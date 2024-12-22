@@ -33,7 +33,6 @@ def docstring(sym):
 # %% ../nbs/06_docments.ipynb
 def parse_docstring(sym):
     "Parse a numpy-style docstring in `sym`"
-    docs = docstring(sym)
     return AttrDict(**docscrape.NumpyDocString(docstring(sym)))
 
 # %% ../nbs/06_docments.ipynb

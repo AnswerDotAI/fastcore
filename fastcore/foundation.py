@@ -260,11 +260,11 @@ def read_config_file(file, **kwargs):
 # %% ../nbs/02_foundation.ipynb
 class Config:
     "Reading and writing `ConfigParser` ini files"
-    def __init__(self, cfg_path, cfg_name, create=None, save=True, extra_files=None, types=None):
+    def __init__(self, cfg_path, cfg_name, create=None, save=True, extra_files=None, types=None, **cfg_kwargs):
         self.types = types or {}
         cfg_path = Path(cfg_path).expanduser().absolute()
         self.config_path,self.config_file = cfg_path,cfg_path/cfg_name
-        self._cfg = ConfigParser()
+        self._cfg = ConfigParser(**cfg_kwargs)
         self.d = self._cfg['DEFAULT']
         found = [Path(o) for o in self._cfg.read(L(extra_files)+[self.config_file], encoding='utf8')]
         if self.config_file not in found and create is not None:

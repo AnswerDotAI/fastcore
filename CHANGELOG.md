@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.7.28
+
+### New Features
+
+- Support documenting args and kwargs ([#660](https://github.com/AnswerDotAI/fastcore/pull/660)), thanks to [@Isaac-Flath](https://github.com/Isaac-Flath)
+- Update Config to support ConfigParser keyword arguments ([#659](https://github.com/AnswerDotAI/fastcore/pull/659)), thanks to [@ncoop57](https://github.com/ncoop57)
+
+
 ## 1.7.27
 
 ### New Features

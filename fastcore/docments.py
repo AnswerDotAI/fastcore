@@ -65,13 +65,19 @@ def _clean_comment(s):
     res = _clean_re.findall(s)
     return res[0] if res else None
 
-def _param_locs(s, returns=True):
+def _param_locs(s, returns=True, args_kwargs=False):
     "`dict` of parameter line numbers to names"
     body = _parses(s).body
-    if len(body)==1: #or not isinstance(body[0], FunctionDef): return None
+    if len(body)==1:
         defn = body[0]
         if isinstance(defn, (FunctionDef, AsyncFunctionDef)):
             res = {arg.lineno:arg.arg for arg in defn.args.args}
+            # Add *args if present
+            if defn.args.vararg and args_kwargs: res[defn.args.vararg.lineno] = defn.args.vararg.arg
+            # Add keyword-only args
+            if args_kwargs: res.update({arg.lineno:arg.arg for arg in defn.args.kwonlyargs})
+            # Add **kwargs if present
+            if defn.args.kwarg and args_kwargs: res[defn.args.kwarg.lineno] = defn.args.kwarg.arg
             if returns and defn.returns: res[defn.returns.lineno] = 'return'
             return res
         elif isdataclass(s):
@@ -133,12 +139,12 @@ def qual_name(obj):
     return get_name(obj)
 
 # %% ../nbs/06_docments.ipynb
-def _docments(s, returns=True, eval_str=False):
+def _docments(s, returns=True, eval_str=False, args_kwargs=False):
     "`dict` of parameter names to 'docment-style' comments in function or string `s`"
     nps = parse_docstring(s)
     if isclass(s) and not is_dataclass(s): s = s.__init__ # Constructor for a class
     comments = {o.start[0]:_clean_comment(o.string) for o in _tokens(s) if o.type==COMMENT}
-    parms = _param_locs(s, returns=returns) or {}
+    parms = _param_locs(s, returns=returns, args_kwargs=args_kwargs) or {}
     docs = {arg:_get_comment(line, arg, comments, parms) for line,arg in parms.items()}
 
     sig = signature_ex(s, True)

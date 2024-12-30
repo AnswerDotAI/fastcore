@@ -1,0 +1,2360 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.39">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Utility functions used in the fastai library">
+
+<title>Utility functions – fastcore</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-ebc57992554dae5230fa85c1bd5a55fa.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="Utility functions – fastcore">
+<meta property="og:description" content="Utility functions used in the fastai library">
+<meta property="og:site_name" content="fastcore">
+<meta name="twitter:title" content="Utility functions – fastcore">
+<meta name="twitter:description" content="Utility functions used in the fastai library">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">fastcore</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/fastai/fastcore"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://x.com/fastdotai"> <i class="bi bi-twitter" role="img" aria-label="Fast.ai Twitter">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./xtras.html">Utility functions</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome to fastcore</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">A tour of fastcore</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./test.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Test</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Basic functionality</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Foundation</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./xtras.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Utility functions</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parallel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parallel</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./net.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Network functionality</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./dispatch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Type dispatch</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./transform.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Transforms</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./docments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Docments</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./meta.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Meta</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./script.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Script - CLI</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./xdg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">XDG</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./style.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Style</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./xml.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">XML</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./py2pyi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Create delegated pyi</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./external.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">External modules</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#file-functions" id="toc-file-functions" class="nav-link active" data-scroll-target="#file-functions">File Functions</a>
+  <ul class="collapse">
+  <li><a href="#walk" id="toc-walk" class="nav-link" data-scroll-target="#walk">walk</a></li>
+  <li><a href="#globtastic" id="toc-globtastic" class="nav-link" data-scroll-target="#globtastic">globtastic</a></li>
+  <li><a href="#maybe_open" id="toc-maybe_open" class="nav-link" data-scroll-target="#maybe_open">maybe_open</a></li>
+  <li><a href="#mkdir" id="toc-mkdir" class="nav-link" data-scroll-target="#mkdir">mkdir</a></li>
+  <li><a href="#image_size" id="toc-image_size" class="nav-link" data-scroll-target="#image_size">image_size</a></li>
+  <li><a href="#bunzip" id="toc-bunzip" class="nav-link" data-scroll-target="#bunzip">bunzip</a></li>
+  <li><a href="#loads" id="toc-loads" class="nav-link" data-scroll-target="#loads">loads</a></li>
+  <li><a href="#loads_multi" id="toc-loads_multi" class="nav-link" data-scroll-target="#loads_multi">loads_multi</a></li>
+  <li><a href="#dumps" id="toc-dumps" class="nav-link" data-scroll-target="#dumps">dumps</a></li>
+  <li><a href="#untar_dir" id="toc-untar_dir" class="nav-link" data-scroll-target="#untar_dir">untar_dir</a></li>
+  <li><a href="#repo_details" id="toc-repo_details" class="nav-link" data-scroll-target="#repo_details">repo_details</a></li>
+  <li><a href="#run" id="toc-run" class="nav-link" data-scroll-target="#run">run</a></li>
+  <li><a href="#open_file" id="toc-open_file" class="nav-link" data-scroll-target="#open_file">open_file</a></li>
+  <li><a href="#save_pickle" id="toc-save_pickle" class="nav-link" data-scroll-target="#save_pickle">save_pickle</a></li>
+  <li><a href="#load_pickle" id="toc-load_pickle" class="nav-link" data-scroll-target="#load_pickle">load_pickle</a></li>
+  <li><a href="#parse_env" id="toc-parse_env" class="nav-link" data-scroll-target="#parse_env">parse_env</a></li>
+  <li><a href="#expand_wildcards" id="toc-expand_wildcards" class="nav-link" data-scroll-target="#expand_wildcards">expand_wildcards</a></li>
+  </ul></li>
+  <li><a href="#collections" id="toc-collections" class="nav-link" data-scroll-target="#collections">Collections</a>
+  <ul class="collapse">
+  <li><a href="#dict2obj" id="toc-dict2obj" class="nav-link" data-scroll-target="#dict2obj">dict2obj</a></li>
+  <li><a href="#obj2dict" id="toc-obj2dict" class="nav-link" data-scroll-target="#obj2dict">obj2dict</a></li>
+  <li><a href="#repr_dict" id="toc-repr_dict" class="nav-link" data-scroll-target="#repr_dict">repr_dict</a></li>
+  <li><a href="#is_listy" id="toc-is_listy" class="nav-link" data-scroll-target="#is_listy">is_listy</a></li>
+  <li><a href="#mapped" id="toc-mapped" class="nav-link" data-scroll-target="#mapped">mapped</a></li>
+  </ul></li>
+  <li><a href="#extensions-to-pathlib.path" id="toc-extensions-to-pathlib.path" class="nav-link" data-scroll-target="#extensions-to-pathlib.path">Extensions to Pathlib.Path</a>
+  <ul class="collapse">
+  <li><a href="#path.readlines" id="toc-path.readlines" class="nav-link" data-scroll-target="#path.readlines">Path.readlines</a></li>
+  <li><a href="#path.read_json" id="toc-path.read_json" class="nav-link" data-scroll-target="#path.read_json">Path.read_json</a></li>
+  <li><a href="#path.mk_write" id="toc-path.mk_write" class="nav-link" data-scroll-target="#path.mk_write">Path.mk_write</a></li>
+  <li><a href="#path.relpath" id="toc-path.relpath" class="nav-link" data-scroll-target="#path.relpath">Path.relpath</a></li>
+  <li><a href="#path.ls" id="toc-path.ls" class="nav-link" data-scroll-target="#path.ls">Path.ls</a></li>
+  <li><a href="#path.__repr__" id="toc-path.__repr__" class="nav-link" data-scroll-target="#path.__repr__">Path.__repr__</a></li>
+  <li><a href="#path.delete" id="toc-path.delete" class="nav-link" data-scroll-target="#path.delete">Path.delete</a></li>
+  </ul></li>
+  <li><a href="#reindexing-collections" id="toc-reindexing-collections" class="nav-link" data-scroll-target="#reindexing-collections">Reindexing Collections</a></li>
+  <li><a href="#other-helpers" id="toc-other-helpers" class="nav-link" data-scroll-target="#other-helpers">Other Helpers</a>
+  <ul class="collapse">
+  <li><a href="#exec_eval" id="toc-exec_eval" class="nav-link" data-scroll-target="#exec_eval">exec_eval</a></li>
+  <li><a href="#get_source_link" id="toc-get_source_link" class="nav-link" data-scroll-target="#get_source_link">get_source_link</a></li>
+  <li><a href="#truncstr" id="toc-truncstr" class="nav-link" data-scroll-target="#truncstr">truncstr</a></li>
+  <li><a href="#sparkline" id="toc-sparkline" class="nav-link" data-scroll-target="#sparkline">sparkline</a></li>
+  <li><a href="#modify_exception" id="toc-modify_exception" class="nav-link" data-scroll-target="#modify_exception">modify_exception</a></li>
+  <li><a href="#round_multiple" id="toc-round_multiple" class="nav-link" data-scroll-target="#round_multiple">round_multiple</a></li>
+  <li><a href="#set_num_threads" id="toc-set_num_threads" class="nav-link" data-scroll-target="#set_num_threads">set_num_threads</a></li>
+  <li><a href="#join_path_file" id="toc-join_path_file" class="nav-link" data-scroll-target="#join_path_file">join_path_file</a></li>
+  <li><a href="#autostart" id="toc-autostart" class="nav-link" data-scroll-target="#autostart">autostart</a></li>
+  <li><a href="#stringfmt_names" id="toc-stringfmt_names" class="nav-link" data-scroll-target="#stringfmt_names">stringfmt_names</a></li>
+  <li><a href="#partial_format" id="toc-partial_format" class="nav-link" data-scroll-target="#partial_format">partial_format</a></li>
+  <li><a href="#utc2local" id="toc-utc2local" class="nav-link" data-scroll-target="#utc2local">utc2local</a></li>
+  <li><a href="#local2utc" id="toc-local2utc" class="nav-link" data-scroll-target="#local2utc">local2utc</a></li>
+  <li><a href="#trace" id="toc-trace" class="nav-link" data-scroll-target="#trace">trace</a></li>
+  <li><a href="#modified_env" id="toc-modified_env" class="nav-link" data-scroll-target="#modified_env">modified_env</a></li>
+  <li><a href="#shufflish" id="toc-shufflish" class="nav-link" data-scroll-target="#shufflish">shufflish</a></li>
+  <li><a href="#console_help" id="toc-console_help" class="nav-link" data-scroll-target="#console_help">console_help</a></li>
+  <li><a href="#hl_md" id="toc-hl_md" class="nav-link" data-scroll-target="#hl_md">hl_md</a></li>
+  <li><a href="#type2str" id="toc-type2str" class="nav-link" data-scroll-target="#type2str">type2str</a></li>
+  <li><a href="#dataclass_src" id="toc-dataclass_src" class="nav-link" data-scroll-target="#dataclass_src">dataclass_src</a></li>
+  <li><a href="#unset" id="toc-unset" class="nav-link" data-scroll-target="#unset">Unset</a></li>
+  <li><a href="#nullable_dc" id="toc-nullable_dc" class="nav-link" data-scroll-target="#nullable_dc">nullable_dc</a></li>
+  <li><a href="#make_nullable" id="toc-make_nullable" class="nav-link" data-scroll-target="#make_nullable">make_nullable</a></li>
+  <li><a href="#flexiclass" id="toc-flexiclass" class="nav-link" data-scroll-target="#flexiclass">flexiclass</a></li>
+  <li><a href="#asdict" id="toc-asdict" class="nav-link" data-scroll-target="#asdict">asdict</a></li>
+  <li><a href="#is_typeddict" id="toc-is_typeddict" class="nav-link" data-scroll-target="#is_typeddict">is_typeddict</a></li>
+  <li><a href="#is_namedtuple" id="toc-is_namedtuple" class="nav-link" data-scroll-target="#is_namedtuple">is_namedtuple</a></li>
+  <li><a href="#flexicache" id="toc-flexicache" class="nav-link" data-scroll-target="#flexicache">flexicache</a></li>
+  <li><a href="#time_policy" id="toc-time_policy" class="nav-link" data-scroll-target="#time_policy">time_policy</a></li>
+  <li><a href="#mtime_policy" id="toc-mtime_policy" class="nav-link" data-scroll-target="#mtime_policy">mtime_policy</a></li>
+  <li><a href="#timed_cache" id="toc-timed_cache" class="nav-link" data-scroll-target="#timed_cache">timed_cache</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/AnswerDotAI/fastcore/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="xtras.html.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Utility functions</h1>
+</div>
+
+<div>
+  <div class="description">
+    Utility functions used in the fastai library
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<section id="file-functions" class="level2">
+<h2 class="anchored" data-anchor-id="file-functions">File Functions</h2>
+<p>Utilities (other than extensions to Pathlib.Path) for dealing with IO.</p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L34" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="walk" class="level3">
+<h3 class="anchored" data-anchor-id="walk">walk</h3>
+<blockquote class="blockquote">
+<pre><code> walk (path:pathlib.Path|str, symlinks:bool=True, keep_file:&lt;built-
+       infunctioncallable&gt;=&lt;function ret_true&gt;, keep_folder:&lt;built-
+       infunctioncallable&gt;=&lt;function ret_true&gt;, skip_folder:&lt;built-
+       infunctioncallable&gt;=&lt;function ret_false&gt;, func:&lt;built-
+       infunctioncallable&gt;=&lt;function join&gt;, ret_folders:bool=False)</code></pre>
+</blockquote>
+<p><em>Generator version of <code>os.walk</code>, using functions to filter files and folders</em></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>path</td>
+<td>pathlib.Path | str</td>
+<td></td>
+<td>path to start searching</td>
+</tr>
+<tr class="even">
+<td>symlinks</td>
+<td>bool</td>
+<td>True</td>
+<td>follow symlinks?</td>
+</tr>
+<tr class="odd">
+<td>keep_file</td>
+<td>callable</td>
+<td>ret_true</td>
+<td>function that returns True for wanted files</td>
+</tr>
+<tr class="even">
+<td>keep_folder</td>
+<td>callable</td>
+<td>ret_true</td>
+<td>function that returns True for folders to enter</td>
+</tr>
+<tr class="odd">
+<td>skip_folder</td>
+<td>callable</td>
+<td>ret_false</td>
+<td>function that returns True for folders to skip</td>
+</tr>
+<tr class="even">
+<td>func</td>
+<td>callable</td>
+<td>join</td>
+<td>function to apply to each matched file</td>
+</tr>
+<tr class="odd">
+<td>ret_folders</td>
+<td>bool</td>
+<td>False</td>
+<td>return folders, not just files</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L53" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="globtastic" class="level3">
+<h3 class="anchored" data-anchor-id="globtastic">globtastic</h3>
+<blockquote class="blockquote">
+<pre><code> globtastic (path:pathlib.Path|str, recursive:bool=True,
+             symlinks:bool=True, file_glob:str=None, file_re:str=None,
+             folder_re:str=None, skip_file_glob:str=None,
+             skip_file_re:str=None, skip_folder_re:str=None, func:&lt;built-
+             infunctioncallable&gt;=&lt;function join&gt;, ret_folders:bool=False)</code></pre>
+</blockquote>
+<p><em>A more powerful <code>glob</code>, including regex matches, symlink handling, and skip parameters</em></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>path</td>
+<td>pathlib.Path | str</td>
+<td></td>
+<td>path to start searching</td>
+</tr>
+<tr class="even">
+<td>recursive</td>
+<td>bool</td>
+<td>True</td>
+<td>search subfolders</td>
+</tr>
+<tr class="odd">
+<td>symlinks</td>
+<td>bool</td>
+<td>True</td>
+<td>follow symlinks?</td>
+</tr>
+<tr class="even">
+<td>file_glob</td>
+<td>str</td>
+<td>None</td>
+<td>Only include files matching glob</td>
+</tr>
+<tr class="odd">
+<td>file_re</td>
+<td>str</td>
+<td>None</td>
+<td>Only include files matching regex</td>
+</tr>
+<tr class="even">
+<td>folder_re</td>
+<td>str</td>
+<td>None</td>
+<td>Only enter folders matching regex</td>
+</tr>
+<tr class="odd">
+<td>skip_file_glob</td>
+<td>str</td>
+<td>None</td>
+<td>Skip files matching glob</td>
+</tr>
+<tr class="even">
+<td>skip_file_re</td>
+<td>str</td>
+<td>None</td>
+<td>Skip files matching regex</td>
+</tr>
+<tr class="odd">
+<td>skip_folder_re</td>
+<td>str</td>
+<td>None</td>
+<td>Skip folders matching regex,</td>
+</tr>
+<tr class="even">
+<td>func</td>
+<td>callable</td>
+<td>join</td>
+<td>function to apply to each matched file</td>
+</tr>
+<tr class="odd">
+<td>ret_folders</td>
+<td>bool</td>
+<td>False</td>
+<td>return folders, not just files</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>L</strong></td>
+<td></td>
+<td><strong>Paths to matched files</strong></td>
+</tr>
+</tbody>
+</table>
+<div id="cell-6" class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>globtastic(<span class="st">'.'</span>, skip_folder_re<span class="op">=</span><span class="st">'^[_.]'</span>, folder_re<span class="op">=</span><span class="st">'core'</span>, file_glob<span class="op">=</span><span class="st">'*.*py*'</span>, file_re<span class="op">=</span><span class="st">'c'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(#5) ['./fastcore/docments.py','./fastcore/dispatch.py','./fastcore/basics.py','./fastcore/docscrape.py','./fastcore/script.py']</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L85" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="maybe_open" class="level3">
+<h3 class="anchored" data-anchor-id="maybe_open">maybe_open</h3>
+<blockquote class="blockquote">
+<pre><code> maybe_open (f, mode='r', **kwargs)</code></pre>
+</blockquote>
+<p><em>Context manager: open <code>f</code> if it is a path (and close on exit)</em></p>
+<p>This is useful for functions where you want to accept a path <em>or</em> file. <a href="https://fastcore.fast.ai/xtras.html#maybe_open"><code>maybe_open</code></a> will not close your file handle if you pass one in.</p>
+<div id="cell-9" class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _f(fn):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> maybe_open(fn) <span class="im">as</span> f: <span class="cf">return</span> f.encoding</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>fname <span class="op">=</span> <span class="st">'00_test.ipynb'</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>sys_encoding <span class="op">=</span> <span class="st">'cp1252'</span> <span class="cf">if</span> sys.platform <span class="op">==</span> <span class="st">'win32'</span> <span class="cf">else</span> <span class="st">'UTF-8'</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>test_eq(_f(fname), sys_encoding)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(fname) <span class="im">as</span> fh: test_eq(_f(fh), sys_encoding)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>For example, we can use this to reimplement <a href="https://docs.python.org/3/library/imghdr.html#imghdr.what"><code>imghdr.what</code></a> from the Python standard library, which is <a href="https://github.com/python/cpython/blob/3.9/Lib/imghdr.py#L11">written in Python 3.9</a> as:</p>
+<div id="cell-11" class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastcore <span class="im">import</span> imghdr</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-12" class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> what(<span class="bu">file</span>, h<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> h <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="bu">isinstance</span>(<span class="bu">file</span>, (<span class="bu">str</span>,os.PathLike)):</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                f <span class="op">=</span> <span class="bu">open</span>(<span class="bu">file</span>, <span class="st">'rb'</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                h <span class="op">=</span> f.read(<span class="dv">32</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span>:</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>                location <span class="op">=</span> <span class="bu">file</span>.tell()</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>                h <span class="op">=</span> <span class="bu">file</span>.read(<span class="dv">32</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>                <span class="bu">file</span>.seek(location)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> tf <span class="kw">in</span> imghdr.tests:</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>            res <span class="op">=</span> tf(h, f)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> res: <span class="cf">return</span> res</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">finally</span>:</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> f: f.close()</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="va">None</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Here’s an example of the use of this function:</p>
+<div id="cell-14" class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>fname <span class="op">=</span> <span class="st">'images/puppy.jpg'</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>what(fname)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>'jpeg'</code></pre>
+</div>
+</div>
+<p>With <a href="https://fastcore.fast.ai/xtras.html#maybe_open"><code>maybe_open</code></a>, <code>Self</code>, and <a href="https://fastcore.fast.ai/foundation.html#l.map_first"><code>L.map_first</code></a>, we can rewrite this in a much more concise and (in our opinion) clear way:</p>
+<div id="cell-16" class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> what(<span class="bu">file</span>, h<span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> h <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> maybe_open(<span class="bu">file</span>, <span class="st">'rb'</span>) <span class="im">as</span> f: h <span class="op">=</span> f.peek(<span class="dv">32</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> L(imghdr.tests).map_first(Self(h,<span class="bu">file</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>…and we can check that it still works:</p>
+<div id="cell-18" class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>test_eq(what(fname), <span class="st">'jpeg'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>…along with the version passing a file handle:</p>
+<div id="cell-20" class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(fname,<span class="st">'rb'</span>) <span class="im">as</span> f: test_eq(what(f), <span class="st">'jpeg'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>…along with the <code>h</code> parameter version:</p>
+<div id="cell-22" class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(fname,<span class="st">'rb'</span>) <span class="im">as</span> f: test_eq(what(<span class="va">None</span>, h<span class="op">=</span>f.read(<span class="dv">32</span>)), <span class="st">'jpeg'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L92" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="mkdir" class="level3">
+<h3 class="anchored" data-anchor-id="mkdir">mkdir</h3>
+<blockquote class="blockquote">
+<pre><code> mkdir (path, exist_ok=False, parents=False, overwrite=False, **kwargs)</code></pre>
+</blockquote>
+<p><em>Creates and returns a directory defined by <code>path</code>, optionally removing previous existing directory if <code>overwrite</code> is <code>True</code></em></p>
+<div id="cell-24" class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> tempfile.TemporaryDirectory() <span class="im">as</span> d:</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    path <span class="op">=</span> Path(os.path.join(d, <span class="st">'new_dir'</span>))</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    new_dir <span class="op">=</span> mkdir(path)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> new_dir.exists()</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    test_eq(new_dir, path)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># test overwrite</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(new_dir<span class="op">/</span><span class="st">'test.txt'</span>, <span class="st">'w'</span>) <span class="im">as</span> f: f.writelines(<span class="st">'test'</span>)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    test_eq(<span class="bu">len</span>(<span class="bu">list</span>(walk(new_dir))), <span class="dv">1</span>) <span class="co"># assert file is present</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    new_dir <span class="op">=</span> mkdir(new_dir, overwrite<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    test_eq(<span class="bu">len</span>(<span class="bu">list</span>(walk(new_dir))), <span class="dv">0</span>) <span class="co"># assert file was deleted</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L101" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="image_size" class="level3">
+<h3 class="anchored" data-anchor-id="image_size">image_size</h3>
+<blockquote class="blockquote">
+<pre><code> image_size (fn)</code></pre>
+</blockquote>
+<p><em>Tuple of (w,h) for png, gif, or jpg; <code>None</code> otherwise</em></p>
+<div id="cell-26" class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>test_eq(image_size(fname), (<span class="dv">1200</span>,<span class="dv">803</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L126" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="bunzip" class="level3">
+<h3 class="anchored" data-anchor-id="bunzip">bunzip</h3>
+<blockquote class="blockquote">
+<pre><code> bunzip (fn)</code></pre>
+</blockquote>
+<p><em>bunzip <code>fn</code>, raising exception if output already exists</em></p>
+<div id="cell-28" class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>f <span class="op">=</span> Path(<span class="st">'files/test.txt'</span>)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> f.exists(): f.unlink()</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>bunzip(<span class="st">'files/test.txt.bz2'</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> f.<span class="bu">open</span>().readlines()</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>test_eq(<span class="bu">len</span>(t),<span class="dv">1</span>)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>test_eq(t[<span class="dv">0</span>], <span class="st">'test</span><span class="ch">\n</span><span class="st">'</span>)</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>f.unlink()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L137" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="loads" class="level3">
+<h3 class="anchored" data-anchor-id="loads">loads</h3>
+<blockquote class="blockquote">
+<pre><code> loads (s, **kw)</code></pre>
+</blockquote>
+<p><em>Same as <code>json.loads</code>, but handles <code>None</code></em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L145" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="loads_multi" class="level3">
+<h3 class="anchored" data-anchor-id="loads_multi">loads_multi</h3>
+<blockquote class="blockquote">
+<pre><code> loads_multi (s:str)</code></pre>
+</blockquote>
+<p><em>Generator of &gt;=0 decoded json dicts, possibly with non-json ignored text at start and end</em></p>
+<div id="cell-31" class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>tst <span class="op">=</span> <span class="st">"""</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="st"># ignored</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="st">{ "a":1 }</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="st">hello</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="st">{</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="st">"b":2</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="st">}</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>test_eq(<span class="bu">list</span>(loads_multi(tst)), [{<span class="st">'a'</span>: <span class="dv">1</span>}, {<span class="st">'b'</span>: <span class="dv">2</span>}])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L157" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="dumps" class="level3">
+<h3 class="anchored" data-anchor-id="dumps">dumps</h3>
+<blockquote class="blockquote">
+<pre><code> dumps (obj, **kw)</code></pre>
+</blockquote>
+<p><em>Same as <code>json.dumps</code>, but uses <code>ujson</code> if available</em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L172" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="untar_dir" class="level3">
+<h3 class="anchored" data-anchor-id="untar_dir">untar_dir</h3>
+<blockquote class="blockquote">
+<pre><code> untar_dir (fname, dest, rename=False, overwrite=False)</code></pre>
+</blockquote>
+<p><em>untar <code>file</code> into <code>dest</code>, creating a directory if the root contains more than one item</em></p>
+<div id="cell-34" class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> test_untar(foldername, rename<span class="op">=</span><span class="va">False</span>, <span class="op">**</span>kwargs):</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> tempfile.TemporaryDirectory() <span class="im">as</span> d:</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>        nm <span class="op">=</span> os.path.join(d, <span class="st">'a'</span>)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>        shutil.make_archive(nm, <span class="st">'gztar'</span>, <span class="op">**</span>kwargs)</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> tempfile.TemporaryDirectory() <span class="im">as</span> d2:</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>            d2 <span class="op">=</span> Path(d2)</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>            untar_dir(nm<span class="op">+</span><span class="st">'.tar.gz'</span>, d2, rename<span class="op">=</span>rename)</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>            test_eq(d2.ls(), [d2<span class="op">/</span>foldername])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If the contents of <code>fname</code> contain just one file or directory, it is placed directly in <code>dest</code>:</p>
+<div id="cell-36" class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># using `base_dir` in `make_archive` results in `images` directory included in file names</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>test_untar(<span class="st">'images'</span>, base_dir<span class="op">=</span><span class="st">'images'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If <code>rename</code> then the directory created is named based on the archive, without extension:</p>
+<div id="cell-38" class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>test_untar(<span class="st">'a'</span>, base_dir<span class="op">=</span><span class="st">'images'</span>, rename<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If the contents of <code>fname</code> contain multiple files and directories, a new folder in <code>dest</code> is created with the same name as <code>fname</code> (but without extension):</p>
+<div id="cell-40" class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># using `root_dir` in `make_archive` results in `images` directory *not* included in file names</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>test_untar(<span class="st">'a'</span>, root_dir<span class="op">=</span><span class="st">'images'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L191" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="repo_details" class="level3">
+<h3 class="anchored" data-anchor-id="repo_details">repo_details</h3>
+<blockquote class="blockquote">
+<pre><code> repo_details (url)</code></pre>
+</blockquote>
+<p><em>Tuple of <code>owner,name</code> from ssh or https git repo <code>url</code></em></p>
+<div id="cell-42" class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>test_eq(repo_details(<span class="st">'https://github.com/fastai/fastai.git'</span>), [<span class="st">'fastai'</span>, <span class="st">'fastai'</span>])</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>test_eq(repo_details(<span class="st">'git@github.com:fastai/nbdev.git</span><span class="ch">\n</span><span class="st">'</span>), [<span class="st">'fastai'</span>, <span class="st">'nbdev'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L198" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="run" class="level3">
+<h3 class="anchored" data-anchor-id="run">run</h3>
+<blockquote class="blockquote">
+<pre><code> run (cmd, *rest, same_in_win=False, ignore_ex=False, as_bytes=False,
+      stderr=False)</code></pre>
+</blockquote>
+<p><em>Pass <code>cmd</code> (splitting with <code>shlex</code> if string) to <code>subprocess.run</code>; return <code>stdout</code>; raise <code>IOError</code> if fails</em></p>
+<p>You can pass a string (which will be split based on standard shell rules), a list, or pass args directly:</p>
+<div id="cell-45" class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>run(<span class="st">'echo'</span>, same_in_win<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>run(<span class="st">'pip'</span>, <span class="st">'--version'</span>, same_in_win<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>run([<span class="st">'pip'</span>, <span class="st">'--version'</span>], same_in_win<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>'pip 23.3.1 from /Users/jhoward/miniconda3/lib/python3.11/site-packages/pip (python 3.11)'</code></pre>
+</div>
+</div>
+<div id="cell-46" class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> sys.platform <span class="op">==</span> <span class="st">'win32'</span>:</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="st">'ipynb'</span> <span class="kw">in</span> run(<span class="st">'cmd /c dir /p'</span>)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="st">'ipynb'</span> <span class="kw">in</span> run([<span class="st">'cmd'</span>, <span class="st">'/c'</span>, <span class="st">'dir'</span>, <span class="st">'/p'</span>])</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="st">'ipynb'</span> <span class="kw">in</span> run(<span class="st">'cmd'</span>, <span class="st">'/c'</span>, <span class="st">'dir'</span>,  <span class="st">'/p'</span>)</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="st">'ipynb'</span> <span class="kw">in</span> run(<span class="st">'ls -ls'</span>)</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="st">'ipynb'</span> <span class="kw">in</span> run([<span class="st">'ls'</span>, <span class="st">'-l'</span>])</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="st">'ipynb'</span> <span class="kw">in</span> run(<span class="st">'ls'</span>, <span class="st">'-l'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Some commands fail in non-error situations, like <code>grep</code>. Use <code>ignore_ex</code> in those cases, which will return a tuple of stdout and returncode:</p>
+<div id="cell-48" class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> sys.platform <span class="op">==</span> <span class="st">'win32'</span>:</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    test_eq(run(<span class="st">'cmd /c findstr asdfds 00_test.ipynb'</span>, ignore_ex<span class="op">=</span><span class="va">True</span>)[<span class="dv">0</span>], <span class="dv">1</span>)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    test_eq(run(<span class="st">'grep asdfds 00_test.ipynb'</span>, ignore_ex<span class="op">=</span><span class="va">True</span>)[<span class="dv">0</span>], <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><a href="https://fastcore.fast.ai/xtras.html#run"><code>run</code></a> automatically decodes returned bytes to a <code>str</code>. Use <code>as_bytes</code> to skip that:</p>
+<div id="cell-50" class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> sys.platform <span class="op">==</span> <span class="st">'win32'</span>:</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>    test_eq(run(<span class="st">'cmd /c echo hi'</span>), <span class="st">'hi'</span>)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    test_eq(run(<span class="st">'echo hi'</span>, as_bytes<span class="op">=</span><span class="va">True</span>), <span class="st">b'hi</span><span class="ch">\n</span><span class="st">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L222" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="open_file" class="level3">
+<h3 class="anchored" data-anchor-id="open_file">open_file</h3>
+<blockquote class="blockquote">
+<pre><code> open_file (fn, mode='r', **kwargs)</code></pre>
+</blockquote>
+<p><em>Open a file, with optional compression if gz or bz2 suffix</em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L233" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="save_pickle" class="level3">
+<h3 class="anchored" data-anchor-id="save_pickle">save_pickle</h3>
+<blockquote class="blockquote">
+<pre><code> save_pickle (fn, o)</code></pre>
+</blockquote>
+<p><em>Save a pickle file, to a file name or opened file</em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L239" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="load_pickle" class="level3">
+<h3 class="anchored" data-anchor-id="load_pickle">load_pickle</h3>
+<blockquote class="blockquote">
+<pre><code> load_pickle (fn)</code></pre>
+</blockquote>
+<p><em>Load a pickle file from a file name or opened file</em></p>
+<div id="cell-54" class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> suf <span class="kw">in</span> <span class="st">'.pkl'</span>,<span class="st">'.bz2'</span>,<span class="st">'.gz'</span>:</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># delete=False is added for Windows</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># https://stackoverflow.com/questions/23212435/permission-denied-to-write-to-my-temporary-file</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> tempfile.NamedTemporaryFile(suffix<span class="op">=</span>suf, delete<span class="op">=</span><span class="va">False</span>) <span class="im">as</span> f:</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>        fn <span class="op">=</span> Path(f.name)</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>        save_pickle(fn, <span class="st">'t'</span>)</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>        t <span class="op">=</span> load_pickle(fn)</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>    f.close()</span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>    test_eq(t,<span class="st">'t'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L245" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="parse_env" class="level3">
+<h3 class="anchored" data-anchor-id="parse_env">parse_env</h3>
+<blockquote class="blockquote">
+<pre><code> parse_env (s:str=None, fn:Union[str,pathlib.Path]=None)</code></pre>
+</blockquote>
+<p><em>Parse a shell-style environment string or file</em></p>
+<div id="cell-56" class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>testf <span class="op">=</span> <span class="st">"""# comment</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="st">   # another comment</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="st"> export FOO="bar#baz"</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="st">BAR=thing # comment "ok"</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a><span class="st">  baz='thong'</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a><span class="st">QUX=quux</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a><span class="st">export ZAP = "zip" # more comments</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a><span class="st">   FOOBAR = 42   # trailing space and comment"""</span></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>exp <span class="op">=</span> <span class="bu">dict</span>(FOO<span class="op">=</span><span class="st">'bar#baz'</span>, BAR<span class="op">=</span><span class="st">'thing'</span>, baz<span class="op">=</span><span class="st">'thong'</span>, QUX<span class="op">=</span><span class="st">'quux'</span>, ZAP<span class="op">=</span><span class="st">'zip'</span>, FOOBAR<span class="op">=</span><span class="st">'42'</span>)</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>test_eq(parse_env(testf),  exp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L256" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="expand_wildcards" class="level3">
+<h3 class="anchored" data-anchor-id="expand_wildcards">expand_wildcards</h3>
+<blockquote class="blockquote">
+<pre><code> expand_wildcards (code)</code></pre>
+</blockquote>
+<p><em>Expand all wildcard imports in the given code string.</em></p>
+<div id="cell-58" class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>inp <span class="op">=</span> <span class="st">"""from math import *</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="st">from os import *</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="st">from random import *</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="st">def func(): return sin(pi) + path.join('a', 'b') + randint(1, 10)"""</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>exp <span class="op">=</span> <span class="st">"""from math import pi, sin</span></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a><span class="st">from os import path</span></span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a><span class="st">from random import randint</span></span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a><span class="st">def func(): return sin(pi) + path.join('a', 'b') + randint(1, 10)"""</span></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>test_eq(expand_wildcards(inp), exp)</span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>inp <span class="op">=</span> <span class="st">"""from itertools import *</span></span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a><span class="st">def func(): pass"""</span></span>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a>test_eq(expand_wildcards(inp), inp)</span>
+<span id="cb45-16"><a href="#cb45-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-17"><a href="#cb45-17" aria-hidden="true" tabindex="-1"></a>inp <span class="op">=</span> <span class="st">"""def outer():</span></span>
+<span id="cb45-18"><a href="#cb45-18" aria-hidden="true" tabindex="-1"></a><span class="st">    from math import *</span></span>
+<span id="cb45-19"><a href="#cb45-19" aria-hidden="true" tabindex="-1"></a><span class="st">    def inner():</span></span>
+<span id="cb45-20"><a href="#cb45-20" aria-hidden="true" tabindex="-1"></a><span class="st">        from os import *</span></span>
+<span id="cb45-21"><a href="#cb45-21" aria-hidden="true" tabindex="-1"></a><span class="st">        return sin(pi) + path.join('a', 'b')"""</span></span>
+<span id="cb45-22"><a href="#cb45-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-23"><a href="#cb45-23" aria-hidden="true" tabindex="-1"></a>exp <span class="op">=</span> <span class="st">"""def outer():</span></span>
+<span id="cb45-24"><a href="#cb45-24" aria-hidden="true" tabindex="-1"></a><span class="st">    from math import pi, sin</span></span>
+<span id="cb45-25"><a href="#cb45-25" aria-hidden="true" tabindex="-1"></a><span class="st">    def inner():</span></span>
+<span id="cb45-26"><a href="#cb45-26" aria-hidden="true" tabindex="-1"></a><span class="st">        from os import path</span></span>
+<span id="cb45-27"><a href="#cb45-27" aria-hidden="true" tabindex="-1"></a><span class="st">        return sin(pi) + path.join('a', 'b')"""</span></span>
+<span id="cb45-28"><a href="#cb45-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-29"><a href="#cb45-29" aria-hidden="true" tabindex="-1"></a>test_eq(expand_wildcards(inp), exp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="collections" class="level2">
+<h2 class="anchored" data-anchor-id="collections">Collections</h2>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L290" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="dict2obj" class="level3">
+<h3 class="anchored" data-anchor-id="dict2obj">dict2obj</h3>
+<blockquote class="blockquote">
+<pre><code> dict2obj (d, list_func=&lt;class 'fastcore.foundation.L'&gt;, dict_func=&lt;class
+           'fastcore.basics.AttrDict'&gt;)</code></pre>
+</blockquote>
+<p><em>Convert (possibly nested) dicts (or lists of dicts) to <a href="https://fastcore.fast.ai/basics.html#attrdict"><code>AttrDict</code></a></em></p>
+<p>This is a convenience to give you “dotted” access to (possibly nested) dictionaries, e.g:</p>
+<div id="cell-62" class="cell">
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>d1 <span class="op">=</span> <span class="bu">dict</span>(a<span class="op">=</span><span class="dv">1</span>, b<span class="op">=</span><span class="bu">dict</span>(c<span class="op">=</span><span class="dv">2</span>,d<span class="op">=</span><span class="dv">3</span>))</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>d2 <span class="op">=</span> dict2obj(d1)</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>test_eq(d2.b.c, <span class="dv">2</span>)</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>test_eq(d2.b[<span class="st">'c'</span>], <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>It can also be used on lists of dicts.</p>
+<div id="cell-64" class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>_list_of_dicts <span class="op">=</span> [d1, d1]</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>ds <span class="op">=</span> dict2obj(_list_of_dicts)</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>test_eq(ds[<span class="dv">0</span>].b.c, <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L297" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="obj2dict" class="level3">
+<h3 class="anchored" data-anchor-id="obj2dict">obj2dict</h3>
+<blockquote class="blockquote">
+<pre><code> obj2dict (d)</code></pre>
+</blockquote>
+<p><em>Convert (possibly nested) AttrDicts (or lists of AttrDicts) to <code>dict</code></em></p>
+<p><a href="https://fastcore.fast.ai/xtras.html#obj2dict"><code>obj2dict</code></a> can be used to reverse what is done by <a href="https://fastcore.fast.ai/xtras.html#dict2obj"><code>dict2obj</code></a>:</p>
+<div id="cell-67" class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>test_eq(obj2dict(d2), d1)</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>test_eq(obj2dict(ds), _list_of_dicts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L312" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="repr_dict" class="level3">
+<h3 class="anchored" data-anchor-id="repr_dict">repr_dict</h3>
+<blockquote class="blockquote">
+<pre><code> repr_dict (d)</code></pre>
+</blockquote>
+<p><em>Print nested dicts and lists, such as returned by <a href="https://fastcore.fast.ai/xtras.html#dict2obj"><code>dict2obj</code></a></em></p>
+<div id="cell-69" class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(repr_dict(d2))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>- a: 1
+- b: 
+  - c: 2
+  - d: 3</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L317" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="is_listy" class="level3">
+<h3 class="anchored" data-anchor-id="is_listy">is_listy</h3>
+<blockquote class="blockquote">
+<pre><code> is_listy (x)</code></pre>
+</blockquote>
+<p><em><code>isinstance(x, (tuple,list,L,slice,Generator))</code></em></p>
+<div id="cell-71" class="cell">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> is_listy((<span class="dv">1</span>,))</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> is_listy([<span class="dv">1</span>])</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> is_listy(L([<span class="dv">1</span>]))</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> is_listy(<span class="bu">slice</span>(<span class="dv">2</span>))</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="kw">not</span> is_listy(array([<span class="dv">1</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L322" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="mapped" class="level3">
+<h3 class="anchored" data-anchor-id="mapped">mapped</h3>
+<blockquote class="blockquote">
+<pre><code> mapped (f, it)</code></pre>
+</blockquote>
+<p><em>map <code>f</code> over <code>it</code>, unless it’s not listy, in which case return <code>f(it)</code></em></p>
+<div id="cell-73" class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _f(x,a<span class="op">=</span><span class="dv">1</span>): <span class="cf">return</span> x<span class="op">-</span>a</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>test_eq(mapped(_f,<span class="dv">1</span>),<span class="dv">0</span>)</span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>test_eq(mapped(_f,[<span class="dv">1</span>,<span class="dv">2</span>]),[<span class="dv">0</span>,<span class="dv">1</span>])</span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>test_eq(mapped(_f,(<span class="dv">1</span>,)),(<span class="dv">0</span>,))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="extensions-to-pathlib.path" class="level2">
+<h2 class="anchored" data-anchor-id="extensions-to-pathlib.path">Extensions to Pathlib.Path</h2>
+<p>The following methods are added to the standard python libary <a href="https://docs.python.org/3/library/pathlib.html#basic-use">Pathlib.Path</a>.</p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L328" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="path.readlines" class="level3">
+<h3 class="anchored" data-anchor-id="path.readlines">Path.readlines</h3>
+<blockquote class="blockquote">
+<pre><code> Path.readlines (hint=-1, encoding='utf8')</code></pre>
+</blockquote>
+<p><em>Read the content of <code>self</code></em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L334" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="path.read_json" class="level3">
+<h3 class="anchored" data-anchor-id="path.read_json">Path.read_json</h3>
+<blockquote class="blockquote">
+<pre><code> Path.read_json (encoding=None, errors=None)</code></pre>
+</blockquote>
+<p><em>Same as <code>read_text</code> followed by <a href="https://fastcore.fast.ai/xtras.html#loads"><code>loads</code></a></em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L340" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="path.mk_write" class="level3">
+<h3 class="anchored" data-anchor-id="path.mk_write">Path.mk_write</h3>
+<blockquote class="blockquote">
+<pre><code> Path.mk_write (data, encoding=None, errors=None, mode=511)</code></pre>
+</blockquote>
+<p><em>Make all parent dirs of <code>self</code>, and write <code>data</code></em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L347" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="path.relpath" class="level3">
+<h3 class="anchored" data-anchor-id="path.relpath">Path.relpath</h3>
+<blockquote class="blockquote">
+<pre><code> Path.relpath (start=None)</code></pre>
+</blockquote>
+<p><em>Same as <code>os.path.relpath</code>, but returns a <code>Path</code>, and resolves symlinks</em></p>
+<div id="cell-80" class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> Path(<span class="st">'../fastcore/'</span>).resolve()</span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>p</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>Path('/Users/daniel.roy.greenfeld/fh/fastcore/fastcore')</code></pre>
+</div>
+</div>
+<div id="cell-81" class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>p.relpath(Path.cwd())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>Path('../fastcore')</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L353" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="path.ls" class="level3">
+<h3 class="anchored" data-anchor-id="path.ls">Path.ls</h3>
+<blockquote class="blockquote">
+<pre><code> Path.ls (n_max=None, file_type=None, file_exts=None)</code></pre>
+</blockquote>
+<p><em>Contents of path as a list</em></p>
+<p>We add an <code>ls()</code> method to <code>pathlib.Path</code> which is simply defined as <code>list(Path.iterdir())</code>, mainly for convenience in REPL environments such as notebooks.</p>
+<div id="cell-84" class="cell">
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> Path()</span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> path.ls()</span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">len</span>(t)<span class="op">&gt;</span><span class="dv">0</span></span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a>t1 <span class="op">=</span> path.ls(<span class="dv">10</span>)</span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>test_eq(<span class="bu">len</span>(t1), <span class="dv">10</span>)</span>
+<span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a>t2 <span class="op">=</span> path.ls(file_exts<span class="op">=</span><span class="st">'.ipynb'</span>)</span>
+<span id="cb67-7"><a href="#cb67-7" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">len</span>(t)<span class="op">&gt;</span><span class="bu">len</span>(t2)</span>
+<span id="cb67-8"><a href="#cb67-8" aria-hidden="true" tabindex="-1"></a>t[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>Path('000_tour.ipynb')</code></pre>
+</div>
+</div>
+<p>You can also pass an optional <code>file_type</code> MIME prefix and/or a list of file extensions.</p>
+<div id="cell-86" class="cell">
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>lib_path <span class="op">=</span> (path<span class="op">/</span><span class="st">'../fastcore'</span>)</span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>txt_files<span class="op">=</span>lib_path.ls(file_type<span class="op">=</span><span class="st">'text'</span>)</span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">len</span>(txt_files) <span class="op">&gt;</span> <span class="dv">0</span> <span class="kw">and</span> txt_files[<span class="dv">0</span>].suffix<span class="op">==</span><span class="st">'.py'</span></span>
+<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a>ipy_files<span class="op">=</span>path.ls(file_exts<span class="op">=</span>[<span class="st">'.ipynb'</span>])</span>
+<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">len</span>(ipy_files) <span class="op">&gt;</span> <span class="dv">0</span> <span class="kw">and</span> ipy_files[<span class="dv">0</span>].suffix<span class="op">==</span><span class="st">'.ipynb'</span></span>
+<span id="cb69-6"><a href="#cb69-6" aria-hidden="true" tabindex="-1"></a>txt_files[<span class="dv">0</span>],ipy_files[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(Path('../fastcore/shutil.py'), Path('000_tour.ipynb'))</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L365" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="path.__repr__" class="level3">
+<h3 class="anchored" data-anchor-id="path.__repr__">Path.__repr__</h3>
+<blockquote class="blockquote">
+<pre><code> Path.__repr__ ()</code></pre>
+</blockquote>
+<p><em>Return repr(self).</em></p>
+<p>fastai also updates the <code>repr</code> of <code>Path</code> such that, if <code>Path.BASE_PATH</code> is defined, all paths are printed relative to that path (as long as they are contained in <code>Path.BASE_PATH</code>:</p>
+<div id="cell-89" class="cell">
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> ipy_files[<span class="dv">0</span>].absolute()</span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>    Path.BASE_PATH <span class="op">=</span> t.parent.parent</span>
+<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a>    test_eq(<span class="bu">repr</span>(t), <span class="ss">f"Path('nbs/</span><span class="sc">{</span>t<span class="sc">.</span>name<span class="sc">}</span><span class="ss">')"</span>)</span>
+<span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a><span class="cf">finally</span>: Path.BASE_PATH <span class="op">=</span> <span class="va">None</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L374" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="path.delete" class="level3">
+<h3 class="anchored" data-anchor-id="path.delete">Path.delete</h3>
+<blockquote class="blockquote">
+<pre><code> Path.delete ()</code></pre>
+</blockquote>
+<p><em>Delete a file, symlink, or directory tree</em></p>
+</section>
+</section>
+<section id="reindexing-collections" class="level2">
+<h2 class="anchored" data-anchor-id="reindexing-collections">Reindexing Collections</h2>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L389" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="reindexcollection" class="level4">
+<h4 class="anchored" data-anchor-id="reindexcollection">ReindexCollection</h4>
+<blockquote class="blockquote">
+<pre><code> ReindexCollection (coll, idxs=None, cache=None, tfm=&lt;function noop&gt;)</code></pre>
+</blockquote>
+<p><em>Reindexes collection <code>coll</code> with indices <code>idxs</code> and optional LRU cache of size <code>cache</code></em></p>
+<p>This is useful when constructing batches or organizing data in a particular manner (i.e.&nbsp;for deep learning). This class is primarly used in organizing data for language models in fastai.</p>
+<p>You can supply a custom index upon instantiation with the <code>idxs</code> argument, or you can call the <code>reindex</code> method to supply a new index for your collection.</p>
+<p>Here is how you can reindex a list such that the elements are reversed:</p>
+<div id="cell-95" class="cell">
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>rc<span class="op">=</span>ReindexCollection([<span class="st">'a'</span>, <span class="st">'b'</span>, <span class="st">'c'</span>, <span class="st">'d'</span>, <span class="st">'e'</span>], idxs<span class="op">=</span>[<span class="dv">4</span>,<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">0</span>])</span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(rc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>['e', 'd', 'c', 'b', 'a']</code></pre>
+</div>
+</div>
+<p>Alternatively, you can use the <code>reindex</code> method:</p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L400" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="reindexcollection.reindex" class="level6">
+<h6 class="anchored" data-anchor-id="reindexcollection.reindex">ReindexCollection.reindex</h6>
+<blockquote class="blockquote">
+<pre><code> ReindexCollection.reindex (idxs)</code></pre>
+</blockquote>
+<p><em>Replace <code>self.idxs</code> with idxs</em></p>
+<div id="cell-98" class="cell">
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>rc<span class="op">=</span>ReindexCollection([<span class="st">'a'</span>, <span class="st">'b'</span>, <span class="st">'c'</span>, <span class="st">'d'</span>, <span class="st">'e'</span>])</span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>rc.reindex([<span class="dv">4</span>,<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">0</span>])</span>
+<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(rc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>['e', 'd', 'c', 'b', 'a']</code></pre>
+</div>
+</div>
+<p>You can optionally specify a LRU cache, which uses <a href="https://docs.python.org/3/library/functools.html#functools.lru_cache">functools.lru_cache</a> upon instantiation:</p>
+<div id="cell-100" class="cell">
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>sz <span class="op">=</span> <span class="dv">50</span></span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> ReindexCollection(L.<span class="bu">range</span>(sz), cache<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-4"><a href="#cb80-4" aria-hidden="true" tabindex="-1"></a><span class="co">#trigger a cache hit by indexing into the same element multiple times</span></span>
+<span id="cb80-5"><a href="#cb80-5" aria-hidden="true" tabindex="-1"></a>t[<span class="dv">0</span>], t[<span class="dv">0</span>]</span>
+<span id="cb80-6"><a href="#cb80-6" aria-hidden="true" tabindex="-1"></a>t._get.cache_info()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>CacheInfo(hits=1, misses=1, maxsize=2, currsize=1)</code></pre>
+</div>
+</div>
+<p>You can optionally clear the LRU cache by calling the <code>cache_clear</code> method:</p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L404" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="reindexcollection.cache_clear" class="level5">
+<h5 class="anchored" data-anchor-id="reindexcollection.cache_clear">ReindexCollection.cache_clear</h5>
+<blockquote class="blockquote">
+<pre><code> ReindexCollection.cache_clear ()</code></pre>
+</blockquote>
+<p><em>Clear LRU cache</em></p>
+<div id="cell-103" class="cell">
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>sz <span class="op">=</span> <span class="dv">50</span></span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> ReindexCollection(L.<span class="bu">range</span>(sz), cache<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb83-4"><a href="#cb83-4" aria-hidden="true" tabindex="-1"></a><span class="co">#trigger a cache hit by indexing into the same element multiple times</span></span>
+<span id="cb83-5"><a href="#cb83-5" aria-hidden="true" tabindex="-1"></a>t[<span class="dv">0</span>], t[<span class="dv">0</span>]</span>
+<span id="cb83-6"><a href="#cb83-6" aria-hidden="true" tabindex="-1"></a>t.cache_clear()</span>
+<span id="cb83-7"><a href="#cb83-7" aria-hidden="true" tabindex="-1"></a>t._get.cache_info()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>CacheInfo(hits=0, misses=0, maxsize=2, currsize=0)</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L401" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="reindexcollection.shuffle" class="level5">
+<h5 class="anchored" data-anchor-id="reindexcollection.shuffle">ReindexCollection.shuffle</h5>
+<blockquote class="blockquote">
+<pre><code> ReindexCollection.shuffle ()</code></pre>
+</blockquote>
+<p><em>Randomly shuffle indices</em></p>
+<p>Note that an ordered index is automatically constructed for the data structure even if one is not supplied.</p>
+<div id="cell-106" class="cell">
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a>rc<span class="op">=</span>ReindexCollection([<span class="st">'a'</span>, <span class="st">'b'</span>, <span class="st">'c'</span>, <span class="st">'d'</span>, <span class="st">'e'</span>, <span class="st">'f'</span>, <span class="st">'g'</span>, <span class="st">'h'</span>])</span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a>rc.shuffle()</span>
+<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a><span class="bu">list</span>(rc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>['a', 'd', 'h', 'c', 'e', 'b', 'f', 'g']</code></pre>
+</div>
+</div>
+<div id="cell-107" class="cell">
+<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>sz <span class="op">=</span> <span class="dv">50</span></span>
+<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> ReindexCollection(L.<span class="bu">range</span>(sz), cache<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb88-3"><a href="#cb88-3" aria-hidden="true" tabindex="-1"></a>test_eq(<span class="bu">list</span>(t), <span class="bu">range</span>(sz))</span>
+<span id="cb88-4"><a href="#cb88-4" aria-hidden="true" tabindex="-1"></a>test_eq(t[sz<span class="op">-</span><span class="dv">1</span>], sz<span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb88-5"><a href="#cb88-5" aria-hidden="true" tabindex="-1"></a>test_eq(t._get.cache_info().hits, <span class="dv">1</span>)</span>
+<span id="cb88-6"><a href="#cb88-6" aria-hidden="true" tabindex="-1"></a>t.shuffle()</span>
+<span id="cb88-7"><a href="#cb88-7" aria-hidden="true" tabindex="-1"></a>test_eq(t._get.cache_info().hits, <span class="dv">1</span>)</span>
+<span id="cb88-8"><a href="#cb88-8" aria-hidden="true" tabindex="-1"></a>test_ne(<span class="bu">list</span>(t), <span class="bu">range</span>(sz))</span>
+<span id="cb88-9"><a href="#cb88-9" aria-hidden="true" tabindex="-1"></a>test_eq(<span class="bu">set</span>(t), <span class="bu">set</span>(<span class="bu">range</span>(sz)))</span>
+<span id="cb88-10"><a href="#cb88-10" aria-hidden="true" tabindex="-1"></a>t.cache_clear()</span>
+<span id="cb88-11"><a href="#cb88-11" aria-hidden="true" tabindex="-1"></a>test_eq(t._get.cache_info().hits, <span class="dv">0</span>)</span>
+<span id="cb88-12"><a href="#cb88-12" aria-hidden="true" tabindex="-1"></a>test_eq(t.count(<span class="dv">0</span>), <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="other-helpers" class="level2">
+<h2 class="anchored" data-anchor-id="other-helpers">Other Helpers</h2>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L413" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="exec_eval" class="level3">
+<h3 class="anchored" data-anchor-id="exec_eval">exec_eval</h3>
+<blockquote class="blockquote">
+<pre><code> exec_eval (code, g=None, l=None)</code></pre>
+</blockquote>
+<p><em>Evaluate <code>code</code> in <code>g</code> (defaults to <code>globals()</code>) and <code>l</code> (defaults to <code>locals()</code>)</em></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>code</td>
+<td></td>
+<td></td>
+<td>Code to exec/eval</td>
+</tr>
+<tr class="even">
+<td>g</td>
+<td>NoneType</td>
+<td>None</td>
+<td>Globals namespace dict</td>
+</tr>
+<tr class="odd">
+<td>l</td>
+<td>NoneType</td>
+<td>None</td>
+<td>Locals namespace dict</td>
+</tr>
+</tbody>
+</table>
+<p>This is a combination of <code>eval</code> and <code>exec</code>, which behaves like ipython and Jupyter. If the last line is an expression, it is evaluated and the result is returned:</p>
+<div id="cell-111" class="cell">
+<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>exec_eval(<span class="st">'''</span></span>
+<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a><span class="st">def f(x): return x+1</span></span>
+<span id="cb90-3"><a href="#cb90-3" aria-hidden="true" tabindex="-1"></a><span class="st">f(1)</span></span>
+<span id="cb90-4"><a href="#cb90-4" aria-hidden="true" tabindex="-1"></a><span class="st">'''</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>2</code></pre>
+</div>
+</div>
+<p>By default, the code uses the caller’s globals and locals. For instance, here <code>f</code> is available since it’s been added to our symbol table:</p>
+<div id="cell-113" class="cell">
+<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a>exec_eval(<span class="st">'print(f(2))'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>3</code></pre>
+</div>
+</div>
+<p>Pass a dict as the <code>g</code> param in order to use an arbitrary namespace:</p>
+<div id="cell-115" class="cell">
+<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>exec_eval(<span class="st">'print(f)'</span>, {<span class="st">'f'</span>: <span class="st">'Hi I am f.'</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Hi I am f.</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L445" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="get_source_link" class="level3">
+<h3 class="anchored" data-anchor-id="get_source_link">get_source_link</h3>
+<blockquote class="blockquote">
+<pre><code> get_source_link (func)</code></pre>
+</blockquote>
+<p><em>Return link to <code>func</code> in source code</em></p>
+<p><a href="https://fastcore.fast.ai/xtras.html#get_source_link"><code>get_source_link</code></a> allows you get a link to source code related to an object. For <a href="https://github.com/fastai/nbdev">nbdev</a> related projects such as fastcore, we can get the full link to a GitHub repo. For <code>nbdev</code> projects, be sure to properly set the <code>git_url</code> in <code>settings.ini</code> (derived from <code>lib_name</code> and <code>branch</code> on top of the prefix you will need to adapt) so that those links are correct.</p>
+<p>For example, below we get the link to <a href="https://fastcore.fast.ai/test.html#test_eq"><code>fastcore.test.test_eq</code></a>:</p>
+<div id="cell-118" class="cell">
+<div class="sourceCode cell-code" id="cb97"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastcore.test <span class="im">import</span> test_eq</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-119" class="cell">
+<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'fastcore/test.py'</span> <span class="kw">in</span> get_source_link(test_eq)</span>
+<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> get_source_link(test_eq).startswith(<span class="st">'https://github.com/fastai/fastcore'</span>)</span>
+<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a>get_source_link(test_eq)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>'https://github.com/fastai/fastcore/tree/master/fastcore/test.py#L35'</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L459" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="truncstr" class="level3">
+<h3 class="anchored" data-anchor-id="truncstr">truncstr</h3>
+<blockquote class="blockquote">
+<pre><code> truncstr (s:str, maxlen:int, suf:str='…', space='')</code></pre>
+</blockquote>
+<p><em>Truncate <code>s</code> to length <code>maxlen</code>, adding suffix <code>suf</code> if truncated</em></p>
+<div id="cell-121" class="cell">
+<div class="sourceCode cell-code" id="cb101"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a>w <span class="op">=</span> <span class="st">'abacadabra'</span></span>
+<span id="cb101-2"><a href="#cb101-2" aria-hidden="true" tabindex="-1"></a>test_eq(truncstr(w, <span class="dv">10</span>), w)</span>
+<span id="cb101-3"><a href="#cb101-3" aria-hidden="true" tabindex="-1"></a>test_eq(truncstr(w, <span class="dv">5</span>), <span class="st">'abac…'</span>)</span>
+<span id="cb101-4"><a href="#cb101-4" aria-hidden="true" tabindex="-1"></a>test_eq(truncstr(w, <span class="dv">5</span>, suf<span class="op">=</span><span class="st">''</span>), <span class="st">'abaca'</span>)</span>
+<span id="cb101-5"><a href="#cb101-5" aria-hidden="true" tabindex="-1"></a>test_eq(truncstr(w, <span class="dv">11</span>, space<span class="op">=</span><span class="st">'_'</span>), w<span class="op">+</span><span class="st">"_"</span>)</span>
+<span id="cb101-6"><a href="#cb101-6" aria-hidden="true" tabindex="-1"></a>test_eq(truncstr(w, <span class="dv">10</span>, space<span class="op">=</span><span class="st">'_'</span>), w[:<span class="op">-</span><span class="dv">1</span>]<span class="op">+</span><span class="st">'…'</span>)</span>
+<span id="cb101-7"><a href="#cb101-7" aria-hidden="true" tabindex="-1"></a>test_eq(truncstr(w, <span class="dv">5</span>, suf<span class="op">=</span><span class="st">'!!'</span>), <span class="st">'aba!!'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L476" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="sparkline" class="level3">
+<h3 class="anchored" data-anchor-id="sparkline">sparkline</h3>
+<blockquote class="blockquote">
+<pre><code> sparkline (data, mn=None, mx=None, empty_zero=False)</code></pre>
+</blockquote>
+<p><em>Sparkline for <code>data</code>, with <code>None</code>s (and zero, if <code>empty_zero</code>) shown as empty column</em></p>
+<div id="cell-123" class="cell">
+<div class="sourceCode cell-code" id="cb103"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> [<span class="dv">9</span>,<span class="dv">6</span>,<span class="va">None</span>,<span class="dv">1</span>,<span class="dv">4</span>,<span class="dv">0</span>,<span class="dv">8</span>,<span class="dv">15</span>,<span class="dv">10</span>]</span>
+<span id="cb103-2"><a href="#cb103-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'without "empty_zero": </span><span class="sc">{</span>sparkline(data, empty_zero<span class="op">=</span><span class="va">False</span>)<span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb103-3"><a href="#cb103-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'   with "empty_zero": </span><span class="sc">{</span>sparkline(data, empty_zero<span class="op">=</span><span class="va">True</span> )<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>without "empty_zero": ▅▂ ▁▂▁▃▇▅
+   with "empty_zero": ▅▂ ▁▂ ▃▇▅</code></pre>
+</div>
+</div>
+<p>You can set a maximum and minimum for the y-axis of the sparkline with the arguments <code>mn</code> and <code>mx</code> respectively:</p>
+<div id="cell-125" class="cell">
+<div class="sourceCode cell-code" id="cb105"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a>sparkline([<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">400</span>], mn<span class="op">=</span><span class="dv">0</span>, mx<span class="op">=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>'▂▅▇▇'</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L485" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="modify_exception" class="level3">
+<h3 class="anchored" data-anchor-id="modify_exception">modify_exception</h3>
+<blockquote class="blockquote">
+<pre><code> modify_exception (e:Exception, msg:str=None, replace:bool=False)</code></pre>
+</blockquote>
+<p><em>Modifies <code>e</code> with a custom message attached</em></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>e</td>
+<td>Exception</td>
+<td></td>
+<td>An exception</td>
+</tr>
+<tr class="even">
+<td>msg</td>
+<td>str</td>
+<td>None</td>
+<td>A custom message</td>
+</tr>
+<tr class="odd">
+<td>replace</td>
+<td>bool</td>
+<td>False</td>
+<td>Whether to replace e.args with [msg]</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>Exception</strong></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div id="cell-127" class="cell">
+<div class="sourceCode cell-code" id="cb108"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a>msg <span class="op">=</span> <span class="st">"This is my custom message!"</span></span>
+<span id="cb108-2"><a href="#cb108-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb108-3"><a href="#cb108-3" aria-hidden="true" tabindex="-1"></a>test_fail(<span class="kw">lambda</span>: (_ <span class="cf">for</span> _ <span class="kw">in</span> ()).throw(modify_exception(<span class="pp">Exception</span>(), <span class="va">None</span>)), contains<span class="op">=</span><span class="st">''</span>)</span>
+<span id="cb108-4"><a href="#cb108-4" aria-hidden="true" tabindex="-1"></a>test_fail(<span class="kw">lambda</span>: (_ <span class="cf">for</span> _ <span class="kw">in</span> ()).throw(modify_exception(<span class="pp">Exception</span>(), msg)), contains<span class="op">=</span>msg)</span>
+<span id="cb108-5"><a href="#cb108-5" aria-hidden="true" tabindex="-1"></a>test_fail(<span class="kw">lambda</span>: (_ <span class="cf">for</span> _ <span class="kw">in</span> ()).throw(modify_exception(<span class="pp">Exception</span>(<span class="st">"The first message"</span>), msg)), contains<span class="op">=</span><span class="st">"The first message This is my custom message!"</span>)</span>
+<span id="cb108-6"><a href="#cb108-6" aria-hidden="true" tabindex="-1"></a>test_fail(<span class="kw">lambda</span>: (_ <span class="cf">for</span> _ <span class="kw">in</span> ()).throw(modify_exception(<span class="pp">Exception</span>(<span class="st">"The first message"</span>), msg, <span class="va">True</span>)), contains<span class="op">=</span><span class="st">"This is my custom message!"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L495" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="round_multiple" class="level3">
+<h3 class="anchored" data-anchor-id="round_multiple">round_multiple</h3>
+<blockquote class="blockquote">
+<pre><code> round_multiple (x, mult, round_down=False)</code></pre>
+</blockquote>
+<p><em>Round <code>x</code> to nearest multiple of <code>mult</code></em></p>
+<div id="cell-129" class="cell">
+<div class="sourceCode cell-code" id="cb110"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a>test_eq(round_multiple(<span class="dv">63</span>,<span class="dv">32</span>), <span class="dv">64</span>)</span>
+<span id="cb110-2"><a href="#cb110-2" aria-hidden="true" tabindex="-1"></a>test_eq(round_multiple(<span class="dv">50</span>,<span class="dv">32</span>), <span class="dv">64</span>)</span>
+<span id="cb110-3"><a href="#cb110-3" aria-hidden="true" tabindex="-1"></a>test_eq(round_multiple(<span class="dv">40</span>,<span class="dv">32</span>), <span class="dv">32</span>)</span>
+<span id="cb110-4"><a href="#cb110-4" aria-hidden="true" tabindex="-1"></a>test_eq(round_multiple( <span class="dv">0</span>,<span class="dv">32</span>),  <span class="dv">0</span>)</span>
+<span id="cb110-5"><a href="#cb110-5" aria-hidden="true" tabindex="-1"></a>test_eq(round_multiple(<span class="dv">63</span>,<span class="dv">32</span>, round_down<span class="op">=</span><span class="va">True</span>), <span class="dv">32</span>)</span>
+<span id="cb110-6"><a href="#cb110-6" aria-hidden="true" tabindex="-1"></a>test_eq(round_multiple((<span class="dv">63</span>,<span class="dv">40</span>),<span class="dv">32</span>), (<span class="dv">64</span>,<span class="dv">32</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L502" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="set_num_threads" class="level3">
+<h3 class="anchored" data-anchor-id="set_num_threads">set_num_threads</h3>
+<blockquote class="blockquote">
+<pre><code> set_num_threads (nt)</code></pre>
+</blockquote>
+<p><em>Get numpy (and others) to use <code>nt</code> threads</em></p>
+<p>This sets the number of threads consistently for many tools, by:</p>
+<ol type="1">
+<li>Set the following environment variables equal to <code>nt</code>: <code>OPENBLAS_NUM_THREADS</code>,<code>NUMEXPR_NUM_THREADS</code>,<code>OMP_NUM_THREADS</code>,<code>MKL_NUM_THREADS</code></li>
+<li>Sets <code>nt</code> threads for numpy and pytorch.</li>
+</ol>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L513" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="join_path_file" class="level3">
+<h3 class="anchored" data-anchor-id="join_path_file">join_path_file</h3>
+<blockquote class="blockquote">
+<pre><code> join_path_file (file, path, ext='')</code></pre>
+</blockquote>
+<p><em>Return <code>path/file</code> if file is a string or a <code>Path</code>, file otherwise</em></p>
+<div id="cell-133" class="cell">
+<div class="sourceCode cell-code" id="cb113"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a>path <span class="op">=</span> Path.cwd()<span class="op">/</span><span class="st">'_tmp'</span><span class="op">/</span><span class="st">'tst'</span></span>
+<span id="cb113-2"><a href="#cb113-2" aria-hidden="true" tabindex="-1"></a>f <span class="op">=</span> join_path_file(<span class="st">'tst.txt'</span>, path)</span>
+<span id="cb113-3"><a href="#cb113-3" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> path.exists()</span>
+<span id="cb113-4"><a href="#cb113-4" aria-hidden="true" tabindex="-1"></a>test_eq(f, path<span class="op">/</span><span class="st">'tst.txt'</span>)</span>
+<span id="cb113-5"><a href="#cb113-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(f, <span class="st">'w'</span>) <span class="im">as</span> f_: <span class="cf">assert</span> join_path_file(f_, path) <span class="op">==</span> f_</span>
+<span id="cb113-6"><a href="#cb113-6" aria-hidden="true" tabindex="-1"></a>shutil.rmtree(Path.cwd()<span class="op">/</span><span class="st">'_tmp'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L520" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="autostart" class="level3">
+<h3 class="anchored" data-anchor-id="autostart">autostart</h3>
+<blockquote class="blockquote">
+<pre><code> autostart (g)</code></pre>
+</blockquote>
+<p><em>Decorator that automatically starts a generator</em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L530" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="eventtimer" class="level4">
+<h4 class="anchored" data-anchor-id="eventtimer">EventTimer</h4>
+<blockquote class="blockquote">
+<pre><code> EventTimer (store=5, span=60)</code></pre>
+</blockquote>
+<p><em>An event timer with history of <code>store</code> items of time <code>span</code></em></p>
+<p>Add events with <code>add</code>, and get number of <code>events</code> and their frequency (<code>freq</code>).</p>
+<div id="cell-137" class="cell">
+<div class="sourceCode cell-code" id="cb116"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Random wait function for testing</span></span>
+<span id="cb116-2"><a href="#cb116-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _randwait(): <span class="cf">yield</span> <span class="cf">from</span> (sleep(random.random()<span class="op">/</span><span class="dv">200</span>) <span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">100</span>))</span>
+<span id="cb116-3"><a href="#cb116-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb116-4"><a href="#cb116-4" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> EventTimer(store<span class="op">=</span><span class="dv">5</span>, span<span class="op">=</span><span class="fl">0.03</span>)</span>
+<span id="cb116-5"><a href="#cb116-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> o <span class="kw">in</span> _randwait(): c.add(<span class="dv">1</span>)</span>
+<span id="cb116-6"><a href="#cb116-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'Num Events: </span><span class="sc">{</span>c<span class="sc">.</span>events<span class="sc">}</span><span class="ss">, Freq/sec: </span><span class="sc">{</span>c<span class="sc">.</span>freq<span class="sc">:.01f}</span><span class="ss">'</span>)</span>
+<span id="cb116-7"><a href="#cb116-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">'Most recent: '</span>, sparkline(c.hist), <span class="op">*</span>L(c.hist).<span class="bu">map</span>(<span class="st">'</span><span class="sc">{:.01f}</span><span class="st">'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Num Events: 3, Freq/sec: 205.6
+Most recent:  ▁▁▃▁▇ 254.1 263.2 284.5 259.9 315.7</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L557" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+</section>
+<section id="stringfmt_names" class="level3">
+<h3 class="anchored" data-anchor-id="stringfmt_names">stringfmt_names</h3>
+<blockquote class="blockquote">
+<pre><code> stringfmt_names (s:str)</code></pre>
+</blockquote>
+<p><em>Unique brace-delimited names in <code>s</code></em></p>
+<div id="cell-139" class="cell">
+<div class="sourceCode cell-code" id="cb119"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a>s <span class="op">=</span> <span class="st">'/pulls/</span><span class="sc">{pull_number}</span><span class="st">/reviews/</span><span class="sc">{review_id}</span><span class="st">'</span></span>
+<span id="cb119-2"><a href="#cb119-2" aria-hidden="true" tabindex="-1"></a>test_eq(stringfmt_names(s), [<span class="st">'pull_number'</span>,<span class="st">'review_id'</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L562" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="partialformatter" class="level4">
+<h4 class="anchored" data-anchor-id="partialformatter">PartialFormatter</h4>
+<blockquote class="blockquote">
+<pre><code> PartialFormatter ()</code></pre>
+</blockquote>
+<p><em>A <code>string.Formatter</code> that doesn’t error on missing fields, and tracks missing fields and unused args</em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L578" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+</section>
+<section id="partial_format" class="level3">
+<h3 class="anchored" data-anchor-id="partial_format">partial_format</h3>
+<blockquote class="blockquote">
+<pre><code> partial_format (s:str, **kwargs)</code></pre>
+</blockquote>
+<p><em>string format <code>s</code>, ignoring missing field errors, returning missing and extra fields</em></p>
+<p>The result is a tuple of <code>(formatted_string,missing_fields,extra_fields)</code>, e.g:</p>
+<div id="cell-143" class="cell">
+<div class="sourceCode cell-code" id="cb122"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb122-1"><a href="#cb122-1" aria-hidden="true" tabindex="-1"></a>res,missing,xtra <span class="op">=</span> partial_format(s, pull_number<span class="op">=</span><span class="dv">1</span>, foo<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb122-2"><a href="#cb122-2" aria-hidden="true" tabindex="-1"></a>test_eq(res, <span class="st">'/pulls/1/reviews/</span><span class="sc">{review_id}</span><span class="st">'</span>)</span>
+<span id="cb122-3"><a href="#cb122-3" aria-hidden="true" tabindex="-1"></a>test_eq(missing, [<span class="st">'review_id'</span>])</span>
+<span id="cb122-4"><a href="#cb122-4" aria-hidden="true" tabindex="-1"></a>test_eq(xtra, {<span class="st">'foo'</span>:<span class="dv">2</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L585" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="utc2local" class="level3">
+<h3 class="anchored" data-anchor-id="utc2local">utc2local</h3>
+<blockquote class="blockquote">
+<pre><code> utc2local (dt:datetime.datetime)</code></pre>
+</blockquote>
+<p><em>Convert <code>dt</code> from UTC to local time</em></p>
+<div id="cell-145" class="cell">
+<div class="sourceCode cell-code" id="cb124"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb124-1"><a href="#cb124-1" aria-hidden="true" tabindex="-1"></a>dt <span class="op">=</span> datetime(<span class="dv">2000</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">12</span>)</span>
+<span id="cb124-2"><a href="#cb124-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'</span><span class="sc">{</span>dt<span class="sc">}</span><span class="ss"> UTC is </span><span class="sc">{</span>utc2local(dt)<span class="sc">}</span><span class="ss"> local time'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>2000-01-01 12:00:00 UTC is 2000-01-01 22:00:00+10:00 local time</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L590" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="local2utc" class="level3">
+<h3 class="anchored" data-anchor-id="local2utc">local2utc</h3>
+<blockquote class="blockquote">
+<pre><code> local2utc (dt:datetime.datetime)</code></pre>
+</blockquote>
+<p><em>Convert <code>dt</code> from local to UTC time</em></p>
+<div id="cell-147" class="cell">
+<div class="sourceCode cell-code" id="cb127"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb127-1"><a href="#cb127-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f'</span><span class="sc">{</span>dt<span class="sc">}</span><span class="ss"> local is </span><span class="sc">{</span>local2utc(dt)<span class="sc">}</span><span class="ss"> UTC time'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>2000-01-01 12:00:00 local is 2000-01-01 02:00:00+00:00 UTC time</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L595" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="trace" class="level3">
+<h3 class="anchored" data-anchor-id="trace">trace</h3>
+<blockquote class="blockquote">
+<pre><code> trace (f)</code></pre>
+</blockquote>
+<p><em>Add <code>set_trace</code> to an existing function <code>f</code></em></p>
+<p>You can add a breakpoint to an existing function, e.g:</p>
+<div class="sourceCode" id="cb130"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb130-1"><a href="#cb130-1" aria-hidden="true" tabindex="-1"></a>Path.cwd <span class="op">=</span> trace(Path.cwd)</span>
+<span id="cb130-2"><a href="#cb130-2" aria-hidden="true" tabindex="-1"></a>Path.cwd()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Now, when the function is called it will drop you into the debugger. Note, you must issue the <code>s</code> command when you begin to step into the function that is being traced.</p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L607" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="modified_env" class="level3">
+<h3 class="anchored" data-anchor-id="modified_env">modified_env</h3>
+<blockquote class="blockquote">
+<pre><code> modified_env (*delete, **replace)</code></pre>
+</blockquote>
+<p><em>Context manager temporarily modifying <code>os.environ</code> by deleting <code>delete</code> and replacing <code>replace</code></em></p>
+<div id="cell-151" class="cell">
+<div class="sourceCode cell-code" id="cb132"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb132-1"><a href="#cb132-1" aria-hidden="true" tabindex="-1"></a><span class="co"># USER isn't in Cloud Linux Environments</span></span>
+<span id="cb132-2"><a href="#cb132-2" aria-hidden="true" tabindex="-1"></a>env_test <span class="op">=</span> <span class="st">'USERNAME'</span> <span class="cf">if</span> sys.platform <span class="op">==</span> <span class="st">"win32"</span> <span class="cf">else</span> <span class="st">'SHELL'</span></span>
+<span id="cb132-3"><a href="#cb132-3" aria-hidden="true" tabindex="-1"></a>oldusr <span class="op">=</span> os.environ[env_test]</span>
+<span id="cb132-4"><a href="#cb132-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb132-5"><a href="#cb132-5" aria-hidden="true" tabindex="-1"></a>replace_param <span class="op">=</span> {env_test: <span class="st">'a'</span>}</span>
+<span id="cb132-6"><a href="#cb132-6" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> modified_env(<span class="st">'PATH'</span>, <span class="op">**</span>replace_param):</span>
+<span id="cb132-7"><a href="#cb132-7" aria-hidden="true" tabindex="-1"></a>    test_eq(os.environ[env_test], <span class="st">'a'</span>)</span>
+<span id="cb132-8"><a href="#cb132-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> <span class="st">'PATH'</span> <span class="kw">not</span> <span class="kw">in</span> os.environ</span>
+<span id="cb132-9"><a href="#cb132-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb132-10"><a href="#cb132-10" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="st">'PATH'</span> <span class="kw">in</span> os.environ</span>
+<span id="cb132-11"><a href="#cb132-11" aria-hidden="true" tabindex="-1"></a>test_eq(os.environ[env_test], oldusr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L619" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="contextmanagers" class="level4">
+<h4 class="anchored" data-anchor-id="contextmanagers">ContextManagers</h4>
+<blockquote class="blockquote">
+<pre><code> ContextManagers (mgrs)</code></pre>
+</blockquote>
+<p><em>Wrapper for <code>contextlib.ExitStack</code> which enters a collection of context managers</em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L626" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+</section>
+<section id="shufflish" class="level3">
+<h3 class="anchored" data-anchor-id="shufflish">shufflish</h3>
+<blockquote class="blockquote">
+<pre><code> shufflish (x, pct=0.04)</code></pre>
+</blockquote>
+<p><em>Randomly relocate items of <code>x</code> up to <code>pct</code> of <code>len(x)</code> from their starting location</em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L633" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="console_help" class="level3">
+<h3 class="anchored" data-anchor-id="console_help">console_help</h3>
+<blockquote class="blockquote">
+<pre><code> console_help (libname:str)</code></pre>
+</blockquote>
+<p><em>Show help for all console scripts from <code>libname</code></em></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>libname</td>
+<td>str</td>
+<td>name of library for console script listing</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L645" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="hl_md" class="level3">
+<h3 class="anchored" data-anchor-id="hl_md">hl_md</h3>
+<blockquote class="blockquote">
+<pre><code> hl_md (s, lang='xml', show=True)</code></pre>
+</blockquote>
+<p><em>Syntax highlight <code>s</code> using <code>lang</code>.</em></p>
+<p>When we display code in a notebook, it’s nice to highlight it, so we create a function to simplify that:</p>
+<div id="cell-157" class="cell">
+<div class="sourceCode cell-code" id="cb137"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb137-1"><a href="#cb137-1" aria-hidden="true" tabindex="-1"></a>hl_md(<span class="st">'&lt;test&gt;&lt;xml foo="bar"&gt;a child&lt;/xml&gt;&lt;/test&gt;'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display cell-output-markdown">
+<div class="sourceCode" id="cb138"><pre class="sourceCode xml code-with-copy"><code class="sourceCode xml"><span id="cb138-1"><a href="#cb138-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">test</span>&gt;&lt;<span class="kw">xml</span><span class="ot"> foo=</span><span class="st">"bar"</span>&gt;a child&lt;/<span class="kw">xml</span>&gt;&lt;/<span class="kw">test</span>&gt;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L655" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="type2str" class="level3">
+<h3 class="anchored" data-anchor-id="type2str">type2str</h3>
+<blockquote class="blockquote">
+<pre><code> type2str (typ:type)</code></pre>
+</blockquote>
+<p><em>Stringify <code>typ</code></em></p>
+<div id="cell-159" class="cell">
+<div class="sourceCode cell-code" id="cb140"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb140-1"><a href="#cb140-1" aria-hidden="true" tabindex="-1"></a>test_eq(type2str(Optional[<span class="bu">float</span>]), <span class="st">'Union[float, None]'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L666" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="dataclass_src" class="level3">
+<h3 class="anchored" data-anchor-id="dataclass_src">dataclass_src</h3>
+<blockquote class="blockquote">
+<pre><code> dataclass_src (cls)</code></pre>
+</blockquote>
+<div id="cell-161" class="cell">
+<div class="sourceCode cell-code" id="cb142"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb142-1"><a href="#cb142-1" aria-hidden="true" tabindex="-1"></a>DC <span class="op">=</span> make_dataclass(<span class="st">'DC'</span>, [(<span class="st">'x'</span>, <span class="bu">int</span>), (<span class="st">'y'</span>, Optional[<span class="bu">float</span>], <span class="va">None</span>), (<span class="st">'z'</span>, <span class="bu">float</span>, <span class="va">None</span>)])</span>
+<span id="cb142-2"><a href="#cb142-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(dataclass_src(DC))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>@dataclass
+class DC:
+    x: int
+    y: Union[float, None] = None
+    z: float = None
+</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L674" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="unset" class="level3">
+<h3 class="anchored" data-anchor-id="unset">Unset</h3>
+<blockquote class="blockquote">
+<pre><code> Unset (value, names=None, module=None, qualname=None, type=None, start=1)</code></pre>
+</blockquote>
+<p><em>An enumeration.</em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L682" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="nullable_dc" class="level3">
+<h3 class="anchored" data-anchor-id="nullable_dc">nullable_dc</h3>
+<blockquote class="blockquote">
+<pre><code> nullable_dc (cls)</code></pre>
+</blockquote>
+<p><em>Like <code>dataclass</code>, but default of <code>UNSET</code> added to fields without defaults</em></p>
+<div id="cell-164" class="cell">
+<div class="sourceCode cell-code" id="cb146"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb146-1"><a href="#cb146-1" aria-hidden="true" tabindex="-1"></a><span class="at">@nullable_dc</span></span>
+<span id="cb146-2"><a href="#cb146-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Person: name: <span class="bu">str</span><span class="op">;</span> age: <span class="bu">int</span><span class="op">;</span> city: <span class="bu">str</span> <span class="op">=</span> <span class="st">"Unknown"</span></span>
+<span id="cb146-3"><a href="#cb146-3" aria-hidden="true" tabindex="-1"></a>Person(name<span class="op">=</span><span class="st">"Bob"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>Person(name='Bob', age=UNSET, city='Unknown')</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L689" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="make_nullable" class="level3">
+<h3 class="anchored" data-anchor-id="make_nullable">make_nullable</h3>
+<blockquote class="blockquote">
+<pre><code> make_nullable (clas)</code></pre>
+</blockquote>
+<div id="cell-166" class="cell">
+<div class="sourceCode cell-code" id="cb149"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb149-1"><a href="#cb149-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb149-2"><a href="#cb149-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Person: name: <span class="bu">str</span><span class="op">;</span> age: <span class="bu">int</span><span class="op">;</span> city: <span class="bu">str</span> <span class="op">=</span> <span class="st">"Unknown"</span></span>
+<span id="cb149-3"><a href="#cb149-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb149-4"><a href="#cb149-4" aria-hidden="true" tabindex="-1"></a>make_nullable(Person)</span>
+<span id="cb149-5"><a href="#cb149-5" aria-hidden="true" tabindex="-1"></a>Person(<span class="st">"Bob"</span>, city<span class="op">=</span><span class="st">'NY'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>Person(name='Bob', age=UNSET, city='NY')</code></pre>
+</div>
+</div>
+<div id="cell-167" class="cell">
+<div class="sourceCode cell-code" id="cb151"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb151-1"><a href="#cb151-1" aria-hidden="true" tabindex="-1"></a>Person(name<span class="op">=</span><span class="st">"Bob"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>Person(name='Bob', age=UNSET, city='Unknown')</code></pre>
+</div>
+</div>
+<div id="cell-168" class="cell">
+<div class="sourceCode cell-code" id="cb153"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb153-1"><a href="#cb153-1" aria-hidden="true" tabindex="-1"></a>Person(<span class="st">"Bob"</span>, <span class="dv">34</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>Person(name='Bob', age=34, city='Unknown')</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L711" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="flexiclass" class="level3">
+<h3 class="anchored" data-anchor-id="flexiclass">flexiclass</h3>
+<blockquote class="blockquote">
+<pre><code> flexiclass (cls)</code></pre>
+</blockquote>
+<p><em>Convert <code>cls</code> into a <code>dataclass</code> like <a href="https://fastcore.fast.ai/xtras.html#make_nullable"><code>make_nullable</code></a>. Converts in place and also returns the result.</em></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>cls</td>
+<td></td>
+<td>The class to convert</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>dataclass</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>This can be used as a decorator…</p>
+<div id="cell-171" class="cell">
+<div class="sourceCode cell-code" id="cb156"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb156-1"><a href="#cb156-1" aria-hidden="true" tabindex="-1"></a><span class="at">@flexiclass</span></span>
+<span id="cb156-2"><a href="#cb156-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Person: name: <span class="bu">str</span><span class="op">;</span> age: <span class="bu">int</span><span class="op">;</span> city: <span class="bu">str</span> <span class="op">=</span> <span class="st">"Unknown"</span></span>
+<span id="cb156-3"><a href="#cb156-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb156-4"><a href="#cb156-4" aria-hidden="true" tabindex="-1"></a>bob <span class="op">=</span> Person(name<span class="op">=</span><span class="st">"Bob"</span>)</span>
+<span id="cb156-5"><a href="#cb156-5" aria-hidden="true" tabindex="-1"></a>bob</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>Person(name='Bob', age=UNSET, city='Unknown')</code></pre>
+</div>
+</div>
+<p>…or can update the behavior of an existing class (or dataclass):</p>
+<div id="cell-173" class="cell">
+<div class="sourceCode cell-code" id="cb158"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb158-1"><a href="#cb158-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Person: name: <span class="bu">str</span><span class="op">;</span> age: <span class="bu">int</span><span class="op">;</span> city: <span class="bu">str</span> <span class="op">=</span> <span class="st">"Unknown"</span></span>
+<span id="cb158-2"><a href="#cb158-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb158-3"><a href="#cb158-3" aria-hidden="true" tabindex="-1"></a>flexiclass(Person)</span>
+<span id="cb158-4"><a href="#cb158-4" aria-hidden="true" tabindex="-1"></a>bob <span class="op">=</span> Person(name<span class="op">=</span><span class="st">"Bob"</span>)</span>
+<span id="cb158-5"><a href="#cb158-5" aria-hidden="true" tabindex="-1"></a>bob</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>Person(name='Bob', age=UNSET, city='Unknown')</code></pre>
+</div>
+</div>
+<p>Action occurs in-place:</p>
+<div id="cell-175" class="cell">
+<div class="sourceCode cell-code" id="cb160"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb160-1"><a href="#cb160-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Person: name: <span class="bu">str</span><span class="op">;</span> age: <span class="bu">int</span><span class="op">;</span> city: <span class="bu">str</span> <span class="op">=</span> <span class="st">"Unknown"</span></span>
+<span id="cb160-2"><a href="#cb160-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb160-3"><a href="#cb160-3" aria-hidden="true" tabindex="-1"></a>flexiclass(Person)</span>
+<span id="cb160-4"><a href="#cb160-4" aria-hidden="true" tabindex="-1"></a>is_dataclass(Person)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L722" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="asdict" class="level3">
+<h3 class="anchored" data-anchor-id="asdict">asdict</h3>
+<blockquote class="blockquote">
+<pre><code> asdict (o)</code></pre>
+</blockquote>
+<p><em>Convert <code>o</code> to a <code>dict</code>, supporting dataclasses, namedtuples, iterables, and <code>__dict__</code> attrs.</em></p>
+<p>Any <code>UNSET</code> values are not included.</p>
+<div id="cell-178" class="cell">
+<div class="sourceCode cell-code" id="cb163"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb163-1"><a href="#cb163-1" aria-hidden="true" tabindex="-1"></a>asdict(bob)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>{'name': 'Bob', 'city': 'Unknown'}</code></pre>
+</div>
+</div>
+<p>To customise dict conversion behavior for a class, implement the <code>_asdict</code> method (this is used in the Python stdlib for named tuples).</p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L735" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="is_typeddict" class="level3">
+<h3 class="anchored" data-anchor-id="is_typeddict">is_typeddict</h3>
+<blockquote class="blockquote">
+<pre><code> is_typeddict (cls:type)</code></pre>
+</blockquote>
+<p><em>Check if <code>cls</code> is a <code>TypedDict</code></em></p>
+<div id="cell-181" class="cell">
+<div class="sourceCode cell-code" id="cb166"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb166-1"><a href="#cb166-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> MyDict(TypedDict): name:<span class="bu">str</span></span>
+<span id="cb166-2"><a href="#cb166-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb166-3"><a href="#cb166-3" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> is_typeddict(MyDict)</span>
+<span id="cb166-4"><a href="#cb166-4" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="kw">not</span> is_typeddict({<span class="st">'a'</span>:<span class="dv">1</span>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L741" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="is_namedtuple" class="level3">
+<h3 class="anchored" data-anchor-id="is_namedtuple">is_namedtuple</h3>
+<blockquote class="blockquote">
+<pre><code> is_namedtuple (cls)</code></pre>
+</blockquote>
+<p><em><code>True</code> if <code>cls</code> is a namedtuple type</em></p>
+<div id="cell-183" class="cell">
+<div class="sourceCode cell-code" id="cb168"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb168-1"><a href="#cb168-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> is_namedtuple(namedtuple(<span class="st">'tst'</span>, [<span class="st">'a'</span>]))</span>
+<span id="cb168-2"><a href="#cb168-2" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="kw">not</span> is_namedtuple(<span class="bu">tuple</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L746" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="flexicache" class="level3">
+<h3 class="anchored" data-anchor-id="flexicache">flexicache</h3>
+<blockquote class="blockquote">
+<pre><code> flexicache (*funcs, maxsize=128)</code></pre>
+</blockquote>
+<p><em>Like <code>lru_cache</code>, but customisable with policy <code>funcs</code></em></p>
+<p>This is a flexible lru cache function that you can pass a list of functions to. Those functions define the cache eviction policy. For instance, <a href="https://fastcore.fast.ai/xtras.html#time_policy"><code>time_policy</code></a> is provided for time-based cache eviction, and <a href="https://fastcore.fast.ai/xtras.html#mtime_policy"><code>mtime_policy</code></a> evicts based on a file’s modified-time changing. The policy functions are passed the last value that function returned was (initially <code>None</code>), and return a new value to indicate the cache has expired. When the cache expires, all functions are called with <code>None</code> to force getting new values.</p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L779" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="time_policy" class="level3">
+<h3 class="anchored" data-anchor-id="time_policy">time_policy</h3>
+<blockquote class="blockquote">
+<pre><code> time_policy (seconds)</code></pre>
+</blockquote>
+<p><em>A <a href="https://fastcore.fast.ai/xtras.html#flexicache"><code>flexicache</code></a> policy that expires cached items after <code>seconds</code> have passed</em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L787" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="mtime_policy" class="level3">
+<h3 class="anchored" data-anchor-id="mtime_policy">mtime_policy</h3>
+<blockquote class="blockquote">
+<pre><code> mtime_policy (filepath)</code></pre>
+</blockquote>
+<p><em>A <a href="https://fastcore.fast.ai/xtras.html#flexicache"><code>flexicache</code></a> policy that expires cached items after <code>filepath</code> modified-time changes</em></p>
+<div id="cell-188" class="cell">
+<div class="sourceCode cell-code" id="cb172"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb172-1"><a href="#cb172-1" aria-hidden="true" tabindex="-1"></a><span class="at">@flexicache</span>(time_policy(<span class="dv">10</span>), mtime_policy(<span class="st">'000_tour.ipynb'</span>))</span>
+<span id="cb172-2"><a href="#cb172-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cached_func(x, y): <span class="cf">return</span> x<span class="op">+</span>y</span>
+<span id="cb172-3"><a href="#cb172-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb172-4"><a href="#cb172-4" aria-hidden="true" tabindex="-1"></a>cached_func(<span class="dv">1</span>,<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>3</code></pre>
+</div>
+</div>
+<div id="cell-189" class="cell">
+<div class="sourceCode cell-code" id="cb174"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb174-1"><a href="#cb174-1" aria-hidden="true" tabindex="-1"></a><span class="at">@flexicache</span>(time_policy(<span class="dv">10</span>), mtime_policy(<span class="st">'000_tour.ipynb'</span>))</span>
+<span id="cb174-2"><a href="#cb174-2" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> cached_func(x, y): <span class="cf">return</span> x<span class="op">+</span>y</span>
+<span id="cb174-3"><a href="#cb174-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb174-4"><a href="#cb174-4" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> cached_func(<span class="dv">1</span>,<span class="dv">2</span>)</span>
+<span id="cb174-5"><a href="#cb174-5" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> cached_func(<span class="dv">1</span>,<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>3</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/xtras.py#L795" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="timed_cache" class="level3">
+<h3 class="anchored" data-anchor-id="timed_cache">timed_cache</h3>
+<blockquote class="blockquote">
+<pre><code> timed_cache (seconds=60, maxsize=128)</code></pre>
+</blockquote>
+<p><em>Like <code>lru_cache</code>, but also with time-based eviction</em></p>
+<p>This function is a small convenience wrapper for using <a href="https://fastcore.fast.ai/xtras.html#flexicache"><code>flexicache</code></a> with <a href="https://fastcore.fast.ai/xtras.html#time_policy"><code>time_policy</code></a>.</p>
+<div id="cell-192" class="cell">
+<div class="sourceCode cell-code" id="cb177"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb177-1"><a href="#cb177-1" aria-hidden="true" tabindex="-1"></a><span class="at">@timed_cache</span>(seconds<span class="op">=</span><span class="fl">0.05</span>, maxsize<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb177-2"><a href="#cb177-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cached_func(x): <span class="cf">return</span> x <span class="op">*</span> <span class="dv">2</span>, time()</span>
+<span id="cb177-3"><a href="#cb177-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb177-4"><a href="#cb177-4" aria-hidden="true" tabindex="-1"></a><span class="co"># basic caching</span></span>
+<span id="cb177-5"><a href="#cb177-5" aria-hidden="true" tabindex="-1"></a>result1, time1 <span class="op">=</span> cached_func(<span class="dv">2</span>)</span>
+<span id="cb177-6"><a href="#cb177-6" aria-hidden="true" tabindex="-1"></a>test_eq(result1, <span class="dv">4</span>)</span>
+<span id="cb177-7"><a href="#cb177-7" aria-hidden="true" tabindex="-1"></a>sleep(<span class="fl">0.001</span>)</span>
+<span id="cb177-8"><a href="#cb177-8" aria-hidden="true" tabindex="-1"></a>result2, time2 <span class="op">=</span> cached_func(<span class="dv">2</span>)</span>
+<span id="cb177-9"><a href="#cb177-9" aria-hidden="true" tabindex="-1"></a>test_eq(result2, <span class="dv">4</span>)</span>
+<span id="cb177-10"><a href="#cb177-10" aria-hidden="true" tabindex="-1"></a>test_eq(time1, time2)</span>
+<span id="cb177-11"><a href="#cb177-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb177-12"><a href="#cb177-12" aria-hidden="true" tabindex="-1"></a><span class="co"># caching different values</span></span>
+<span id="cb177-13"><a href="#cb177-13" aria-hidden="true" tabindex="-1"></a>result3, _ <span class="op">=</span> cached_func(<span class="dv">3</span>)</span>
+<span id="cb177-14"><a href="#cb177-14" aria-hidden="true" tabindex="-1"></a>test_eq(result3, <span class="dv">6</span>)</span>
+<span id="cb177-15"><a href="#cb177-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb177-16"><a href="#cb177-16" aria-hidden="true" tabindex="-1"></a><span class="co"># maxsize</span></span>
+<span id="cb177-17"><a href="#cb177-17" aria-hidden="true" tabindex="-1"></a>_, time4 <span class="op">=</span> cached_func(<span class="dv">4</span>)</span>
+<span id="cb177-18"><a href="#cb177-18" aria-hidden="true" tabindex="-1"></a>_, time2_new <span class="op">=</span> cached_func(<span class="dv">2</span>)</span>
+<span id="cb177-19"><a href="#cb177-19" aria-hidden="true" tabindex="-1"></a>test_close(time2, time2_new, eps<span class="op">=</span><span class="fl">0.1</span>)</span>
+<span id="cb177-20"><a href="#cb177-20" aria-hidden="true" tabindex="-1"></a>_, time3_new <span class="op">=</span> cached_func(<span class="dv">3</span>)</span>
+<span id="cb177-21"><a href="#cb177-21" aria-hidden="true" tabindex="-1"></a>test_ne(time3_new, time())</span>
+<span id="cb177-22"><a href="#cb177-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb177-23"><a href="#cb177-23" aria-hidden="true" tabindex="-1"></a><span class="co"># time expiration</span></span>
+<span id="cb177-24"><a href="#cb177-24" aria-hidden="true" tabindex="-1"></a>sleep(<span class="fl">0.05</span>)</span>
+<span id="cb177-25"><a href="#cb177-25" aria-hidden="true" tabindex="-1"></a>_, time4_new <span class="op">=</span> cached_func(<span class="dv">4</span>)</span>
+<span id="cb177-26"><a href="#cb177-26" aria-hidden="true" tabindex="-1"></a>test_ne(time4_new, time())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/fastcore\.fast\.ai\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/AnswerDotAI/fastcore/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.39">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Basic single and dual parameter dispatch">
+
+<title>Type dispatch – fastcore</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-ebc57992554dae5230fa85c1bd5a55fa.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="Type dispatch – fastcore">
+<meta property="og:description" content="Basic single and dual parameter dispatch">
+<meta property="og:site_name" content="fastcore">
+<meta name="twitter:title" content="Type dispatch – fastcore">
+<meta name="twitter:description" content="Basic single and dual parameter dispatch">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">fastcore</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/fastai/fastcore"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://x.com/fastdotai"> <i class="bi bi-twitter" role="img" aria-label="Fast.ai Twitter">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./dispatch.html">Type dispatch</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome to fastcore</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">A tour of fastcore</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./test.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Test</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Basic functionality</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Foundation</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./xtras.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Utility functions</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parallel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parallel</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./net.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Network functionality</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./dispatch.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Type dispatch</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./transform.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Transforms</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./docments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Docments</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./meta.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Meta</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./script.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Script - CLI</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./xdg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">XDG</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./style.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Style</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./xml.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">XML</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./py2pyi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Create delegated pyi</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./external.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">External modules</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#helpers" id="toc-helpers" class="nav-link active" data-scroll-target="#helpers">Helpers</a>
+  <ul class="collapse">
+  <li><a href="#lenient_issubclass" id="toc-lenient_issubclass" class="nav-link" data-scroll-target="#lenient_issubclass">lenient_issubclass</a></li>
+  <li><a href="#sorted_topologically" id="toc-sorted_topologically" class="nav-link" data-scroll-target="#sorted_topologically">sorted_topologically</a></li>
+  </ul></li>
+  <li><a href="#typedispatch" id="toc-typedispatch" class="nav-link" data-scroll-target="#typedispatch">TypeDispatch</a>
+  <ul class="collapse">
+  <li><a href="#typedispatch-1" id="toc-typedispatch-1" class="nav-link" data-scroll-target="#typedispatch-1">TypeDispatch</a></li>
+  <li><a href="#typedispatch.add" id="toc-typedispatch.add" class="nav-link" data-scroll-target="#typedispatch.add">TypeDispatch.add</a></li>
+  <li><a href="#typedispatch.__call__" id="toc-typedispatch.__call__" class="nav-link" data-scroll-target="#typedispatch.__call__">TypeDispatch.__call__</a></li>
+  <li><a href="#typedispatch.returns" id="toc-typedispatch.returns" class="nav-link" data-scroll-target="#typedispatch.returns">TypeDispatch.returns</a></li>
+  </ul></li>
+  <li><a href="#typedispatch-decorator" id="toc-typedispatch-decorator" class="nav-link" data-scroll-target="#typedispatch-decorator">typedispatch Decorator</a>
+  <ul class="collapse">
+  <li><a href="#dispatchreg" id="toc-dispatchreg" class="nav-link" data-scroll-target="#dispatchreg">DispatchReg</a></li>
+  </ul></li>
+  <li><a href="#casting" id="toc-casting" class="nav-link" data-scroll-target="#casting">Casting</a>
+  <ul class="collapse">
+  <li><a href="#retain_meta" id="toc-retain_meta" class="nav-link" data-scroll-target="#retain_meta">retain_meta</a></li>
+  <li><a href="#default_set_meta" id="toc-default_set_meta" class="nav-link" data-scroll-target="#default_set_meta">default_set_meta</a></li>
+  <li><a href="#objectobject---cast" id="toc-objectobject---cast" class="nav-link" data-scroll-target="#objectobject---cast">(object,object) -&gt; cast</a></li>
+  <li><a href="#retain_type" id="toc-retain_type" class="nav-link" data-scroll-target="#retain_type">retain_type</a></li>
+  <li><a href="#retain_types" id="toc-retain_types" class="nav-link" data-scroll-target="#retain_types">retain_types</a></li>
+  <li><a href="#explode_types" id="toc-explode_types" class="nav-link" data-scroll-target="#explode_types">explode_types</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/AnswerDotAI/fastcore/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="dispatch.html.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Type dispatch</h1>
+</div>
+
+<div>
+  <div class="description">
+    Basic single and dual parameter dispatch
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<div id="cell-2" class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nbdev.showdoc <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastcore.test <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastcore.nb_imports <span class="im">import</span> <span class="op">*</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="helpers" class="level2">
+<h2 class="anchored" data-anchor-id="helpers">Helpers</h2>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/dispatch.py#L18" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="lenient_issubclass" class="level3">
+<h3 class="anchored" data-anchor-id="lenient_issubclass">lenient_issubclass</h3>
+<blockquote class="blockquote">
+<pre><code> lenient_issubclass (cls, types)</code></pre>
+</blockquote>
+<p><em>If possible return whether <code>cls</code> is a subclass of <code>types</code>, otherwise return False.</em></p>
+<div id="cell-5" class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="kw">not</span> lenient_issubclass(typing.Collection, <span class="bu">list</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> lenient_issubclass(<span class="bu">list</span>, typing.Collection)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> lenient_issubclass(typing.Collection, <span class="bu">object</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> lenient_issubclass(typing.List, typing.Collection)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="kw">not</span> lenient_issubclass(typing.Collection, typing.List)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="kw">not</span> lenient_issubclass(<span class="bu">object</span>, typing.Callable)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/dispatch.py#L25" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="sorted_topologically" class="level3">
+<h3 class="anchored" data-anchor-id="sorted_topologically">sorted_topologically</h3>
+<blockquote class="blockquote">
+<pre><code> sorted_topologically (iterable, cmp=&lt;built-in function lt&gt;,
+                       reverse=False)</code></pre>
+</blockquote>
+<p><em>Return a new list containing all items from the iterable sorted topologically</em></p>
+<div id="cell-7" class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>td <span class="op">=</span> [<span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">5</span>]</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>test_eq(sorted_topologically(td), [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">5</span>])</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>test_eq(sorted_topologically(td, reverse<span class="op">=</span><span class="va">True</span>), [<span class="dv">5</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-8" class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>td <span class="op">=</span> {<span class="bu">int</span>:<span class="dv">1</span>, numbers.Number:<span class="dv">2</span>, numbers.Integral:<span class="dv">3</span>}</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>test_eq(sorted_topologically(td, <span class="bu">cmp</span><span class="op">=</span>lenient_issubclass), [<span class="bu">int</span>, numbers.Integral, numbers.Number])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-9" class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>td <span class="op">=</span> [numbers.Integral, <span class="bu">tuple</span>, <span class="bu">list</span>, <span class="bu">int</span>, <span class="bu">dict</span>]</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>td <span class="op">=</span> sorted_topologically(td, <span class="bu">cmp</span><span class="op">=</span>lenient_issubclass)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> td.index(<span class="bu">int</span>) <span class="op">&lt;</span> td.index(numbers.Integral)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="typedispatch" class="level2">
+<h2 class="anchored" data-anchor-id="typedispatch">TypeDispatch</h2>
+<p>Type dispatch, or <a href="https://en.wikipedia.org/wiki/Multiple_dispatch#Julia">Multiple dispatch</a>, allows you to change the way a function behaves based upon the input types it recevies. This is a prominent feature in some programming languages like Julia. For example, this is a <a href="https://en.wikipedia.org/wiki/Multiple_dispatch#Julia">conceptual example</a> of how multiple dispatch works in Julia, returning different values depending on the input types of x and y:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">collide_with</span>(x<span class="op">::</span><span class="dt">Asteroid</span>, y<span class="op">::</span><span class="dt">Asteroid</span>) <span class="op">=</span> <span class="op">...</span> </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># deal with asteroid hitting asteroid</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">collide_with</span>(x<span class="op">::</span><span class="dt">Asteroid</span>, y<span class="op">::</span><span class="dt">Spaceship</span>) <span class="op">=</span> <span class="op">...</span> </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># deal with asteroid hitting spaceship</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">collide_with</span>(x<span class="op">::</span><span class="dt">Spaceship</span>, y<span class="op">::</span><span class="dt">Asteroid</span>) <span class="op">=</span> <span class="op">...</span> </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co"># deal with spaceship hitting asteroid</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="fu">collide_with</span>(x<span class="op">::</span><span class="dt">Spaceship</span>, y<span class="op">::</span><span class="dt">Spaceship</span>) <span class="op">=</span> <span class="op">...</span> </span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co"># deal with spaceship hitting spaceship</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Type dispatch can be especially useful in data science, where you might allow different input types (i.e.&nbsp;numpy arrays and pandas dataframes) to function that processes data. Type dispatch allows you to have a common API for functions that do similar tasks.</p>
+<p>The <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> class allows us to achieve type dispatch in Python. It contains a dictionary that maps types from type annotations to functions, which ensures that the proper function is called when passed inputs.</p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/dispatch.py#L82" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="typedispatch-1" class="level3">
+<h3 class="anchored" data-anchor-id="typedispatch-1">TypeDispatch</h3>
+<blockquote class="blockquote">
+<pre><code> TypeDispatch (funcs=(), bases=())</code></pre>
+</blockquote>
+<p><em>Dictionary-like object; <code>__getitem__</code> matches keys of types using <code>issubclass</code></em></p>
+<p>To demonstrate how <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> works, we define a set of functions that accept a variety of input types, specified with different type annotations:</p>
+<div id="cell-14" class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f2(x:<span class="bu">int</span>, y:<span class="bu">float</span>): <span class="cf">return</span> x<span class="op">+</span>y              <span class="co">#int and float for 2nd arg</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f_nin(x:numbers.Integral)<span class="op">-&gt;</span><span class="bu">int</span>:  <span class="cf">return</span> x<span class="op">+</span><span class="dv">1</span> <span class="co">#integral numeric</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f_ni2(x:<span class="bu">int</span>): <span class="cf">return</span> x                      <span class="co">#integer</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f_bll(x:<span class="bu">bool</span><span class="op">|</span><span class="bu">list</span>): <span class="cf">return</span> x              <span class="co">#bool or list</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f_num(x:numbers.Number): <span class="cf">return</span> x           <span class="co">#Number (root of numerics)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can optionally initialize <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> with a list of functions we want to search. Printing an instance of <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> will display convenient mapping of types -&gt; functions:</p>
+<div id="cell-16" class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> TypeDispatch([f_nin,f_ni2,f_num,f_bll,<span class="va">None</span>])</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>t</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(bool,object) -&gt; f_bll
+(int,object) -&gt; f_ni2
+(Integral,object) -&gt; f_nin
+(Number,object) -&gt; f_num
+(list,object) -&gt; f_bll
+(object,object) -&gt; NoneType</code></pre>
+</div>
+</div>
+<p>Note that only the first two arguments are used for <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a>. If your function only contains one argument, the second parameter will be shown as <code>object</code>. If you pass <code>None</code> into <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a>, then this will be displayed as <code>(object, object) -&gt; NoneType</code>.</p>
+<p><a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> is a dictionary-like object, which means that you can retrieve a function by the associated type annotation. For example, the statement:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode py code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>t[<span class="bu">float</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Will return <code>f_num</code> because that is the matching function that has a type annotation that is a super-class of of <code>float</code> - <code>numbers.Number</code>:</p>
+<div id="cell-18" class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">issubclass</span>(<span class="bu">float</span>, numbers.Number)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>test_eq(t[<span class="bu">float</span>], f_num)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The same is true for other types as well:</p>
+<div id="cell-20" class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>test_eq(t[np.int32], f_nin)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>test_eq(t[<span class="bu">bool</span>], f_bll)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>test_eq(t[<span class="bu">list</span>], f_bll)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>test_eq(t[np.int32], f_nin)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If you try to get a type that doesn’t match, <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> will return <code>None</code>:</p>
+<div id="cell-22" class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>test_eq(t[<span class="bu">str</span>], <span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/dispatch.py#L90" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="typedispatch.add" class="level3">
+<h3 class="anchored" data-anchor-id="typedispatch.add">TypeDispatch.add</h3>
+<blockquote class="blockquote">
+<pre><code> TypeDispatch.add (f)</code></pre>
+</blockquote>
+<p><em>Add type <code>t</code> and function <code>f</code></em></p>
+<p>This method allows you to add an additional function to an existing <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> instance :</p>
+<div id="cell-25" class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f_col(x:typing.Collection): <span class="cf">return</span> x</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>t.add(f_col)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>test_eq(t[<span class="bu">str</span>], f_col)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>t</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(bool,object) -&gt; f_bll
+(int,object) -&gt; f_ni2
+(Integral,object) -&gt; f_nin
+(Number,object) -&gt; f_num
+(list,object) -&gt; f_bll
+(typing.Collection,object) -&gt; f_col
+(object,object) -&gt; NoneType</code></pre>
+</div>
+</div>
+<p>If you accidentally add the same function more than once things will still work as expected:</p>
+<div id="cell-27" class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>t.add(f_ni2) </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>test_eq(t[<span class="bu">int</span>], f_ni2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>However, if you add a function that has a type collision that raises an ambiguity, this will automatically resolve to the latest function added:</p>
+<div id="cell-29" class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f_ni3(z:<span class="bu">int</span>): <span class="cf">return</span> z <span class="co"># collides with f_ni2 with same type annotations</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>t.add(f_ni3) </span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>test_eq(t[<span class="bu">int</span>], f_ni3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="using-bases" class="level4">
+<h4 class="anchored" data-anchor-id="using-bases">Using <code>bases</code>:</h4>
+<p>The argument <code>bases</code> can optionally accept a single instance of <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> or a collection (i.e.&nbsp;a tuple or list) of <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> objects. This can provide functionality similar to multiple inheritance.</p>
+<p>These are searched for matching functions if no match in your list of functions:</p>
+<div id="cell-32" class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f_str(x:<span class="bu">str</span>): <span class="cf">return</span> x<span class="op">+</span><span class="st">'1'</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> TypeDispatch([f_nin,f_ni2,f_num,f_bll,<span class="va">None</span>])</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>t2 <span class="op">=</span> TypeDispatch(f_str, bases<span class="op">=</span>t) <span class="co"># you can optionally supply a list of TypeDispatch objects for `bases`.</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>t2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(str,object) -&gt; f_str
+(bool,object) -&gt; f_bll
+(int,object) -&gt; f_ni2
+(Integral,object) -&gt; f_nin
+(Number,object) -&gt; f_num
+(list,object) -&gt; f_bll
+(object,object) -&gt; NoneType</code></pre>
+</div>
+</div>
+<div id="cell-33" class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>test_eq(t2[<span class="bu">int</span>], f_ni2)       <span class="co"># searches `t` b/c not found in `t2`</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>test_eq(t2[np.int32], f_nin)  <span class="co"># searches `t` b/c not found in `t2`</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>test_eq(t2[<span class="bu">float</span>], f_num)     <span class="co"># searches `t` b/c not found in `t2`</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>test_eq(t2[<span class="bu">bool</span>], f_bll)      <span class="co"># searches `t` b/c not found in `t2`</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>test_eq(t2[<span class="bu">str</span>], f_str)       <span class="co"># found in `t`!</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>test_eq(t2(<span class="st">'a'</span>), <span class="st">'a1'</span>)        <span class="co"># found in `t`!, and uses __call__</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>o <span class="op">=</span> np.int32(<span class="dv">1</span>)</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>test_eq(t2(o), <span class="dv">2</span>)             <span class="co"># found in `t2` and uses __call__</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="up-to-two-arguments" class="level4">
+<h4 class="anchored" data-anchor-id="up-to-two-arguments">Up To Two Arguments</h4>
+<p><a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> supports up to two arguments when searching for the appropriate function. The following functions <code>f1</code> and <code>f2</code> both have two parameters:</p>
+<div id="cell-36" class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f1(x:numbers.Integral, y): <span class="cf">return</span> x<span class="op">+</span><span class="dv">1</span>  <span class="co">#Integral is a numeric type</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f2(x:<span class="bu">int</span>, y:<span class="bu">float</span>): <span class="cf">return</span> x<span class="op">+</span>y</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> TypeDispatch([f1,f2])</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>t</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(int,float) -&gt; f2
+(Integral,object) -&gt; f1</code></pre>
+</div>
+</div>
+<p>You can lookup functions from a <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> instance with two parameters like this:</p>
+<div id="cell-38" class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>test_eq(t[np.int32], f1)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>test_eq(t[<span class="bu">int</span>,<span class="bu">float</span>], f2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Keep in mind that anything beyond the first two parameters are ignored, and any collisions will be resolved in favor of the most recent function added. In the below example, <code>f1</code> is ignored in favor of <code>f2</code> because the first two parameters have identical type hints:</p>
+<div id="cell-40" class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f1(a:<span class="bu">str</span>, b:<span class="bu">int</span>, c:<span class="bu">list</span>): <span class="cf">return</span> a</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f2(a: <span class="bu">str</span>, b:<span class="bu">int</span>): <span class="cf">return</span> b</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> TypeDispatch([f1,f2])</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>test_eq(t[<span class="bu">str</span>, <span class="bu">int</span>], f2)</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>t</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(str,int) -&gt; f2</code></pre>
+</div>
+</div>
+</section>
+<section id="matching" class="level4">
+<h4 class="anchored" data-anchor-id="matching">Matching</h4>
+<p><code>Type Dispatch</code> matches types with functions according to whether the supplied class is a subclass or the same class of the type annotation(s) of associated functions.</p>
+<p>Let’s consider an example where we try to retrieve the function corresponding to types of <code>[np.int32, float]</code>.</p>
+<p>In this scenario, <code>f2</code> will not be matched. This is because the first type annotation of <code>f2</code>, <code>int</code>, is not a superclass (or the same class) of <code>np.int32</code>:</p>
+<div id="cell-43" class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f1(x:numbers.Integral, y): <span class="cf">return</span> x<span class="op">+</span><span class="dv">1</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f2(x:<span class="bu">int</span>, y:<span class="bu">float</span>): <span class="cf">return</span> x<span class="op">+</span>y</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> TypeDispatch([f1,f2])</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="kw">not</span> <span class="bu">issubclass</span>(np.int32, <span class="bu">int</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Instead, <code>f1</code> is a valid match, as its first argument is annoted with the type <code>numbers.Integeral</code>, which <code>np.int32</code> is a subclass of:</p>
+<div id="cell-45" class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">issubclass</span>(np.int32, numbers.Integral)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>test_eq(t[np.int32,<span class="bu">float</span>], f1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In <code>f1</code> , the 2nd parameter <code>y</code> is not annotated, which means <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> will match anything where the first argument matches <code>int</code> that is not matched with anything else:</p>
+<div id="cell-47" class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">issubclass</span>(<span class="bu">int</span>, numbers.Integral) <span class="co"># int is a subclass of numbers.Integral</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>test_eq(t[<span class="bu">int</span>], f1)</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>test_eq(t[<span class="bu">int</span>,<span class="bu">int</span>], f1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If no match is possible, <code>None</code> is returned:</p>
+<div id="cell-49" class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>test_eq(t[<span class="bu">float</span>,<span class="bu">float</span>], <span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/dispatch.py#L115" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+</section>
+<section id="typedispatch.__call__" class="level3">
+<h3 class="anchored" data-anchor-id="typedispatch.__call__">TypeDispatch.__call__</h3>
+<blockquote class="blockquote">
+<pre><code> TypeDispatch.__call__ (*args, **kwargs)</code></pre>
+</blockquote>
+<p><em>Call self as a function.</em></p>
+<p><a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> is also callable. When you call an instance of <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a>, it will execute the relevant function:</p>
+<div id="cell-52" class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f_arr(x:np.ndarray): <span class="cf">return</span> x.<span class="bu">sum</span>()</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f_int(x:np.int32): <span class="cf">return</span> x<span class="op">+</span><span class="dv">1</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> TypeDispatch([f_arr, f_int])</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>arr <span class="op">=</span> np.array([<span class="dv">5</span>,<span class="dv">4</span>,<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">1</span>])</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>test_eq(t(arr), <span class="dv">15</span>) <span class="co"># dispatches to f_arr</span></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>o <span class="op">=</span> np.int32(<span class="dv">1</span>)</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>test_eq(t(o), <span class="dv">2</span>) <span class="co"># dispatches to f_int</span></span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> t.first() <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>You can also call an instance of of <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> when there are two parameters:</p>
+<div id="cell-54" class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f1(x:numbers.Integral, y): <span class="cf">return</span> x<span class="op">+</span><span class="dv">1</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f2(x:<span class="bu">int</span>, y:<span class="bu">float</span>): <span class="cf">return</span> x<span class="op">+</span>y</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> TypeDispatch([f1,f2])</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>test_eq(t(<span class="dv">3</span>,<span class="fl">2.0</span>), <span class="dv">5</span>)</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>test_eq(t(<span class="dv">3</span>,<span class="dv">2</span>), <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>When no match is found, a <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> instance becomes an identity function. This default behavior is leveraged by fasatai for data transformations to provide a sensible default when a matching function cannot be found.</p>
+<div id="cell-56" class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>test_eq(t(<span class="st">'a'</span>), <span class="st">'a'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/dispatch.py#L104" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="typedispatch.returns" class="level3">
+<h3 class="anchored" data-anchor-id="typedispatch.returns">TypeDispatch.returns</h3>
+<blockquote class="blockquote">
+<pre><code> TypeDispatch.returns (x)</code></pre>
+</blockquote>
+<p><em>Get the return type of annotation of <code>x</code>.</em></p>
+<p>You can optionally pass an object to <a href="https://fastcore.fast.ai/dispatch.html#typedispatch.returns"><code>TypeDispatch.returns</code></a> and get the return type annotation back:</p>
+<div id="cell-59" class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f1(x:<span class="bu">int</span>) <span class="op">-&gt;</span> np.ndarray: <span class="cf">return</span> np.array(x)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f2(x:<span class="bu">str</span>) <span class="op">-&gt;</span> <span class="bu">float</span>: <span class="cf">return</span> List</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f3(x:<span class="bu">float</span>): <span class="cf">return</span> List <span class="co"># f3 has no return type annotation</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> TypeDispatch([f1, f2, f3])</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>test_eq(t.returns(<span class="dv">1</span>), np.ndarray)  <span class="co"># dispatched to f1</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>test_eq(t.returns(<span class="st">'Hello'</span>), <span class="bu">float</span>) <span class="co"># dispatched to f2</span></span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>test_eq(t.returns(<span class="fl">1.0</span>), <span class="va">None</span>)      <span class="co"># dispatched to f3</span></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _Test: <span class="cf">pass</span></span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>_test <span class="op">=</span> _Test()</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>test_eq(t.returns(_test), <span class="va">None</span>) <span class="co"># type `_Test` not found, so None returned</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="using-typedispatch-with-methods" class="level4">
+<h4 class="anchored" data-anchor-id="using-typedispatch-with-methods">Using TypeDispatch With Methods</h4>
+<p>You can use <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> when defining methods as well:</p>
+<div id="cell-62" class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> m_nin(<span class="va">self</span>, x:<span class="bu">str</span><span class="op">|</span>numbers.Integral): <span class="cf">return</span> <span class="bu">str</span>(x)<span class="op">+</span><span class="st">'1'</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> m_bll(<span class="va">self</span>, x:<span class="bu">bool</span>): <span class="va">self</span>.foo<span class="op">=</span><span class="st">'a'</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> m_num(<span class="va">self</span>, x:numbers.Number): <span class="cf">return</span> x<span class="op">*</span><span class="dv">2</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> TypeDispatch([m_nin,m_num,m_bll])</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> A: f <span class="op">=</span> t <span class="co"># set class attribute `f` equal to a TypeDispatch instance</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> A()</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>test_eq(a.f(<span class="dv">1</span>), <span class="st">'11'</span>)  <span class="co">#dispatch to m_nin</span></span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a>test_eq(a.f(<span class="fl">1.</span>), <span class="fl">2.</span>)   <span class="co">#dispatch to m_num</span></span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a>test_is(a.f.inst, a)</span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>a.f(<span class="va">False</span>) <span class="co"># this triggers t.m_bll to run, which sets self.foo to 'a'</span></span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>test_eq(a.foo, <span class="st">'a'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>As discussed in <a href="https://fastcore.fast.ai/dispatch.html#typedispatch.__call__"><code>TypeDispatch.__call__</code></a>, when there is not a match, <a href="https://fastcore.fast.ai/dispatch.html#typedispatch.__call__"><code>TypeDispatch.__call__</code></a> becomes an identity function. In the below example, a tuple does not match any type annotations so a tuple is returned:</p>
+<div id="cell-64" class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>test_eq(a.f(()), ())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We extend the previous example by using <code>bases</code> to add an additional method that supports tuples:</p>
+<div id="cell-66" class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> m_tup(<span class="va">self</span>, x:<span class="bu">tuple</span>): <span class="cf">return</span> x<span class="op">+</span>(<span class="dv">1</span>,)</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>t2 <span class="op">=</span> TypeDispatch(m_tup, bases<span class="op">=</span>t)</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> A2: f <span class="op">=</span> t2</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>a2 <span class="op">=</span> A2()</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>test_eq(a2.f(<span class="dv">1</span>), <span class="st">'11'</span>)</span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>test_eq(a2.f(<span class="fl">1.</span>), <span class="fl">2.</span>)</span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>test_is(a2.f.inst, a2)</span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>a2.f(<span class="va">False</span>)</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>test_eq(a2.foo, <span class="st">'a'</span>)</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>test_eq(a2.f(()), (<span class="dv">1</span>,))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="using-typedispatch-with-class-methods" class="level4">
+<h4 class="anchored" data-anchor-id="using-typedispatch-with-class-methods">Using TypeDispatch With Class Methods</h4>
+<p>You can use <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> when defining class methods too:</p>
+<div id="cell-69" class="cell">
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> m_nin(cls, x:<span class="bu">str</span><span class="op">|</span>numbers.Integral): <span class="cf">return</span> <span class="bu">str</span>(x)<span class="op">+</span><span class="st">'1'</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> m_bll(cls, x:<span class="bu">bool</span>): cls.foo<span class="op">=</span><span class="st">'a'</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> m_num(cls, x:numbers.Number): <span class="cf">return</span> x<span class="op">*</span><span class="dv">2</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> TypeDispatch([m_nin,m_num,m_bll])</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> A: f <span class="op">=</span> t <span class="co"># set class attribute `f` equal to a TypeDispatch</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>test_eq(A.f(<span class="dv">1</span>), <span class="st">'11'</span>)  <span class="co">#dispatch to m_nin</span></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>test_eq(A.f(<span class="fl">1.</span>), <span class="fl">2.</span>)   <span class="co">#dispatch to m_num</span></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>test_is(A.f.owner, A)</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>A.f(<span class="va">False</span>) <span class="co"># this triggers t.m_bll to run, which sets A.foo to 'a'</span></span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>test_eq(A.foo, <span class="st">'a'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="typedispatch-decorator" class="level2">
+<h2 class="anchored" data-anchor-id="typedispatch-decorator">typedispatch Decorator</h2>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/dispatch.py#L143" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="dispatchreg" class="level3">
+<h3 class="anchored" data-anchor-id="dispatchreg">DispatchReg</h3>
+<blockquote class="blockquote">
+<pre><code> DispatchReg ()</code></pre>
+</blockquote>
+<p><em>A global registry for <a href="https://fastcore.fast.ai/dispatch.html#typedispatch"><code>TypeDispatch</code></a> objects keyed by function name</em></p>
+<div id="cell-72" class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="at">@typedispatch</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f_td_test(x, y): <span class="cf">return</span> <span class="ss">f'</span><span class="sc">{</span>x<span class="sc">}{</span>y<span class="sc">}</span><span class="ss">'</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="at">@typedispatch</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f_td_test(x:numbers.Integral<span class="op">|</span><span class="bu">int</span>, y): <span class="cf">return</span> x<span class="op">+</span><span class="dv">1</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a><span class="at">@typedispatch</span></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f_td_test(x:<span class="bu">int</span>, y:<span class="bu">float</span>): <span class="cf">return</span> x<span class="op">+</span>y</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a><span class="at">@typedispatch</span></span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f_td_test(x:<span class="bu">int</span>, y:<span class="bu">int</span>): <span class="cf">return</span> x<span class="op">*</span>y</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>test_eq(f_td_test(<span class="dv">3</span>,<span class="fl">2.0</span>), <span class="dv">5</span>)</span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">issubclass</span>(<span class="bu">int</span>, numbers.Integral)</span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>test_eq(f_td_test(<span class="dv">3</span>,<span class="dv">2</span>), <span class="dv">6</span>)</span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a>test_eq(f_td_test(<span class="st">'a'</span>,<span class="st">'b'</span>), <span class="st">'ab'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="using-typedispatch-with-other-decorators" class="level4">
+<h4 class="anchored" data-anchor-id="using-typedispatch-with-other-decorators">Using typedispatch With other decorators</h4>
+<p>You can use <code>typedispatch</code> with <code>classmethod</code> and <code>staticmethod</code> decorator</p>
+<div id="cell-75" class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> A:</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">@typedispatch</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> f_td_test(<span class="va">self</span>, x:numbers.Integral, y): <span class="cf">return</span> x<span class="op">+</span><span class="dv">1</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">@typedispatch</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">@classmethod</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> f_td_test(cls, x:<span class="bu">int</span>, y:<span class="bu">float</span>): <span class="cf">return</span> x<span class="op">+</span>y</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">@typedispatch</span></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">@staticmethod</span></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> f_td_test(x:<span class="bu">int</span>, y:<span class="bu">int</span>): <span class="cf">return</span> x<span class="op">*</span>y</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>test_eq(A.f_td_test(<span class="dv">3</span>,<span class="dv">2</span>), <span class="dv">6</span>)</span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a>test_eq(A.f_td_test(<span class="dv">3</span>,<span class="fl">2.0</span>), <span class="dv">5</span>)</span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>test_eq(A().f_td_test(<span class="dv">3</span>,<span class="st">'2.0'</span>), <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="casting" class="level2">
+<h2 class="anchored" data-anchor-id="casting">Casting</h2>
+<p>Now that we can dispatch on types, let’s make it easier to cast objects to a different type.</p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/dispatch.py#L159" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="retain_meta" class="level3">
+<h3 class="anchored" data-anchor-id="retain_meta">retain_meta</h3>
+<blockquote class="blockquote">
+<pre><code> retain_meta (x, res, as_copy=False)</code></pre>
+</blockquote>
+<p><em>Call <code>res.set_meta(x)</code>, if it exists</em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/dispatch.py#L165" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="default_set_meta" class="level3">
+<h3 class="anchored" data-anchor-id="default_set_meta">default_set_meta</h3>
+<blockquote class="blockquote">
+<pre><code> default_set_meta (x, as_copy=False)</code></pre>
+</blockquote>
+<p><em>Copy over <code>_meta</code> from <code>x</code> to <code>res</code>, if it’s missing</em></p>
+<hr>
+</section>
+<section id="objectobject---cast" class="level3">
+<h3 class="anchored" data-anchor-id="objectobject---cast">(object,object) -&gt; cast</h3>
+<p><em>Dictionary-like object; <code>__getitem__</code> matches keys of types using <code>issubclass</code></em></p>
+<p>This works both for plain python classes:…</p>
+<div id="cell-82" class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>mk_class(<span class="st">'_T1'</span>, <span class="st">'a'</span>)   <span class="co"># mk_class is a fastai utility that constructs a class.</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _T2(_T1): <span class="cf">pass</span></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> _T1(a<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>t2 <span class="op">=</span> cast(t, _T2)        </span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> t2 <span class="kw">is</span> t            <span class="co"># t2 refers to the same object as t</span></span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(t, _T2) <span class="co"># t also changed in-place</span></span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">isinstance</span>(t2, _T2)</span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a>test_eq_type(_T2(a<span class="op">=</span><span class="dv">1</span>), t2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>…as well as for arrays and tensors.</p>
+<div id="cell-84" class="cell">
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _T1(ndarray): <span class="cf">pass</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> array([<span class="dv">1</span>])</span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>t2 <span class="op">=</span> cast(t, _T1)</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>test_eq(array([<span class="dv">1</span>]), t2)</span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>test_eq(_T1, <span class="bu">type</span>(t2))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To customize casting for other types, define a separate <a href="https://fastcore.fast.ai/dispatch.html#cast"><code>cast</code></a> function with <code>typedispatch</code> for your type.</p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/dispatch.py#L186" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="retain_type" class="level3">
+<h3 class="anchored" data-anchor-id="retain_type">retain_type</h3>
+<blockquote class="blockquote">
+<pre><code> retain_type (new, old=None, typ=None, as_copy=False)</code></pre>
+</blockquote>
+<p><em>Cast <code>new</code> to type of <code>old</code> or <code>typ</code> if it’s a superclass</em></p>
+<div id="cell-87" class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _T(<span class="bu">tuple</span>): <span class="cf">pass</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> _T((<span class="dv">1</span>,<span class="dv">2</span>))</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> <span class="bu">tuple</span>((<span class="dv">1</span>,<span class="dv">2</span>))</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> retain_type(b, typ<span class="op">=</span>_T)</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>test_eq_type(c, a)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If <code>old</code> has a <code>_meta</code> attribute, its content is passed when casting <code>new</code> to the type of <code>old</code>. In the below example, only the attribute <code>a</code>, but not <code>other_attr</code> is kept, because <code>other_attr</code> is not in <code>_meta</code>:</p>
+<div id="cell-89" class="cell">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _A():</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>    set_meta <span class="op">=</span> default_set_meta</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, t): <span class="va">self</span>.t<span class="op">=</span>t</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _B1(_A):</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, t, a<span class="op">=</span><span class="dv">1</span>):</span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>(t)</span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._meta <span class="op">=</span> {<span class="st">'a'</span>:a}</span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.other_attr <span class="op">=</span> <span class="st">'Hello'</span> <span class="co"># will not be kept after casting.</span></span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> _B1(<span class="dv">1</span>, a<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> _A(<span class="dv">1</span>)</span>
+<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a>c <span class="op">=</span> retain_type(b, old<span class="op">=</span>x)</span>
+<span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a>test_eq(c._meta, {<span class="st">'a'</span>: <span class="dv">2</span>})</span>
+<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="kw">not</span> <span class="bu">getattr</span>(c, <span class="st">'other_attr'</span>, <span class="va">None</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/dispatch.py#L199" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="retain_types" class="level3">
+<h3 class="anchored" data-anchor-id="retain_types">retain_types</h3>
+<blockquote class="blockquote">
+<pre><code> retain_types (new, old=None, typs=None)</code></pre>
+</blockquote>
+<p><em>Cast each item of <code>new</code> to type of matching item in <code>old</code> if it’s a superclass</em></p>
+<div id="cell-91" class="cell">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> T(<span class="bu">tuple</span>): <span class="cf">pass</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>t1,t2 <span class="op">=</span> retain_types((<span class="dv">1</span>,(<span class="dv">1</span>,(<span class="dv">1</span>,<span class="dv">1</span>))), (<span class="dv">2</span>,T((<span class="dv">2</span>,T((<span class="dv">3</span>,<span class="dv">4</span>))))))</span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>test_eq_type(t1, <span class="dv">1</span>)</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>test_eq_type(t2, T((<span class="dv">1</span>,T((<span class="dv">1</span>,<span class="dv">1</span>)))))</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>t1,t2 <span class="op">=</span> retain_types((<span class="dv">1</span>,(<span class="dv">1</span>,(<span class="dv">1</span>,<span class="dv">1</span>))), typs <span class="op">=</span> {<span class="bu">tuple</span>: [<span class="bu">int</span>, {T: [<span class="bu">int</span>, {T: [<span class="bu">int</span>,<span class="bu">int</span>]}]}]})</span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>test_eq_type(t1, <span class="dv">1</span>)</span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>test_eq_type(t2, T((<span class="dv">1</span>,T((<span class="dv">1</span>,<span class="dv">1</span>)))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/master/fastcore/dispatch.py#L211" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="explode_types" class="level3">
+<h3 class="anchored" data-anchor-id="explode_types">explode_types</h3>
+<blockquote class="blockquote">
+<pre><code> explode_types (o)</code></pre>
+</blockquote>
+<p><em>Return the type of <code>o</code>, potentially in nested dictionaries for thing that are listy</em></p>
+<div id="cell-93" class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>test_eq(explode_types((<span class="dv">2</span>,T((<span class="dv">2</span>,T((<span class="dv">3</span>,<span class="dv">4</span>)))))), {<span class="bu">tuple</span>: [<span class="bu">int</span>, {T: [<span class="bu">int</span>, {T: [<span class="bu">int</span>,<span class="bu">int</span>]}]}]})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/fastcore\.fast\.ai\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/AnswerDotAI/fastcore/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

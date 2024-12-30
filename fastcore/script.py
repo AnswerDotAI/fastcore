@@ -39,16 +39,20 @@ def clean_type_str(x:str):
 class Param:
     "A parameter in a function used in `anno_parser` or `call_parse`"
     def __init__(self, help="", type=None, opt=True, action=None, nargs=None, const=None,
-                 choices=None, required=None, default=None):
-        if type in (store_true,bool):  type,action,default=None,'store_true' ,False
+                 choices=None, required=None, default=None, version=None):
+        if type in (store_true,bool):  type,action,default=None,'store_true',False
         if type==store_false: type,action,default=None,'store_false',True
         if type and isinstance(type,typing.Type) and issubclass(type,enum.Enum) and not choices: choices=list(type)
         help = help or ""
         store_attr()
 
     def set_default(self, d):
+        if self.action == "version":
+            if d != inspect.Parameter.empty: self.version = d
+            self.opt = True
+            return
         if self.default is None:
-            if d==inspect.Parameter.empty: self.opt = False
+            if d == inspect.Parameter.empty: self.opt = False
             else: self.default = d
         if self.default is not None:
             self.help += f" (default: {self.default})"

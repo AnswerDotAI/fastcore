@@ -722,8 +722,8 @@ def flexiclass(
 def asdict(o)->dict:
     "Convert `o` to a `dict`, supporting dataclasses, namedtuples, iterables, and `__dict__` attrs."
     if isinstance(o, dict): return o
-    if is_dataclass(o): r = dataclasses.asdict(o)
-    elif hasattr(o, '_asdict'): r = o._asdict()
+    if hasattr(o, '_asdict'): r = o._asdict()
+    elif is_dataclass(o): r = dataclasses.asdict(o)
     elif hasattr(o, '__iter__'):
         try: r = dict(o)
         except TypeError: pass

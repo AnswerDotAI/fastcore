@@ -73,9 +73,9 @@ def _param_locs(s, returns=True, args_kwargs=False):
         if isinstance(defn, (FunctionDef, AsyncFunctionDef)):
             res = {arg.lineno:arg.arg for arg in defn.args.args}
             # Add *args if present
-            if defn.args.vararg and args_kwargs: res[defn.args.vararg.lineno] = defn.args.vararg.arg
+            if defn.args.vararg: res[defn.args.vararg.lineno] = defn.args.vararg.arg
             # Add keyword-only args
-            if args_kwargs: res.update({arg.lineno:arg.arg for arg in defn.args.kwonlyargs})
+            res.update({arg.lineno:arg.arg for arg in defn.args.kwonlyargs})
             # Add **kwargs if present
             if defn.args.kwarg and args_kwargs: res[defn.args.kwarg.lineno] = defn.args.kwarg.arg
             if returns and defn.returns: res[defn.returns.lineno] = 'return'
@@ -98,9 +98,12 @@ def _get_comment(line, arg, comments, parms):
         line -= 1
     return dedent('\n'.join(reversed(res))) if res else None
 
-def _get_full(anno, name, default, docs):
-    if anno==empty and default!=empty: anno = type(default)
-    return AttrDict(docment=docs.get(name), anno=anno, default=default)
+def _get_full(p, docs):
+    anno = p.annotation
+    if anno==empty:
+        if p.default!=empty: anno = type(p.default)
+        elif p.kind in (Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD): anno = p.kind
+    return AttrDict(docment=docs.get(p.name), anno=anno, default=p.default)
 
 # %% ../nbs/06_docments.ipynb
 def _merge_doc(dm, npdoc):
@@ -148,8 +151,8 @@ def _docments(s, returns=True, eval_str=False, args_kwargs=False):
     docs = {arg:_get_comment(line, arg, comments, parms) for line,arg in parms.items()}
 
     sig = signature_ex(s, True)
-    res = {arg:_get_full(p.annotation, p.name, p.default, docs) for arg,p in sig.parameters.items()}
-    if returns: res['return'] = _get_full(sig.return_annotation, 'return', empty, docs)
+    res = {name:_get_full(p, docs) for name,p in sig.parameters.items()}
+    if returns: res['return'] = AttrDict(docment=docs.get('return'), anno=sig.return_annotation, default=empty)
     res = _merge_docs(res, nps)
     if eval_str:
         hints = type_hints(s)
@@ -159,8 +162,9 @@ def _docments(s, returns=True, eval_str=False, args_kwargs=False):
 
 # %% ../nbs/06_docments.ipynb
 @delegates(_docments)
-def docments(elt, full=False, **kwargs):
+def docments(elt, full=False, args_kwargs=False, **kwargs):
     "Generates a `docment`"
+    if full: args_kwargs=True
     r = {}
     params = set(signature(elt).parameters)
     params.add('return')

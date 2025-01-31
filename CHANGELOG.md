@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.7.29
+
+### New Features
+
+- Add `partition_dict` ([#665](https://github.com/AnswerDotAI/fastcore/issues/665))
+- Add `VAR_POSITIONAL` and `VAR_KEYWORD` to docments ([#664](https://github.com/AnswerDotAI/fastcore/issues/664))
+
+
 ## 1.7.28
 
 ### New Features

@@ -11,16 +11,16 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'annotations', 'anno_ret', 'signature_ex', 'union2tuple', 'argnames', 'with_cast', 'store_attr', 'attrdict',
            'properties', 'camel2words', 'camel2snake', 'snake2camel', 'class2attr', 'getcallable', 'getattrs',
            'hasattrs', 'setattrs', 'try_attrs', 'GetAttrBase', 'GetAttr', 'delegate_attr', 'ShowPrint', 'Int', 'Str',
-           'Float', 'partition', 'flatten', 'concat', 'strcat', 'detuplify', 'replicate', 'setify', 'merge', 'range_of',
-           'groupby', 'last_index', 'filter_dict', 'filter_keys', 'filter_values', 'cycle', 'zip_cycle', 'sorted_ex',
-           'not_', 'argwhere', 'filter_ex', 'renumerate', 'first', 'last', 'only', 'nested_attr', 'nested_setdefault',
-           'nested_callable', 'nested_idx', 'set_nested_idx', 'val2idx', 'uniqueify', 'loop_first_last', 'loop_first',
-           'loop_last', 'first_match', 'last_match', 'fastuple', 'bind', 'mapt', 'map_ex', 'compose', 'maps',
-           'partialler', 'instantiate', 'using_attr', 'copy_func', 'patch_to', 'patch', 'patch_property', 'compile_re',
-           'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum', 'Stateful', 'NotStr', 'PrettyString', 'even_mults',
-           'num_cpus', 'add_props', 'str2bool', 'str2int', 'str2float', 'str2list', 'str2date', 'to_bool', 'to_int',
-           'to_float', 'to_list', 'to_date', 'typed', 'exec_new', 'exec_import', 'lt', 'gt', 'le', 'ge', 'eq', 'ne',
-           'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
+           'Float', 'partition', 'partition_dict', 'flatten', 'concat', 'strcat', 'detuplify', 'replicate', 'setify',
+           'merge', 'range_of', 'groupby', 'last_index', 'filter_dict', 'filter_keys', 'filter_values', 'cycle',
+           'zip_cycle', 'sorted_ex', 'not_', 'argwhere', 'filter_ex', 'renumerate', 'first', 'last', 'only',
+           'nested_attr', 'nested_setdefault', 'nested_callable', 'nested_idx', 'set_nested_idx', 'val2idx',
+           'uniqueify', 'loop_first_last', 'loop_first', 'loop_last', 'first_match', 'last_match', 'fastuple', 'bind',
+           'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'copy_func', 'patch_to',
+           'patch', 'patch_property', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum', 'Stateful',
+           'NotStr', 'PrettyString', 'even_mults', 'num_cpus', 'add_props', 'str2bool', 'str2int', 'str2float',
+           'str2list', 'str2date', 'to_bool', 'to_int', 'to_float', 'to_list', 'to_date', 'typed', 'exec_new',
+           'exec_import', 'lt', 'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
 
 # %% ../nbs/01_basics.ipynb
 from .imports import *
@@ -572,6 +572,13 @@ def partition(coll, f):
     if isinstance(coll,tuple):
         typ = type(coll)
         ts,fs = typ(ts),typ(fs)
+    return ts,fs
+
+# %% ../nbs/01_basics.ipynb
+def partition_dict(d, f):
+    "Partition a dict by a predicate that takes key/value params"
+    ts,fs = {},{}
+    for k,v in d.items(): (fs,ts)[f(k,v)][k] = v
     return ts,fs
 
 # %% ../nbs/01_basics.ipynb

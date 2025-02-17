@@ -110,8 +110,8 @@ def use_kwargs(names, keep=False):
 # %% ../nbs/07_meta.ipynb
 def delegates(to:FunctionType=None, # Delegatee
               keep=False, # Keep `kwargs` in decorated function?
-              but:list=None,
-              sort_args=False): # Exclude these parameters from signature
+              but:list=None, # Exclude these parameters from signature
+              sort_args=False): # Sort arguments alphabetically
     "Decorator: replace `**kwargs` in signature with params from `to`"
     if but is None: but = []
     def _f(f):

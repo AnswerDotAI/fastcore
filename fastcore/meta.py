@@ -111,7 +111,7 @@ def use_kwargs(names, keep=False):
 def delegates(to:FunctionType=None, # Delegatee
               keep=False, # Keep `kwargs` in decorated function?
               but:list=None, # Exclude these parameters from signature
-              sort_args=False): # Sort arguments alphabetically
+              sort_args=False): # Sort arguments alphabetically, doesn't work with call_parse
     "Decorator: replace `**kwargs` in signature with params from `to`"
     if but is None: but = []
     def _f(f):

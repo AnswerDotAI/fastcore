@@ -376,7 +376,79 @@ def anno_ret(func):
 def _ispy3_10(): return sys.version_info.major >=3 and sys.version_info.minor >=10
 
 def signature_ex(obj, eval_str:bool=False):
-    "Backport of `inspect.signature(..., eval_str=True` to <py310"
+    """Backport of `inspect.signature(..., eval_str=True` to <py310.
+    Get a signature object with optional string annotation evaluation.
+
+    This function enhances the standard inspect.signature() functionality by
+    providing consistent string annotation evaluation across Python versions.
+    In Python 3.10+, it uses the built-in eval_str parameter, while in earlier
+    versions it implements equivalent functionality.
+
+    Parameters
+    ----------
+    obj : callable
+        The function, method, or class to inspect.
+    eval_str : bool, default=False
+        If True, string annotations like "int" will be evaluated to their
+        corresponding types (like the actual int type). If False, annotations
+        are returned as-is.
+
+    Returns
+    -------
+    inspect.Signature
+        A Signature object containing parameter information with annotations
+        either as-is (eval_str=False) or evaluated to their actual types
+        (eval_str=True).
+
+    Examples
+    --------
+    Basic usage with eval_str=False (default behavior):
+
+    >>> def func(x: "int", y: "str" = "hello") -> "bool":
+    ...     return True
+    ...
+    >>> sig = signature_ex(func, eval_str=False)
+    >>> sig.parameters['x'].annotation
+    'int'  # String annotation preserved
+
+    With eval_str=True (evaluates string annotations):
+
+    >>> sig = signature_ex(func, eval_str=True)
+    >>> sig.parameters['x'].annotation
+    <class 'int'>  # String annotation evaluated to actual type
+
+    Mixed annotations (some parameters not annotated):
+
+    >>> def mixed(a: "int", b, c: int = 1):
+    ...     pass
+    ...
+    >>> sig = signature_ex(mixed, eval_str=True)
+    >>> sig.parameters['a'].annotation
+    <class 'int'>  # String annotation evaluated
+    >>> sig.parameters['b'].annotation
+    <class 'inspect._empty'>  # No annotation
+    >>> sig.parameters['c'].annotation
+    <class 'int'>  # Already a type, not a string
+
+    Forward references:
+
+    >>> class Tree:
+    ...     def add_child(self, child: "Tree"):
+    ...         pass
+    ...
+    >>> sig = signature_ex(Tree.add_child, eval_str=True)
+    >>> sig.parameters['child'].annotation  # doctest: +SKIP
+    <class '__main__.Tree'>  # Forward reference resolved
+
+    Notes
+    -----
+    - Without eval_str=True, string annotations remain as strings
+    - The function provides consistent behavior across Python 3.6-3.10+
+    - The function handles cases where:
+      - Some parameters have no annotations
+      - Annotations are already types (not strings)
+      - Forward references are used
+    """
     from inspect import Signature, Parameter, signature
 
     def _eval_param(ann, k, v):

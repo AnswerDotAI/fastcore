@@ -429,8 +429,8 @@ def exec_eval(code,   # Code to exec/eval
     else: exec(code, g, l)
 
 # %% ../nbs/03_xtras.ipynb
-def _is_type_dispatch(x): return type(x).__name__ == "TypeDispatch"
-def _unwrapped_type_dispatch_func(x): return x.first() if _is_type_dispatch(x) else x
+def _is_type_dispatch(x): return type(x).__name__ == "Function"  # assumes plum-dispatch library is used
+def _unwrapped_type_dispatch_func(x): return x.methods[0].implementation if _is_type_dispatch(x) else x
 
 def _is_property(x): return type(x)==property
 def _has_property_getter(x): return _is_property(x) and hasattr(x, 'fget') and hasattr(x.fget, 'func')

@@ -6,11 +6,11 @@
 Python is a powerful, dynamic language. Rather than bake everything into
 the language, it lets the programmer customize it to make it work for
 them. `fastcore` uses this flexibility to add to Python features
-inspired by other languages we’ve loved, like multiple dispatch from
-Julia, mixins from Ruby, and currying, binding, and more from Haskell.
-It also adds some “missing features” and clean up some rough edges in
-the Python standard library, such as simplifying parallel processing,
-and bringing ideas from NumPy over to Python’s `list` type.
+inspired by other languages we’ve loved, mixins from Ruby, and currying,
+binding, and more from Haskell. It also adds some “missing features” and
+clean up some rough edges in the Python standard library, such as
+simplifying parallel processing, and bringing ideas from NumPy over to
+Python’s `list` type.
 
 ## Getting started
 
@@ -29,9 +29,6 @@ with the `-latest` suffix
 - `fastcore.foundation`: Mixins, delegation, composition, and more
 - `fastcore.xtras`: Utility functions to help with functional-style
   programming, parallel processing, and more
-- `fastcore.dispatch`: Multiple dispatch methods
-- `fastcore.transform`: Pipelines of composed partially reversible
-  transformations
 
 To get started, we recommend you read through [the fastcore
 tour](https://fastcore.fast.ai/tour.html).

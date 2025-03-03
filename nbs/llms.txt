@@ -1,6 +1,6 @@
 # fastcore
 
-fastcore adds to Python features inspired by other languages, like multiple dispatch from Julia, mixins from Ruby, and currying, binding, and more from Haskell. It also adds some “missing features” and clean up some rough edges in the Python standard library, such as simplifying parallel processing, and bringing ideas from NumPy over to Python’s list type.
+fastcore adds to Python features inspired by other languages, like mixins from Ruby, and currying, binding, and more from Haskell. It also adds some "missing features" and clean up some rough edges in the Python standard library, such as simplifying parallel processing, and bringing ideas from NumPy over to Python's list type.
 
 Here are some tips on using fastcore:
 
@@ -13,7 +13,6 @@ Here are some tips on using fastcore:
 - **Expressive testing**: Prefer fastcore's testing functions like `test_eq`, `test_ne`, `test_close` for more readable and informative test assertions.
 - **Advanced file operations**: Use the extended `Path` class, which adds methods like `ls()`, `read_json()`, and others to `pathlib.Path`.
 - **Flexible data structures**: Convert between dictionaries and attribute-access objects using `dict2obj` and `obj2dict` for more intuitive data handling.
-- **Data pipeline construction**: Employ `Transform` and `Pipeline` classes to create modular, composable data processing workflows.
 - **Functional programming paradigms**: Utilize tools like `compose`, `maps`, and `filter_ex` to write more functional-style Python code.
 - **Documentation**: Use `docments` where possible to document parameters of functions and methods.
 - **Time-aware caching**: Apply the `timed_cache` decorator to add time-based expiration to the standard `lru_cache` functionality.

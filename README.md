@@ -29,9 +29,6 @@ with the `-latest` suffix
 - `fastcore.foundation`: Mixins, delegation, composition, and more
 - `fastcore.xtras`: Utility functions to help with functional-style
   programming, parallel processing, and more
-- `fastcore.dispatch`: Multiple dispatch methods
-- `fastcore.transform`: Pipelines of composed partially reversible
-  transformations
 
 To get started, we recommend you read through [the fastcore
 tour](https://fastcore.fast.ai/tour.html).

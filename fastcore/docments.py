@@ -48,16 +48,18 @@ def get_dataclass_source(s):
 # %% ../nbs/06_docments.ipynb
 def get_source(s):
     "Get source code for string, function object or dataclass `s`"
-    return getsource(s) if isfunction(s) or ismethod(s) else get_dataclass_source(s) if isdataclass(s) else s
+    if isinstance(s,str): return s
+    return getsource(s) if isfunction(s) or ismethod(s) else get_dataclass_source(s) if isdataclass(s) else None
 
 # %% ../nbs/06_docments.ipynb
 def _parses(s):
     "Parse Python code in string, function object or dataclass `s`"
-    return parse(dedent(get_source(s)))
+    return parse(dedent(get_source(s) or ''))
 
 def _tokens(s):
     "Tokenize Python code in string or function object `s`"
     s = get_source(s)
+    if not s: return []
     return tokenize(BytesIO(s.encode('utf-8')).readline)
 
 _clean_re = re.compile(r'^\s*#(.*)\s*$')

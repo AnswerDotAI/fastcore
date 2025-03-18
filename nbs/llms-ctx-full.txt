@@ -1,5 +1,5 @@
 <project title="fastcore">
-fastcore adds to Python features inspired by other languages, like multiple dispatch from Julia, mixins from Ruby, and currying, binding, and more from Haskell. It also adds some “missing features” and clean up some rough edges in the Python standard library, such as simplifying parallel processing, and bringing ideas from NumPy over to Python’s list type.
+fastcore adds to Python features inspired by other languages, like mixins from Ruby, and currying, binding, and more from Haskell. It also adds some “missing features” and clean up some rough edges in the Python standard library, such as simplifying parallel processing, and bringing ideas from NumPy over to Python’s list type.
 
 Here are some tips on using fastcore:
 
@@ -12,7 +12,6 @@ Here are some tips on using fastcore:
 - **Expressive testing**: Prefer fastcore's testing functions like `test_eq`, `test_ne`, `test_close` for more readable and informative test assertions.
 - **Advanced file operations**: Use the extended `Path` class, which adds methods like `ls()`, `read_json()`, and others to `pathlib.Path`.
 - **Flexible data structures**: Convert between dictionaries and attribute-access objects using `dict2obj` and `obj2dict` for more intuitive data handling.
-- **Data pipeline construction**: Employ `Transform` and `Pipeline` classes to create modular, composable data processing workflows.
 - **Functional programming paradigms**: Utilize tools like `compose`, `maps`, and `filter_ex` to write more functional-style Python code.
 - **Documentation**: Use `docments` where possible to document parameters of functions and methods.
 - **Time-aware caching**: Apply the `timed_cache` decorator to add time-based expiration to the standard `lru_cache` functionality.
@@ -364,77 +363,8 @@ in `list` in the first place, such as making this do what you’d expect
 
     (#4) [1,2,3,4]
 
-### Transforms
-
-A [`Transform`](https://fastcore.fast.ai/transform.html#transform) is
-the main building block of the fastai data pipelines. In the most
-general terms a transform can be any function you want to apply to your
-data, however the
-[`Transform`](https://fastcore.fast.ai/transform.html#transform) class
-provides several mechanisms that make the process of building them easy
-and flexible (see the docs for information about each of these):
-
-- Type dispatch
-- Dispatch over tuples
-- Reversability
-- Type propagation
-- Preprocessing
-- Filtering based on the dataset type
-- Ordering
-- Appending new behavior with decorators
-
-[`Transform`](https://fastcore.fast.ai/transform.html#transform) looks
-for three special methods, <code>encodes</code>, <code>decodes</code>,
-and <code>setups</code>, which provide the implementation for
-[`__call__`](https://www.python-course.eu/python3_magic_methods.php),
-`decode`, and `setup` respectively. For instance:
-
-``` python
-class A(Transform):
-    def encodes(self, x): return x+1
-
-A()(1)
-```
-
-    2
-
-For simple transforms like this, you can also use
-[`Transform`](https://fastcore.fast.ai/transform.html#transform) as a
-decorator:
-
-``` python
-@Transform
-def f(x): return x+1
-
-f(1)
-```
-
-    2
-
-Transforms can be composed into a
-[`Pipeline`](https://fastcore.fast.ai/transform.html#pipeline):
-
-``` python
-@Transform
-def g(x): return x/2
-
-pipe = Pipeline([f,g])
-pipe(3)
-```
-
-    2.0
-
-The power of
-[`Transform`](https://fastcore.fast.ai/transform.html#transform) and
-[`Pipeline`](https://fastcore.fast.ai/transform.html#pipeline) is best
-understood by seeing how they’re used to create a complete data
-processing pipeline. This is explained in [chapter
-11](https://github.com/fastai/fastbook/blob/master/11_midlevel_data.ipynb)
-of the [fastai
-book](https://www.amazon.com/Deep-Learning-Coders-fastai-PyTorch/dp/1492045527),
-which is [available for free](https://github.com/fastai/fastbook) in
-Jupyter Notebook format.</doc>
-    <doc title="Blog Post" desc="A tour of some of the features of fastcore."># fastcore: An Underrated Python Library
+</doc>
+<doc title="Blog Post" desc="A tour of some of the features of fastcore."># fastcore: An Underrated Python Library
 
 A unique python library that extends the python programming language and provides utilities that enhance productivity.
 
@@ -624,76 +554,6 @@ sc = ChildClass()
 assert sc.some_attr == 'hello' 
 
 ```
-
-* * *
-
-## Type Dispatch __
-
-Type dispatch, orMultiple dispatch, allows you to change the way a function behaves based upon the input types it receives. This is a prominent feature in some programming languages like Julia. For example, this is a conceptual example of how multiple dispatch works in Julia, returning different values depending on the input types of x and y:
-
-```
-collide_with(x::Asteroid, y::Asteroid) = ... 
-# deal with asteroid hitting asteroid
-
-collide_with(x::Asteroid, y::Spaceship) = ... 
-# deal with asteroid hitting spaceship
-
-collide_with(x::Spaceship, y::Asteroid) = ... 
-# deal with spaceship hitting asteroid
-
-collide_with(x::Spaceship, y::Spaceship) = ... 
-# deal with spaceship hitting spaceship
-
-```
-
-Type dispatch can be especially useful in data science, where you might allow different input types (i.e. Numpy arrays and Pandas dataframes) to a function that processes data. Type dispatch allows you to have a common API for functions that do similar tasks.
-
-Unfortunately, Python does not support this out-of-the box. Fortunately, there is the @typedispatch decorator to the rescue. This decorator relies upon type hints in order to route inputs the correct version of the function:
-
-```
-@typedispatch
-def f(x:str, y:str): return f'{x}{y}'
-
-@typedispatch
-def f(x:np.ndarray): return x.sum()
-
-@typedispatch
-def f(x:int, y:int): return x+y
-
-```
-
-Below is a demonstration of type dispatch at work for the function `f`:
-
-```
-f('Hello ', 'World!')
-
-```
-
-```
-'Hello World!'
-```
-
-```
-f(2,3)
-
-```
-
-```
-5
-```
-
-```
-f(np.array([5,5,5,5]))
-
-```
-
-```
-20
-```
-
-There are limitations of this feature, as well as other ways of using this functionality that you can read about here. In the process of learning about typed dispatch, I also found a python library called multipledispatch made by Mathhew Rocklin (the creator of Dask).
-
-After using this feature, I am now motivated to learn languages like Julia to discover what other paradigms I might be missing.
 
 * * *
 
@@ -1049,10 +909,6 @@ Thefunctional programming section is my favorite part of this library.
   * maps: a map that also composes functions
   * mapped: A more robust `map`
   * using_attr: compose a function that operates on an attribute
-
-## Transforms __
-
-Transforms is a collection of utilities for creating data transformations and associated pipelines. These transformation utilities build upon many of the building blocks discussed in this blog post.
 
 ## Further Reading __
 
@@ -1492,60 +1348,6 @@ This blog post was written entirely in a Jupyter Notebook, which GitHub automati
 
 - `def str2bool(s)`
     Case-insensitive convert string `s` too a bool (`y`,`yes`,`t`,`true`,`on`,`1`->`True`)
-
-## fastcore.dispatch
-
-> Basic single and dual parameter dispatch
-
-- `def lenient_issubclass(cls, types)`
-    If possible return whether `cls` is a subclass of `types`, otherwise return False.
-
-- `def sorted_topologically(iterable)`
-    Return a new list containing all items from the iterable sorted topologically
-
-- `class TypeDispatch`
-    Dictionary-like object; `__getitem__` matches keys of types using `issubclass`
-
-    - `def __init__(self, funcs, bases)`
-    - `def add(self, f)`
-        Add type `t` and function `f`
-
-    - `def first(self)`
-        Get first function in ordered dict of type:func.
-
-    - `def returns(self, x)`
-        Get the return type of annotation of `x`.
-
-    - `def __repr__(self)`
-    - `def __call__(self, *args, **kwargs)`
-    - `def __get__(self, inst, owner)`
-    - `def __getitem__(self, k)`
-        Find first matching type that is a super-class of `k`
-
-
-- `class DispatchReg`
-    A global registry for `TypeDispatch` objects keyed by function name
-
-    - `def __init__(self)`
-    - `def __call__(self, f)`
-
-- `def retain_meta(x, res, as_copy)`
-    Call `res.set_meta(x)`, if it exists
-
-- `def default_set_meta(self, x, as_copy)`
-    Copy over `_meta` from `x` to `res`, if it's missing
-
-- `@typedispatch def cast(x, typ)`
-    cast `x` to type `typ` (may also change `x` inplace)
-
-- `def retain_type(new, old, typ, as_copy)`
-    Cast `new` to type of `old` or `typ` if it's a superclass
-
-- `def retain_types(new, old, typs)`
-    Cast each item of `new` to type of matching item in `old` if it's a superclass
-
-- `def explode_types(o)`
-    Return the type of `o`, potentially in nested dictionaries for thing that are listy
 
 ## fastcore.docments
 
@@ -2055,72 +1857,6 @@ This blog post was written entirely in a Jupyter Notebook, which GitHub automati
     - `def __init__(self, ex, regex)`
     - `def __enter__(self)`
     - `def __exit__(self, type, value, traceback)`
-
-## fastcore.transform
-
-> Definition of `Transform` and `Pipeline`
-
-- `class Transform`
-    Delegates (`__call__`,`decode`,`setup`) to (<code>encodes</code>,<code>decodes</code>,<code>setups</code>) if `split_idx` matches
-
-    - `def __init__(self, enc, dec, split_idx, order)`
-    - `@property def name(self)`
-    - `def __call__(self, x, **kwargs)`
-    - `def decode(self, x, **kwargs)`
-    - `def __repr__(self)`
-    - `def setup(self, items, train_setup)`
-
-- `class InplaceTransform`
-    A `Transform` that modifies in-place and just returns whatever it's passed
-
-
-- `class DisplayedTransform`
-    A transform with a `__repr__` that shows its attrs
-
-    - `@property def name(self)`
-
-- `class ItemTransform`
-    A transform that always take tuples as items
-
-    - `def __call__(self, x, **kwargs)`
-    - `def decode(self, x, **kwargs)`
-
-- `def get_func(t, name, *args, **kwargs)`
-    Get the `t.name` (potentially partial-ized with `args` and `kwargs`) or `noop` if not defined
-
-- `class Func`
-    Basic wrapper around a `name` with `args` and `kwargs` to call on a given type
-
-    - `def __init__(self, name, *args, **kwargs)`
-    - `def __repr__(self)`
-    - `def __call__(self, t)`
-
-- `def compose_tfms(x, tfms, is_enc, reverse, **kwargs)`
-    Apply all `func_nm` attribute of `tfms` on `x`, maybe in `reverse` order
-
-- `def mk_transform(f)`
-    Convert function `f` to `Transform` if it isn't already one
-
-- `def gather_attrs(o, k, nm)`
-    Used in __getattr__ to collect all attrs `k` from `self.{nm}`
-
-- `def gather_attr_names(o, nm)`
-    Used in __dir__ to collect all attrs `k` from `self.{nm}`
-
-- `class Pipeline`
-    A pipeline of composed (for encode/decode) transforms, setup with types
-
-    - `def __init__(self, funcs, split_idx)`
-    - `def setup(self, items, train_setup)`
-    - `def add(self, ts, items, train_setup)`
-    - `def __call__(self, o)`
-    - `def __repr__(self)`
-    - `def __getitem__(self, i)`
-    - `def __setstate__(self, data)`
-    - `def __getattr__(self, k)`
-    - `def __dir__(self)`
-    - `def decode(self, o, full)`
-    - `def show(self, o, ctx, **kwargs)`
 
 ## fastcore.xdg
 

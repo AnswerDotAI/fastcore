@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 1.8.0
+
+### Breaking Changes
+
+- Move dispatch and transform modules to fasttransform ([#669](https://github.com/AnswerDotAI/fastcore/pull/669)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+
+### Bugs Squashed
+
+- `list[object]` not handled correctly in docments ([#671](https://github.com/AnswerDotAI/fastcore/issues/671))
+
+
 ## 1.7.29
 
 ### New Features

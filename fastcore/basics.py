@@ -1034,7 +1034,7 @@ class _clsmethod:
     def __get__(self, _, f_cls): return MethodType(self.f, f_cls)
 
 # %% ../nbs/01_basics.ipynb
-def patch_to(cls, as_prop=False, cls_method=False):
+def patch_to(cls, as_prop=False, cls_method=False, set_prop=False):
     "Decorator: add `f` to `cls`"
     if not isinstance(cls, (tuple,list)): cls=(cls,)
     def _inner(f):
@@ -1046,7 +1046,13 @@ def patch_to(cls, as_prop=False, cls_method=False):
             nf.__qualname__ = f"{c_.__name__}.{nm}"
             if cls_method: setattr(c_, nm, _clsmethod(nf))
             else:
-                if as_prop: setattr(c_, nm, property(nf))
+                if set_prop:
+                    if isinstance(getattr(c_, nm, None), property):
+                        prop = getattr(c_, nm)
+                        setattr(c_, nm, prop.setter(nf))
+                    else:
+                        raise AttributeError(f"Cannot set property setter: {nm} is not a property of {c_}")
+                elif as_prop: setattr(c_, nm, property(nf))
                 else:
                     onm = '_orig_'+nm
                     if hasattr(c_, nm) and not hasattr(c_, onm): setattr(c_, onm, getattr(c_, nm))
@@ -1056,12 +1062,12 @@ def patch_to(cls, as_prop=False, cls_method=False):
     return _inner
 
 # %% ../nbs/01_basics.ipynb
-def patch(f=None, *, as_prop=False, cls_method=False):
+def patch(f=None, *, as_prop=False, cls_method=False,  set_prop=False):
     "Decorator: add `f` to the first parameter's class (based on f's type annotations)"
-    if f is None: return partial(patch, as_prop=as_prop, cls_method=cls_method)
+    if f is None: return partial(patch, as_prop=as_prop, cls_method=cls_method, set_prop=set_prop)
     ann,glb,loc = get_annotations_ex(f)
     cls = union2tuple(eval_type(ann.pop('cls') if cls_method else next(iter(ann.values())), glb, loc))
-    return patch_to(cls, as_prop=as_prop, cls_method=cls_method)(f)
+    return patch_to(cls, as_prop=as_prop, cls_method=cls_method, set_prop=set_prop)(f)
 
 # %% ../nbs/01_basics.ipynb
 def patch_property(f):

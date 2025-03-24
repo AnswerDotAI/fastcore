@@ -1046,12 +1046,7 @@ def patch_to(cls, as_prop=False, cls_method=False, set_prop=False):
             nf.__qualname__ = f"{c_.__name__}.{nm}"
             if cls_method: setattr(c_, nm, _clsmethod(nf))
             else:
-                if set_prop:
-                    if isinstance(getattr(c_, nm, None), property):
-                        prop = getattr(c_, nm)
-                        setattr(c_, nm, prop.setter(nf))
-                    else:
-                        raise AttributeError(f"Cannot set property setter: {nm} is not a property of {c_}")
+                if set_prop: setattr(c_, nm, getattr(c_, nm).setter(nf))
                 elif as_prop: setattr(c_, nm, property(nf))
                 else:
                     onm = '_orig_'+nm

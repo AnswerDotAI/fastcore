@@ -127,9 +127,9 @@ def urlread(url, data=None, headers=None, decode=True, return_json=False, return
     return (res,dict(hdrs)) if return_headers else res
 
 # %% ../nbs/03b_net.ipynb
-def urljson(url, data=None, timeout=None):
+def urljson(url, data=None, headers=None, timeout=None):
     "Retrieve `url` and decode json"
-    res = urlread(url, data=data, timeout=timeout)
+    res = urlread(url, data=data, headers=headers, timeout=timeout)
     return json.loads(res) if res else {}
 
 # %% ../nbs/03b_net.ipynb

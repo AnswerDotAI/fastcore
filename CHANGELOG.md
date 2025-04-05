@@ -2,6 +2,15 @@
 
 <!-- do not remove -->
 
+## 1.8.1
+
+### New Features
+
+- Empty tag handling in fastcore.xml to support Fragment ([#677](https://github.com/AnswerDotAI/fastcore/issues/677))
+- Add `headers` arg to `urljson` ([#675](https://github.com/AnswerDotAI/fastcore/pull/675)), thanks to [@CarloLepelaars](https://github.com/CarloLepelaars)
+- Add a setter to patch ([#674](https://github.com/AnswerDotAI/fastcore/pull/674)), thanks to [@galopyz](https://github.com/galopyz)
+
+
 ## 1.8.0
 
 ### Breaking Changes

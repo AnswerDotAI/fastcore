@@ -5,5 +5,5 @@ website:
   title: "fastcore"
   site-url: "https://fastcore.fast.ai/"
   description: "Python supercharged for fastai development"
-  repo-branch: master
+  repo-branch: main
   repo-url: "https://github.com/AnswerDotAI/fastcore/"

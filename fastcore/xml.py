@@ -189,15 +189,16 @@ def _to_xml(elm, lvl=0, indent=True, do_escape=True):
         if sattrs: stag += f' {sattrs}'
 
     cltag = '' if is_void else f'</{tag}>'
+    stag_ = f'<{stag}>' if stag else ''
 
     if not cs:
-        if is_void: return f'{sp}<{stag}>{nl_end}'
-        else: return f'{sp}<{stag}>{cltag}{nl_end}'
+        if is_void: return f'{sp}{stag_}{nl_end}'
+        else: return f'{sp}{stag_}{cltag}{nl_end}'
     if len(cs) == 1 and not isinstance(cs[0], (list, tuple, FT)) and not hasattr(cs[0], '__ft__'):
         content = esc_fn(cs[0])
-        return f'{sp}<{stag}>{content}{cltag}{nl_end}'
+        return f'{sp}{stag_}{content}{cltag}{nl_end}'
 
-    res = f'{sp}<{stag}>{nl}'
+    res = f'{sp}{stag_}{nl}'
     for c in cs:
         res += _to_xml(c, lvl=lvl+2 if indent else 0, indent=indent, do_escape=do_escape)
     if not is_void: res += f'{sp}{cltag}{nl_end}'

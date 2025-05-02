@@ -763,7 +763,8 @@ def flexicache(*funcs, maxsize=128):
                 cache[key] = cache.pop(key)
                 return result
             cache[key] = (newres, [f(None) for f in funcs])
-            if len(cache) > maxsize: cache.popitem()
+            # remove the oldest item when cache overflows
+            if len(cache) > maxsize: del cache[next(iter(cache))]
             return newres
 
         @wraps(func)

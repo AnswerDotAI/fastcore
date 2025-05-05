@@ -748,8 +748,9 @@ def is_namedtuple(cls):
 def flexicache(*funcs, maxsize=128):
     "Like `lru_cache`, but customisable with policy `funcs`"
     import asyncio
+    from collections import OrderedDict
     def _f(func):
-        cache,states = {}, [None]*len(funcs)
+        cache,states = OrderedDict(), [None]*len(funcs)
         def _cache_logic(key, execute_func):
             if key in cache:
                 result,states = cache[key]
@@ -763,7 +764,7 @@ def flexicache(*funcs, maxsize=128):
                 cache[key] = cache.pop(key)
                 return result
             cache[key] = (newres, [f(None) for f in funcs])
-            if len(cache) > maxsize: cache.popitem()
+            if len(cache) > maxsize: cache.popitem(last=False)
             return newres
 
         @wraps(func)

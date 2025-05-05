@@ -146,6 +146,7 @@ def _to_attr(k,v):
         if v==False: return ''
     if isinstance(v,str): v = escape(v, quote=False)
     elif isinstance(v, Mapping): v = json.dumps(v)
+    elif hasattr(v, '__html__'): v = v.__html__()
     else: v = str(v)
     qt = '"'
     if qt in v:
@@ -209,7 +210,9 @@ def to_xml(elm, lvl=0, indent=True, do_escape=True):
     "Convert `ft` element tree into an XML string"
     return Safe(_to_xml(elm, lvl, indent, do_escape=do_escape))
 
-FT.__html__ = to_xml
+# %% ../nbs/09_xml.ipynb
+@patch
+def __html__(self:FT): return to_xml(self, indent=False)
 
 # %% ../nbs/09_xml.ipynb
 def highlight(s, lang='html'):

@@ -2,6 +2,19 @@
 
 <!-- do not remove -->
 
+## 1.8.2
+
+### New Features
+
+- stringify FT with `to_xml` ([#681](https://github.com/AnswerDotAI/fastcore/issues/681))
+- render FT attrs with `to_xml` ([#680](https://github.com/AnswerDotAI/fastcore/issues/680))
+- Add sort args to delegates ([#667](https://github.com/AnswerDotAI/fastcore/pull/667)), thanks to [@pydanny](https://github.com/pydanny)
+
+### Bugs Squashed
+
+- Ensure flexicache is LRU cached ([#679](https://github.com/AnswerDotAI/fastcore/pull/679)), thanks to [@pydanny](https://github.com/pydanny)
+
+
 ## 1.8.1
 
 ### New Features

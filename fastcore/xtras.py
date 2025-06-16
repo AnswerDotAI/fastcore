@@ -13,8 +13,8 @@ __all__ = ['spark_chars', 'UNSET', 'walk', 'globtastic', 'maybe_open', 'mkdir', 
            'round_multiple', 'set_num_threads', 'join_path_file', 'autostart', 'EventTimer', 'stringfmt_names',
            'PartialFormatter', 'partial_format', 'utc2local', 'local2utc', 'trace', 'modified_env', 'ContextManagers',
            'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src', 'Unset', 'nullable_dc', 'make_nullable',
-           'flexiclass', 'asdict', 'is_typeddict', 'is_namedtuple', 'flexicache', 'time_policy', 'mtime_policy',
-           'timed_cache']
+           'flexiclass', 'asdict', 'is_typeddict', 'is_namedtuple', 'CachedIter', 'CachedAwaitable', 'reawaitable',
+           'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb
 from .imports import *
@@ -743,6 +743,29 @@ def is_typeddict(cls:type)->bool:
 def is_namedtuple(cls):
     "`True` if `cls` is a namedtuple type"
     return issubclass(cls, tuple) and hasattr(cls, '_fields')
+
+# %% ../nbs/03_xtras.ipynb
+class CachedIter:
+    "Cache the result returned by an iterator"
+    def __init__(self, o): self.o,self.value = o,UNSET
+    def __iter__(self):
+        if self.value is UNSET: self.value = yield from self.o
+        return self.value
+
+# %% ../nbs/03_xtras.ipynb
+class CachedAwaitable:
+    "Cache the result from an awaitable"
+    def __init__(self, o): self.o,self.value = o,UNSET
+    def __await__(self):
+        if self.value is UNSET: self.value = yield from self.o.__await__()
+        return self.value
+
+# %% ../nbs/03_xtras.ipynb
+def reawaitable(func:callable):
+    "Wraps the result of an asynchronous function into an object which can be awaited more than once"
+    @wraps(func)
+    def _f(*args, **kwargs): return CachedAwaitable(func(*args, **kwargs))
+    return _f
 
 # %% ../nbs/03_xtras.ipynb
 def flexicache(*funcs, maxsize=128):

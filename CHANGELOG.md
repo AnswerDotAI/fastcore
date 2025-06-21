@@ -2,11 +2,12 @@
 
 <!-- do not remove -->
 
-## 1.8.3
+## 1.8.4
 
 ### New Features
 
 - Add `trim_wraps` and `save_iter` ([#685](https://github.com/AnswerDotAI/fastcore/issues/685))
+- Add `asave_iter` ([#686](https://github.com/AnswerDotAI/fastcore/issues/686))
 - Add `CachedIter`, `CachedAwaitable`, and `reawaitable` ([#684](https://github.com/AnswerDotAI/fastcore/issues/684))
 
 

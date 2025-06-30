@@ -7,4 +7,5 @@ from .test import *
 from .meta import *
 from .imports import *
 from .script import *
+from .docments import *
 from .xml import *

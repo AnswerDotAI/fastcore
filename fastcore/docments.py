@@ -5,7 +5,7 @@
 # %% ../nbs/04_docments.ipynb 2
 from __future__ import annotations
 
-import re,ast
+import re,ast,inspect
 from tokenize import tokenize,COMMENT
 from ast import parse,FunctionDef,AsyncFunctionDef,AnnAssign
 from io import BytesIO
@@ -20,7 +20,7 @@ from inspect import isclass,getdoc
 
 # %% auto 0
 __all__ = ['empty', 'docstring', 'parse_docstring', 'isdataclass', 'get_dataclass_source', 'get_source', 'get_name', 'qual_name',
-           'docments', 'extract_docstrings']
+           'docments', 'sig2str', 'extract_docstrings']
 
 # %% ../nbs/04_docments.ipynb
 def docstring(sym):
@@ -181,12 +181,36 @@ def docments(elt, full=False, args_kwargs=False, **kwargs):
     return AttrDict(r)
 
 # %% ../nbs/04_docments.ipynb
+def sig2str(func):
+    "Generate function signature with docments as comments"
+    docs = docments(func, full=True)
+    params = []
+    for k,v in docs.items():
+        if k == 'return': continue
+        anno = getattr(v['anno'], '__name__', str(v['anno'])) if v['anno'] != inspect._empty else ''
+        if '|' in str(v['anno']): anno = str(v['anno'])
+        p = k + (f':{anno}' if anno and anno != 'inspect._empty' else '')
+        if v['default'] != inspect._empty:
+            d = getattr(v['default'], '__name__', v['default']) if hasattr(v['default'], '__name__') else v['default']
+            p += f'={d}' if d is not None else '=None'
+        if v['docment']: p += f' # {v["docment"]}'
+        params.append(p)
+    
+    ret = docs.get('return', {})
+    ret_str = ':'
+    if ret and ret.get('anno')!=inspect._empty:
+        ret_str = f"->{getattr(ret['anno'], '__name__', str(ret['anno']))}" + (f': # {ret["docment"]}' if ret.get('docment') else ':')
+    doc_str = f'    "{func.__doc__}"' if func.__doc__ else ''
+    return f"def {func.__name__}(\n    " + ",\n    ".join(params) + f"\n){ret_str}\n{doc_str}"
+
+# %% ../nbs/04_docments.ipynb
 def _get_params(node):
     params = [a.arg for a in node.args.args]
     if node.args.vararg: params.append(f"*{node.args.vararg.arg}")
     if node.args.kwarg: params.append(f"**{node.args.kwarg.arg}")
     return ", ".join(params)
 
+# %% ../nbs/04_docments.ipynb
 class _DocstringExtractor(ast.NodeVisitor):
     def __init__(self): self.docstrings,self.cls,self.cls_init = {},None,None
 

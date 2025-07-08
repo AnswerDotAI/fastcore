@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.8.5
+
+### New Features
+
+- Auto skip non usable types in `to_xml` ([#689](https://github.com/AnswerDotAI/fastcore/issues/689))
+- Handle jpeg with COM segment ([#688](https://github.com/AnswerDotAI/fastcore/pull/688)), thanks to [@KeremTurgutlu](https://github.com/KeremTurgutlu)
+- Add `sig2str` ([#687](https://github.com/AnswerDotAI/fastcore/issues/687))
+
 
 ## 1.8.4
 

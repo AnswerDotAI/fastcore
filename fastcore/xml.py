@@ -208,7 +208,10 @@ def _to_xml(elm, lvl=0, indent=True, do_escape=True):
 # %% ../nbs/09_xml.ipynb
 def to_xml(elm, lvl=0, indent=True, do_escape=True):
     "Convert `ft` element tree into an XML string"
-    return Safe(_to_xml(elm, lvl, indent, do_escape=do_escape))
+    if isinstance(elm, (list,tuple,FT)) or hasattr(elm, '__ft__'):
+        return Safe(_to_xml(elm, lvl, indent, do_escape=do_escape))
+    if isinstance(elm, bytes): return elm.decode('utf-8')
+    return elm or ''
 
 # %% ../nbs/09_xml.ipynb
 @patch

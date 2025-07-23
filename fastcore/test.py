@@ -13,14 +13,15 @@ from collections import Counter
 from contextlib import redirect_stdout
 
 # %% ../nbs/00_test.ipynb
-def test_fail(f, msg='', contains='', args=None, kwargs=None):
-    "Fails with `msg` unless `f()` raises an exception and (optionally) has `contains` in `e.args`"
+def test_fail(f, msg='', contains='', exc=Exception, args=None, kwargs=None):
+    "Fails with `msg` unless `f()` raises an exception of type `exc` and (optionally) has `contains` in `e.args`"
     args, kwargs = args or [], kwargs or {}
     try: f(*args, **kwargs)
-    except Exception as e:
+    except exc as e:
         assert not contains or contains in str(e)
         return
-    assert False,f"Expected exception but none raised. {msg}"
+    except Exception as e: assert False, f"Expected {exc.__name__} but got {type(e).__name__}: {e}. {msg}"
+    assert False, f"Expected {exc.__name__} but none raised. {msg}"
 
 # %% ../nbs/00_test.ipynb
 def test(a, b, cmp, cname=None):

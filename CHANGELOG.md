@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.8.6
+
+### New Features
+
+- Add `exc` param to `test_fail` ([#690](https://github.com/AnswerDotAI/fastcore/issues/690))
+
+
 ## 1.8.5
 
 ### New Features

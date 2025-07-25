@@ -338,10 +338,11 @@ def read_json(self:Path, encoding=None, errors=None):
 
 # %% ../nbs/03_xtras.ipynb
 @patch
-def mk_write(self:Path, data, encoding=None, errors=None, mode=511):
+def mk_write(self:Path, data, encoding=None, errors=None, mode=511, uid=-1, gid=-1):
     "Make all parent dirs of `self`, and write `data`"
     self.parent.mkdir(exist_ok=True, parents=True, mode=mode)
     self.write_text(data, encoding=encoding, errors=errors)
+    if uid!=-1 or gid!=-1: os.chown(self, uid, gid)
 
 # %% ../nbs/03_xtras.ipynb
 @patch

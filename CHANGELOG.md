@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.8.7
+
+### New Features
+
+- Add uid and gid to `mk_write` as optional parameters ([#691](https://github.com/AnswerDotAI/fastcore/pull/691)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+
+
 ## 1.8.6
 
 ### New Features

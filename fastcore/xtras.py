@@ -13,7 +13,7 @@ __all__ = ['spark_chars', 'UNSET', 'walk', 'globtastic', 'maybe_open', 'mkdir', 
            'truncstr', 'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file',
            'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'utc2local', 'local2utc',
            'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str',
-           'dataclass_src', 'Unset', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'is_typeddict',
+           'dataclass_src', 'Unset', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict',
            'is_namedtuple', 'CachedIter', 'CachedAwaitable', 'reawaitable', 'flexicache', 'time_policy', 'mtime_policy',
            'timed_cache']
 
@@ -770,9 +770,16 @@ def asdict(o)->dict:
     elif hasattr(o, '__iter__'):
         try: r = dict(o)
         except TypeError: pass
-    elif hasattr(o, '__dict__'): r = o.__dict__
-    else: raise TypeError(f'Can not convert {o} to a dict')
-    return {k:v for k,v in r.items() if v not in (UNSET,MISSING)}
+    elif hasattr(o, '__flds__'): r = {x:getattr(o,x) for x in o.__flds__}
+    else: r = vars(o)
+    skip = set(getattr(o, '__skip__', []))
+    return {k:v for k,v in r.items() if v is not UNSET and v is not MISSING and k not in skip}
+
+# %% ../nbs/03_xtras.ipynb
+def vars_pub(x):
+    "Get public non-skipped vars"
+    skip = set(getattr(x, '__skip__', []))
+    return [o for o in vars(x) if o[0]!='_' and o not in skip]
 
 # %% ../nbs/03_xtras.ipynb
 def is_typeddict(cls:type)->bool:

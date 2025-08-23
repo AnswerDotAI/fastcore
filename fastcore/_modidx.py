@@ -655,4 +655,5 @@ d = { 'settings': { 'branch': 'main',
                                 'fastcore.xtras.type2str': ('xtras.html#type2str', 'fastcore/xtras.py'),
                                 'fastcore.xtras.untar_dir': ('xtras.html#untar_dir', 'fastcore/xtras.py'),
                                 'fastcore.xtras.utc2local': ('xtras.html#utc2local', 'fastcore/xtras.py'),
+                                'fastcore.xtras.vars_pub': ('xtras.html#vars_pub', 'fastcore/xtras.py'),
                                 'fastcore.xtras.walk': ('xtras.html#walk', 'fastcore/xtras.py')}}}

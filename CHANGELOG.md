@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.8.8
+
+### New Features
+
+- Add `vars_pub` ([#692](https://github.com/AnswerDotAI/fastcore/issues/692))
+- Add `__skipped__` and `__flds__` to `asdict` ([#692](https://github.com/AnswerDotAI/fastcore/issues/692))
+
+
 ## 1.8.7
 
 ### New Features

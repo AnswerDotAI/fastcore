@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.8.9
+
+### New Features
+
+- Strip terminal queries in fastcore.ansi ([#693](https://github.com/AnswerDotAI/fastcore/issues/693))
+
+
 ## 1.8.8
 
 ### New Features

@@ -12,6 +12,12 @@ _ANSI_RE = re.compile("\x1b\\[(.*?)([@-~])")
 _ANSI_COLORS = ( "ansi-black", "ansi-red", "ansi-green", "ansi-yellow", "ansi-blue", "ansi-magenta", "ansi-cyan", "ansi-white", "ansi-black-intense",
     "ansi-red-intense", "ansi-green-intense", "ansi-yellow-intense", "ansi-blue-intense", "ansi-magenta-intense", "ansi-cyan-intense", "ansi-white-intense")
 
+def strip_terminal_queries(text):
+    # Remove OSC sequences (like background color queries)
+    text = re.sub(r'\x1b\][^\\x07]*\x07', '', text)
+    # Remove DSR sequences (device status reports)
+    return re.sub(r'\x1b\[[0-9]*n', '', text)
+
 
 def strip_ansi(source):
     "Remove ANSI escape codes from text."
@@ -20,7 +26,7 @@ def strip_ansi(source):
 
 def ansi2html(text):
     "Convert ANSI colors to HTML colors."
-    text = escape(text)
+    text = escape(strip_terminal_queries(text))
     return _ansi2anything(text, _htmlconverter)
 
 

@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.8.10
+
+### New Features
+
+- Require py 3.10 now that 3.9 is EOL ([#696](https://github.com/AnswerDotAI/fastcore/issues/696))
+- Add `fastcore.tools` ([#695](https://github.com/AnswerDotAI/fastcore/issues/695))
+
+
 ## 1.8.9
 
 ### New Features

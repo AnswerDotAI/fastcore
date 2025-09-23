@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.8.11
+
+### New Features
+
+- Add sort param to globtastic ([#697](https://github.com/AnswerDotAI/fastcore/issues/697))
+
+
 ## 1.8.10
 
 ### New Features

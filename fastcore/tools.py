@@ -6,6 +6,11 @@
 __all__ = ['run_cmd', 'rg', 'sed', 'view', 'create', 'insert', 'str_replace', 'strs_replace', 'replace_lines']
 
 # %% ../nbs/12_tools.ipynb
+from .utils import *
+from shlex import split
+from subprocess import run, DEVNULL
+
+# %% ../nbs/12_tools.ipynb
 def run_cmd(
     cmd:str, # The command name to run
     argstr:str='', # All args to the command, will be split with shlex

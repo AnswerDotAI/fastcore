@@ -136,7 +136,9 @@ class Safe(str):
     def __html__(self): return self
 
 # %% ../nbs/09_xml.ipynb
-def _escape(s): return '' if s is None else s.__html__() if hasattr(s, '__html__') else escape(s) if isinstance(s, str) else s
+def _escape(s):
+    return '' if s is None else s.__html__() if hasattr(s, '__html__') \
+        else escape(s, quote=False) if isinstance(s, str) else s
 def _noescape(s): return '' if s is None else s.__html__() if hasattr(s, '__html__') else s
 
 # %% ../nbs/09_xml.ipynb

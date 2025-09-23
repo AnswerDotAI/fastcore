@@ -131,7 +131,7 @@ def strs_replace(
     old_strs:list[str], # List of strings to find and replace
     new_strs:list[str], # List of replacement strings (must match length of old_strs)
 ):
-    "Replace for each str pair in old_strs,new_strs call `str_replace"
+    "Replace for each str pair in old_strs,new_strs"
     res = [str_replace(path, old, new) for (old,new) in zip(old_strs,new_strs)]
     return 'Results for each replacement:\n' + '; '.join(res)
 

@@ -39,13 +39,15 @@ def walk(
     keep_folder:callable=ret_true, # function that returns True for folders to enter
     skip_folder:callable=ret_false, # function that returns True for folders to skip
     func:callable=os.path.join, # function to apply to each matched file
-    ret_folders:bool=False  # return folders, not just files
+    ret_folders:bool=False, # return folders, not just files
+    sort:bool=True # sort files by name within each folder
 ):
     "Generator version of `os.walk`, using functions to filter files and folders"
     from copy import copy
     for root,dirs,files in os.walk(path, followlinks=symlinks):
         if keep_folder(root,''):
             if ret_folders: yield func(root, '')
+            if sort: files = sorted(files)
             yield from (func(root, name) for name in files if keep_file(root,name))
         for name in copy(dirs):
             if skip_folder(root,name): dirs.remove(name)
@@ -62,7 +64,8 @@ def globtastic(
     skip_file_re:str=None, # Skip files matching regex
     skip_folder_re:str=None, # Skip folders matching regex,
     func:callable=os.path.join, # function to apply to each matched file
-    ret_folders:bool=False  # return folders, not just files
+    ret_folders:bool=False, # return folders, not just files
+    sort:bool=True # sort files by name within each folder
 )->L: # Paths to matched files
     "A more powerful `glob`, including regex matches, symlink handling, and skip parameters"
     from fnmatch import fnmatch
@@ -79,7 +82,7 @@ def globtastic(
     def _keep_folder(root, name): return not folder_re or folder_re.search(os.path.join(root,name))
     def _skip_folder(root, name): return skip_folder_re and skip_folder_re.search(name)
     return L(walk(path, symlinks=symlinks, keep_file=_keep_file, keep_folder=_keep_folder, skip_folder=_skip_folder,
-                  func=func, ret_folders=ret_folders))
+                  func=func, ret_folders=ret_folders, sort=sort))
 
 # %% ../nbs/03_xtras.ipynb
 @contextmanager

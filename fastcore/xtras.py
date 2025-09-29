@@ -7,9 +7,9 @@ from __future__ import annotations
 
 # %% auto 0
 __all__ = ['spark_chars', 'UNSET', 'walk', 'globtastic', 'maybe_open', 'mkdir', 'image_size', 'bunzip', 'loads', 'loads_multi',
-           'dumps', 'untar_dir', 'repo_details', 'run', 'open_file', 'save_pickle', 'load_pickle', 'parse_env',
-           'expand_wildcards', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy', 'mapped', 'IterLen',
-           'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'friendly_name',
+           'dumps', 'untar_dir', 'repo_details', 'shell', 'ssh', 'rsync_multi', 'run', 'open_file', 'save_pickle',
+           'load_pickle', 'parse_env', 'expand_wildcards', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy', 'mapped',
+           'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'friendly_name',
            'n_friendly_names', 'exec_eval', 'get_source_link', 'truncstr', 'sparkline', 'modify_exception',
            'round_multiple', 'set_num_threads', 'join_path_file', 'autostart', 'EventTimer', 'stringfmt_names',
            'PartialFormatter', 'partial_format', 'utc2local', 'local2utc', 'trace', 'modified_env', 'ContextManagers',
@@ -197,6 +197,25 @@ def repo_details(url):
     res = remove_suffix(url.strip(), '.git')
     res = res.split(':')[-1]
     return res.split('/')[-2:]
+
+# %% ../nbs/03_xtras.ipynb
+def shell(*args, **kwargs):
+    "Shortcut for `subprocess.run(shell=True)`"
+    import subprocess
+    return subprocess.run(*args, shell=True, **kwargs)
+
+# %% ../nbs/03_xtras.ipynb
+def ssh(host, args='', user='ubuntu', sock=None):
+    "Run SSH command with given arguments"
+    sock_opts = f'-S {sock}' if sock else ''
+    return shell(f'ssh {sock_opts} {args} {user}@{host}')
+
+# %% ../nbs/03_xtras.ipynb
+def rsync_multi(ip, files, user='ubuntu', persist='5m'):
+    "Transfer multiple files with rename using persistent SSH connection"
+    sock = f'/tmp/ssh-{ip}-{user}'
+    ssh(ip, f'-o ControlMaster=auto -o ControlPersist={persist} -N -f', user, sock)
+    for src,dst in files: shell(f'rsync -az -e "ssh -S {sock}" {src} {user}@{ip}:{dst}')
 
 # %% ../nbs/03_xtras.ipynb
 def run(cmd, *rest, same_in_win=False, ignore_ex=False, as_bytes=False, stderr=False):

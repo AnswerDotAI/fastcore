@@ -4,7 +4,7 @@
 
 # %% auto 0
 __all__ = ['working_directory', 'add_docs', 'docs', 'coll_repr', 'is_bool', 'mask2idxs', 'cycle', 'zip_cycle', 'is_indexer',
-           'CollBase', 'L', 'save_config_file', 'read_config_file', 'Config']
+           'product', 'CollBase', 'L', 'save_config_file', 'read_config_file', 'Config']
 
 # %% ../nbs/02_foundation.ipynb
 from .imports import *
@@ -81,6 +81,11 @@ def zip_cycle(x, *args):
 def is_indexer(idx):
     "Test whether `idx` will index a single item in a list"
     return isinstance(idx,int) or not getattr(idx,'ndim',1)
+
+# %% ../nbs/02_foundation.ipynb
+def product(xs):
+    "The product of elements of `xs`, with `None`s removed"
+    return reduce(operator.mul, [o for o in xs if o is not None], 1)
 
 # %% ../nbs/02_foundation.ipynb
 class CollBase:

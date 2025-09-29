@@ -2,6 +2,15 @@
 
 <!-- do not remove -->
 
+## 1.8.12
+
+### New Features
+
+- Add `friendly_name` ([#698](https://github.com/AnswerDotAI/fastcore/issues/698))
+- Add `product` ([#698](https://github.com/AnswerDotAI/fastcore/issues/698))
+- Add `shell`, `ssh`, and `rsync_multi` ([#699](https://github.com/AnswerDotAI/fastcore/issues/699))
+
+
 ## 1.8.11
 
 ### New Features

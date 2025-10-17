@@ -256,6 +256,19 @@ def chunked(it, chunk_sz=None, drop_last=False, n_chunks=None):
         if len(res)<chunk_sz: return
 
 # %% ../nbs/01_basics.ipynb
+def chunked(it, chunk_sz=None, drop_last=False, n_chunks=None, pad=False, pad_val=None):
+    "Return batches from iterator `it` of size `chunk_sz` (or return `n_chunks` total)"
+    assert bool(chunk_sz) ^ bool(n_chunks)
+    if n_chunks: chunk_sz = max(math.ceil(len(it)/n_chunks), 1)
+    if not isinstance(it, Iterator): it = iter(it)
+    while True:
+        res = list(itertools.islice(it, chunk_sz))
+        if res and (len(res)==chunk_sz or not drop_last):
+            if pad: yield res + [pad_val]*(chunk_sz-len(res))
+            else: yield res
+        if len(res)<chunk_sz: return
+
+# %% ../nbs/01_basics.ipynb
 def otherwise(x, tst, y):
     "`y if tst(x) else x`"
     return y if tst(x) else x

@@ -221,6 +221,15 @@ def __html__(self:FT): return to_xml(self, indent=False)
 FT.__str__ = FT.__html__
 
 # %% ../nbs/09_xml.ipynb
+@patch
+def __eq__(self:FT, other):
+    if not isinstance(other, FT): return False
+    return self.tag==other.tag and self.attrs==other.attrs and self.children==other.children
+
+@patch
+def __hash__(self:FT): return hash((self.tag, tuple(sorted(self.attrs.items())), self.children))
+
+# %% ../nbs/09_xml.ipynb
 def highlight(s, lang='html'):
     "Markdown to syntax-highlight `s` in language `lang`"
     return f'```{lang}\n{to_xml(s)}\n```'

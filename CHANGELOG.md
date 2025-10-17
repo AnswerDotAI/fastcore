@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.8.13
+
+### New Features
+
+- Add pad to `chunked` ([#701](https://github.com/AnswerDotAI/fastcore/issues/701))
+- Implement `__eq__` and `__hash__` for fastcore.xml.FT for value-based comparison
+
+
 ## 1.8.12
 
 ### New Features

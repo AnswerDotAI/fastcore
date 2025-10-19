@@ -368,6 +368,12 @@ def mk_write(self:Path, data, encoding=None, errors=None, mode=511, uid=-1, gid=
 
 # %% ../nbs/03_xtras.ipynb
 @patch
+def write_json(self:Path, data, encoding=None, errors=None, mode=511, uid=-1, gid=-1, **kw):
+    "Same as `dumps`followed by `mk_write`"
+    self.mk_write(dumps(data,**kw),encoding,errors,mode,uid,gid)
+
+# %% ../nbs/03_xtras.ipynb
+@patch
 def relpath(self:Path, start=None):
     "Same as `os.path.relpath`, but returns a `Path`, and resolves symlinks"
     return Path(os.path.relpath(self.resolve(), Path(start).resolve()))

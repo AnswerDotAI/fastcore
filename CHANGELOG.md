@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.8.14
+
+### New Features
+
+- Add docments renderers (moved from nbdev) ([#703](https://github.com/AnswerDotAI/fastcore/issues/703))
+- add `write_json` ([#702](https://github.com/AnswerDotAI/fastcore/pull/702)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+
+
 ## 1.8.13
 
 ### New Features

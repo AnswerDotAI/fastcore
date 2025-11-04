@@ -284,7 +284,7 @@ class AttrDict(dict):
     def __getattr__(self,k): return self[k] if k in self else stop(AttributeError(k))
     def __setattr__(self, k, v): (self.__setitem__,super().__setattr__)[k[0]=='_'](k,v)
     def __dir__(self): return super().__dir__() + list(self.keys())
-    def _repr_markdown_(self): return f'```json\n{pprint.pformat(self, indent=2)}\n```'
+    def _repr_markdown_(self): return f'```python\n{pprint.pformat(self, indent=2)}\n```'
     def copy(self): return AttrDict(**self)
 
 # %% ../nbs/01_basics.ipynb

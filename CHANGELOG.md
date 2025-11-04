@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.8.15
+
+### Bugs Squashed
+
+- Incorrect json block in AttrDict ([#704](https://github.com/AnswerDotAI/fastcore/issues/704))
+
+
 ## 1.8.14
 
 ### New Features

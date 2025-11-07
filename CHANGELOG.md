@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.8.16
+
+### New Features
+
+- Add `__getitem__` to `NotStr` ([#705](https://github.com/AnswerDotAI/fastcore/issues/705))
+
+
 ## 1.8.15
 
 ### Bugs Squashed

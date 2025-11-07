@@ -1152,6 +1152,7 @@ class NotStr(GetAttr):
     def __bool__(self): return bool(self.s)
     def __contains__(self, b): return b in self.s
     def __iter__(self): return iter(self.s)
+    def __getitem__(self, i): return NotStr(self.s[i])
 
 # %% ../nbs/01_basics.ipynb
 class PrettyString(str):

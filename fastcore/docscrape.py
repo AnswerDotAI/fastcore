@@ -25,6 +25,7 @@ import textwrap, re, copy
 from warnings import warn
 from collections import namedtuple
 from collections.abc import Mapping
+from typing import Any
 
 __all__ = ['Parameter', 'NumpyDocString', 'dedent_lines']
 
@@ -93,6 +94,20 @@ class ParseError(Exception):
 
 
 SECTIONS = 'Summary Extended Yields Receives Other Raises Warns Warnings See Also Notes References Examples Attributes Methods'.split()
+'''Named `numpydoc` sections see: https://numpydoc.readthedocs.io/en/latest/format.html#sections'''
+
+PARAM_SECTIONS = {
+    "Parameters",
+    "Other Parameters",
+    "Attributes",
+    "Methods",
+    "Raises",
+    "Warns",
+    "Yields",
+    "Receives"
+}
+'''Set of `numpydoc` sections which should support parameters via `Parameter`.'''
+
 
 class NumpyDocString(Mapping):
     "Parses a numpydoc string to an abstract representation"
@@ -102,14 +117,26 @@ class NumpyDocString(Mapping):
     sections['Parameters'] = []
     sections['Returns'] = []
 
-    def __init__(self, docstring, config=None):
+    def __init__(self, docstring, config=None, supports_params: set[str] = PARAM_SECTIONS):
+        # --- original initialization ---
         docstring = textwrap.dedent(docstring).split('\n')
         self._doc = Reader(docstring)
         self._parsed_data = copy.deepcopy(self.sections)
         self._parse()
+        
+        # --- fastcore default normalization ---
         self['Parameters'] = {o.name:o for o in self['Parameters']}
         if self['Returns']: self['Returns'] = self['Returns'][0]
-        for section in SECTIONS: self[section] = dedent_lines(self[section], split=False)
+        
+        # --- our patch: normalize ALL parameter-like sections ---
+        for sec in supports_params:
+            if sec in self._parsed_data:
+                self._parsed_data[sec] = self._normalize_param_section(self._parsed_data[sec])
+        
+        
+        # --- continue normal fastcore behavior ---
+        for section in SECTIONS: 
+            self[section] = dedent_lines(self[section], split=False)
 
     def __iter__(self): return iter(self._parsed_data)
     def __len__(self): return len(self._parsed_data)
@@ -174,6 +201,25 @@ class NumpyDocString(Mapping):
             params.append(Parameter(arg_name, arg_type, desc))
         return params
 
+    def _normalize_param_section(self, val: list[Parameter] | Any) -> dict[Parameter] | Any:
+        """
+        Convert lists of `Parameter` objects into a dict or clean list.
+        """
+        # Not a list? Then noop.
+        if not isinstance(val, list):
+            return val
+        
+        # Falsy value i.e. empty list? Then noop.
+        if not val:
+            return val
+        
+        # Lazy check, assumes if first value is a Parameter, all are.
+        if not isinstance(val[0], Parameter):
+            return val
+
+        # Convert to dict[name -> Parameter]
+        return {p.name: p for p in val}
+    
     def _parse_summary(self):
         """Grab signature (if given) and summary"""
         if self._is_at_section(): return

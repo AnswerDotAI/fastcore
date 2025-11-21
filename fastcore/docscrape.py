@@ -112,12 +112,41 @@ PARAM_SECTIONS = {
 class NumpyDocString(Mapping):
     "Parses a numpydoc string to an abstract representation"
     # See the NumPy Doc Manual https://numpydoc.readthedocs.io/en/latest/format.html>
+    # TODO: flushout docstring
+    
+    # NOTE: unclear why these are class variables
     sections = {o:[] for o in SECTIONS}
     sections['Summary'] = ['']
+    
+    # NOTE: unclear why these are not included in `SECTIONS` given initialization above creates lists
     sections['Parameters'] = []
     sections['Returns'] = []
 
-    def __init__(self, docstring, config=None, supports_params: set[str] = PARAM_SECTIONS):
+    # NOTE: following above style, adding `param_sections` as class variable
+    param_sections: set[str] = set(PARAM_SECTIONS)
+
+    def __init__(
+        self, docstring, 
+        config=None, # TODO: figure this out
+        supported_sections: list[str] | None = SECTIONS,
+        supports_params: set[str] | None = PARAM_SECTIONS
+    ):
+        
+        # If None, set to default supported set
+        if supports_params is None: supports_params = set(PARAM_SECTIONS)
+        else:
+            # add missing to class variable
+            missing = set(supports_params) - set(self.param_sections)
+            for sec in missing: self.param_sections.add(sec)
+            
+        # If None, set to default supported set
+        if supported_sections is None: supported_sections = set(SECTIONS)
+        else:
+            # add missing to class variable
+            missing = set(supported_sections) - set(self.sections.keys())
+            for sec in missing: self.sections[sec] = []
+           
+        
         # --- original initialization ---
         docstring = textwrap.dedent(docstring).split('\n')
         self._doc = Reader(docstring)

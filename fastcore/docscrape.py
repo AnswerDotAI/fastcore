@@ -94,48 +94,31 @@ class ParseError(Exception):
 
 
 SECTIONS = 'Summary Extended Yields Receives Other Raises Warns Warnings See Also Notes References Examples Attributes Methods'.split()
-'''Named `numpydoc` sections see: https://numpydoc.readthedocs.io/en/latest/format.html#sections'''
 
 PARAM_SECTIONS = {
-    "Parameters",
-    "Other Parameters",
-    "Attributes",
-    "Methods",
-    "Raises",
-    "Warns",
-    "Yields",
-    "Receives"
+    "Parameters", "Other Parameters", "Attributes", "Methods",
+    "Raises", "Warns", "Yields", "Receives"
 }
-'''Set of `numpydoc` sections which should support parameters via `Parameter`.'''
-
 
 class NumpyDocString(Mapping):
     "Parses a numpydoc string to an abstract representation"
     # See the NumPy Doc Manual https://numpydoc.readthedocs.io/en/latest/format.html>
-    # TODO: flushout docstring
     
-    # NOTE: unclear why these are class variables
     sections = {o:[] for o in SECTIONS}
     sections['Summary'] = ['']
-    
-    # NOTE: unclear why these are not included in `SECTIONS` given initialization above creates lists
     sections['Parameters'] = []
     sections['Returns'] = []
-
-    # NOTE: following above style, adding `param_sections` as class variable
     param_sections: set[str] = set(PARAM_SECTIONS)
 
     def __init__(
         self, docstring, 
-        config=None, # TODO: figure this out
+        config=None, 
         supported_sections: list[str] | None = SECTIONS,
         supports_params: set[str] | None = PARAM_SECTIONS
     ):
         
-        # If None, set to default supported set
         if supports_params is None: supports_params = set(PARAM_SECTIONS)
         else:
-            # add missing to class variable
             missing = set(supports_params) - set(self.param_sections)
             for sec in missing: self.param_sections.add(sec)
             
@@ -157,7 +140,7 @@ class NumpyDocString(Mapping):
         self['Parameters'] = {o.name:o for o in self['Parameters']}
         if self['Returns']: self['Returns'] = self['Returns'][0]
         
-        # --- our patch: normalize ALL parameter-like sections ---
+        # --- normalize ALL parameter-like sections ---
         for sec in supports_params:
             if sec in self._parsed_data:
                 self._parsed_data[sec] = self._normalize_param_section(self._parsed_data[sec])

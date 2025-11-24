@@ -6,16 +6,16 @@
 from __future__ import annotations
 
 # %% auto 0
-__all__ = ['spark_chars', 'UNSET', 'walk', 'globtastic', 'maybe_open', 'mkdir', 'image_size', 'bunzip', 'loads', 'loads_multi',
-           'dumps', 'untar_dir', 'repo_details', 'shell', 'ssh', 'rsync_multi', 'run', 'open_file', 'save_pickle',
-           'load_pickle', 'parse_env', 'expand_wildcards', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy', 'mapped',
-           'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'friendly_name',
-           'n_friendly_names', 'exec_eval', 'get_source_link', 'truncstr', 'sparkline', 'modify_exception',
-           'round_multiple', 'set_num_threads', 'join_path_file', 'autostart', 'EventTimer', 'stringfmt_names',
-           'PartialFormatter', 'partial_format', 'utc2local', 'local2utc', 'trace', 'modified_env', 'ContextManagers',
-           'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src', 'Unset', 'nullable_dc', 'make_nullable',
-           'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple', 'CachedIter', 'CachedAwaitable',
-           'reawaitable', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
+__all__ = ['spark_chars', 'UNSET', 'walk', 'globtastic', 'maybe_open', 'mkdir', 'image_size', 'img_bytes', 'bunzip', 'loads',
+           'loads_multi', 'dumps', 'untar_dir', 'repo_details', 'shell', 'ssh', 'rsync_multi', 'run', 'open_file',
+           'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards', 'dict2obj', 'obj2dict', 'repr_dict',
+           'is_listy', 'mapped', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter',
+           'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link', 'truncstr', 'sparkline',
+           'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file', 'autostart', 'EventTimer',
+           'stringfmt_names', 'PartialFormatter', 'partial_format', 'utc2local', 'local2utc', 'trace', 'modified_env',
+           'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src', 'Unset', 'nullable_dc',
+           'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple', 'CachedIter',
+           'CachedAwaitable', 'reawaitable', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb
 from .imports import *
@@ -125,6 +125,14 @@ def image_size(fn):
         return struct.unpack('>ii', head[16:24])
     d = dict(png=_png_size, gif=_gif_size, jpeg=_jpg_size)
     with maybe_open(fn, 'rb') as f: return d[imghdr.what(f)](f)
+
+# %% ../nbs/03_xtras.ipynb
+def img_bytes(img, fmt='PNG'):
+    # Convert PIL `img` to bytes in format `fmt`
+    from io import BytesIO
+    buf=BytesIO()
+    img.save(buf, format=fmt)
+    return buf.getvalue()
 
 # %% ../nbs/03_xtras.ipynb
 def bunzip(fn):

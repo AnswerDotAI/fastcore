@@ -199,8 +199,7 @@ class NumpyDocString(Mapping):
 
     def _normalize_param_section(self, val):
         """Convert lists of `Parameter` objects into a dict or clean list."""
-        if not isinstance(val, list): return val
-        if not val: return val
+        if not isinstance(val, list) or not val: return val
         if not isinstance(val[0], Parameter): return val 
         return {p.name: p for p in val} 
     

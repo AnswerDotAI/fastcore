@@ -113,9 +113,9 @@ class NumpyDocString(Mapping):
             for sec in missing: self.param_sections.add(sec)
             
         
-        if supported_sections is None: supported_sections = set(SECTIONS) # If None, set to default supported set
+        if supported_sections is None: supported_sections = set(SECTIONS)
         else:
-            missing = set(supported_sections) - set(self.sections.keys()) # add missing to class variable
+            missing = set(supported_sections) - set(self.sections.keys())
             for sec in missing: self.sections[sec] = []
            
         
@@ -199,10 +199,10 @@ class NumpyDocString(Mapping):
 
     def _normalize_param_section(self, val):
         """Convert lists of `Parameter` objects into a dict or clean list."""
-        if not isinstance(val, list): return val # Not a list? Then noop.
-        if not val: return val # Falsy value i.e. empty list? Then noop.
-        if not isinstance(val[0], Parameter): return val # Lazy check, assumes if first value is a Parameter, all are.
-        return {p.name: p for p in val} # Convert to dict[name -> Parameter]
+        if not isinstance(val, list): return val
+        if not val: return val
+        if not isinstance(val[0], Parameter): return val 
+        return {p.name: p for p in val} 
     
     def _parse_summary(self):
         """Grab signature (if given) and summary"""

@@ -94,11 +94,7 @@ class ParseError(Exception):
 
 
 SECTIONS = 'Summary Extended Yields Receives Other Raises Warns Warnings See Also Notes References Examples Attributes Methods'.split()
-
-PARAM_SECTIONS = {
-    "Parameters", "Other Parameters", "Attributes", "Methods",
-    "Raises", "Warns", "Yields", "Receives"
-}
+PARAM_SECTIONS = {"Parameters", "Other Parameters", "Attributes", "Methods", "Raises", "Warns", "Yields", "Receives"}
 
 class NumpyDocString(Mapping):
     "Parses a numpydoc string to an abstract representation"
@@ -110,12 +106,7 @@ class NumpyDocString(Mapping):
     sections['Returns'] = []
     param_sections: set[str] = set(PARAM_SECTIONS)
 
-    def __init__(
-        self, docstring, 
-        config=None, 
-        supported_sections: list[str] | None = SECTIONS,
-        supports_params: set[str] | None = PARAM_SECTIONS
-    ):
+    def __init__(self, docstring, config=None, supported_sections: list[str] | None = SECTIONS, supports_params: set[str] | None = PARAM_SECTIONS):
         
         if supports_params is None: supports_params = set(PARAM_SECTIONS)
         else:
@@ -144,7 +135,6 @@ class NumpyDocString(Mapping):
         for sec in supports_params:
             if sec in self._parsed_data:
                 self._parsed_data[sec] = self._normalize_param_section(self._parsed_data[sec])
-        
         
         # --- continue normal fastcore behavior ---
         for section in SECTIONS: 
@@ -214,23 +204,11 @@ class NumpyDocString(Mapping):
         return params
 
     def _normalize_param_section(self, val: list[Parameter] | Any) -> dict[Parameter] | Any:
-        """
-        Convert lists of `Parameter` objects into a dict or clean list.
-        """
-        # Not a list? Then noop.
-        if not isinstance(val, list):
-            return val
-        
-        # Falsy value i.e. empty list? Then noop.
-        if not val:
-            return val
-        
-        # Lazy check, assumes if first value is a Parameter, all are.
-        if not isinstance(val[0], Parameter):
-            return val
-
-        # Convert to dict[name -> Parameter]
-        return {p.name: p for p in val}
+        """Convert lists of `Parameter` objects into a dict or clean list."""
+        if not isinstance(val, list): return val # Not a list? Then noop.
+        if not val: return val # Falsy value i.e. empty list? Then noop.
+        if not isinstance(val[0], Parameter): return val # Lazy check, assumes if first value is a Parameter, all are.
+        return {p.name: p for p in val} # Convert to dict[name -> Parameter]
     
     def _parse_summary(self):
         """Grab signature (if given) and summary"""

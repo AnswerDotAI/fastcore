@@ -25,7 +25,6 @@ import textwrap, re, copy
 from warnings import warn
 from collections import namedtuple
 from collections.abc import Mapping
-from typing import Any
 
 __all__ = ['Parameter', 'NumpyDocString', 'dedent_lines']
 
@@ -106,37 +105,32 @@ class NumpyDocString(Mapping):
     sections['Returns'] = []
     param_sections: set[str] = set(PARAM_SECTIONS)
 
-    def __init__(self, docstring, config=None, supported_sections: list[str] | None = SECTIONS, supports_params: set[str] | None = PARAM_SECTIONS):
+    def __init__(self, docstring, config=None, supported_sections = SECTIONS, supports_params = PARAM_SECTIONS):
         
         if supports_params is None: supports_params = set(PARAM_SECTIONS)
         else:
             missing = set(supports_params) - set(self.param_sections)
             for sec in missing: self.param_sections.add(sec)
             
-        # If None, set to default supported set
-        if supported_sections is None: supported_sections = set(SECTIONS)
+        
+        if supported_sections is None: supported_sections = set(SECTIONS) # If None, set to default supported set
         else:
-            # add missing to class variable
-            missing = set(supported_sections) - set(self.sections.keys())
+            missing = set(supported_sections) - set(self.sections.keys()) # add missing to class variable
             for sec in missing: self.sections[sec] = []
            
         
-        # --- original initialization ---
         docstring = textwrap.dedent(docstring).split('\n')
         self._doc = Reader(docstring)
         self._parsed_data = copy.deepcopy(self.sections)
         self._parse()
         
-        # --- fastcore default normalization ---
         self['Parameters'] = {o.name:o for o in self['Parameters']}
         if self['Returns']: self['Returns'] = self['Returns'][0]
         
-        # --- normalize ALL parameter-like sections ---
         for sec in supports_params:
             if sec in self._parsed_data:
                 self._parsed_data[sec] = self._normalize_param_section(self._parsed_data[sec])
         
-        # --- continue normal fastcore behavior ---
         for section in SECTIONS: 
             self[section] = dedent_lines(self[section], split=False)
 
@@ -203,7 +197,7 @@ class NumpyDocString(Mapping):
             params.append(Parameter(arg_name, arg_type, desc))
         return params
 
-    def _normalize_param_section(self, val: list[Parameter] | Any) -> dict[Parameter] | Any:
+    def _normalize_param_section(self, val):
         """Convert lists of `Parameter` objects into a dict or clean list."""
         if not isinstance(val, list): return val # Not a list? Then noop.
         if not val: return val # Falsy value i.e. empty list? Then noop.

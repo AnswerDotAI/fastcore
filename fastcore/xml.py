@@ -188,7 +188,7 @@ def _to_xml(elm, lvl=0, indent=True, do_escape=True):
 
     stag = tag
     if attrs:
-        sattrs = ' '.join(_to_attr(k, v) for k, v in attrs.items() if v not in (False, None, '') and (k=='_' or k[-1]!='_'))
+        sattrs = ' '.join(_to_attr(k, v) for k, v in attrs.items() if v is not False and v is not None and (k=='_' or k[-1]!='_'))
         if sattrs: stag += f' {sattrs}'
 
     cltag = '' if is_void else f'</{tag}>'

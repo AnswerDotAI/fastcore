@@ -458,7 +458,7 @@ def store_attr(names=None, self=None, but='', cast=False, store_args=None, **att
     anno = annotations(self) if cast else {}
     if names and isinstance(names,str): names = re.split(', *', names)
     ns = names if names is not None else getattr(self, '__slots__', args[1:])
-    added = {n:fr.f_locals[n] for n in ns}
+    added = {n: getattr(self, n, fr.f_locals[n]) for n in ns}
     attrs = {**attrs, **added}
     if isinstance(but,str): but = re.split(', *', but)
     attrs = {k:v for k,v in attrs.items() if k not in but}

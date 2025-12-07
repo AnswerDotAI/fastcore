@@ -6,11 +6,11 @@
 from __future__ import annotations
 
 # %% auto 0
-__all__ = ['spark_chars', 'UNSET', 'walk', 'globtastic', 'maybe_open', 'mkdir', 'image_size', 'img_bytes', 'bunzip', 'loads',
-           'loads_multi', 'dumps', 'untar_dir', 'repo_details', 'shell', 'ssh', 'rsync_multi', 'run', 'open_file',
-           'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards', 'dict2obj', 'obj2dict', 'repr_dict',
-           'is_listy', 'mapped', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter',
-           'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link', 'truncstr', 'sparkline',
+__all__ = ['spark_chars', 'UNSET', 'walk', 'globtastic', 'maybe_open', 'mkdir', 'image_size', 'img_bytes', 'detect_mime',
+           'bunzip', 'loads', 'loads_multi', 'dumps', 'untar_dir', 'repo_details', 'shell', 'ssh', 'rsync_multi', 'run',
+           'open_file', 'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards', 'dict2obj', 'obj2dict',
+           'repr_dict', 'is_listy', 'mapped', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter',
+           'asave_iter', 'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link', 'truncstr', 'sparkline',
            'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file', 'autostart', 'EventTimer',
            'stringfmt_names', 'PartialFormatter', 'partial_format', 'utc2local', 'local2utc', 'trace', 'modified_env',
            'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src', 'Unset', 'nullable_dc',
@@ -133,6 +133,30 @@ def img_bytes(img, fmt='PNG'):
     buf=BytesIO()
     img.save(buf, format=fmt)
     return buf.getvalue()
+
+# %% ../nbs/03_xtras.ipynb
+_sigs = {
+    (b'%PDF', 0): 'application/pdf',
+    (b'RIFF', 0): lambda d: 'audio/wav' if d[8:12]==b'WAVE' else 'video/avi' if d[8:12]==b'AVI ' else None,
+    (b'ID3', 0): 'audio/mp3',
+    (b'\xff\xfb', 0): 'audio/mp3',
+    (b'\xff\xf3', 0): 'audio/mp3',
+    (b'FORM', 0): lambda d: 'audio/aiff' if d[8:12]==b'AIFF' else None,
+    (b'OggS', 0): 'audio/ogg',
+    (b'fLaC', 0): 'audio/flac',
+    (b'ftyp', 4): lambda d: 'video/3gpp' if d[8:11]==b'3gp' else 'video/mp4',
+    (b'\x1a\x45\xdf', 0): 'video/webm',
+    (b'FLV', 0): 'video/x-flv',
+    (b'\x30\x26\xb2\x75', 0): 'video/wmv',
+    (b'\x00\x00\x01\xb3', 0): 'video/mpeg',
+}
+
+def detect_mime(data):
+    "Get the MIME type for bytes `data`, covering common PDF, audio, video, and image types"
+    import mimetypes
+    for (sig,pos),mime in _sigs.items():
+        if data[pos:pos+len(sig)]==sig: return mime(data) if callable(mime) else mime
+    return mimetypes.types_map.get(f'.{imghdr.what(None, h=data)}')
 
 # %% ../nbs/03_xtras.ipynb
 def bunzip(fn):

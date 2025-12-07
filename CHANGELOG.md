@@ -2,6 +2,15 @@
 
 <!-- do not remove -->
 
+## 1.8.17
+
+### New Features
+
+- Add `detect_mime`, thanks to @KeremTurgutlu ([#711](https://github.com/AnswerDotAI/fastcore/issues/711))
+- Support setting zero and empty string as element attrs ([#709](https://github.com/AnswerDotAI/fastcore/pull/709)), thanks to [@erikgaas](https://github.com/erikgaas)
+- Add `img_bytes` ([#707](https://github.com/AnswerDotAI/fastcore/issues/707))
+
+
 ## 1.8.16
 
 ### New Features

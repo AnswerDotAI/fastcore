@@ -154,6 +154,7 @@ _sigs = {
 def detect_mime(data):
     "Get the MIME type for bytes `data`, covering common PDF, audio, video, and image types"
     import mimetypes
+    from fastcore import imghdr
     for (sig,pos),mime in _sigs.items():
         if data[pos:pos+len(sig)]==sig: return mime(data) if callable(mime) else mime
     return mimetypes.types_map.get(f'.{imghdr.what(None, h=data)}')

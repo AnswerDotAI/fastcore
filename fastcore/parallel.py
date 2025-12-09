@@ -30,7 +30,11 @@ def threaded(process=False):
             _obj_td.result = res
         @wraps(f)
         def _f(*args, **kwargs):
-            res = (Thread,Process)[process](target=g, args=args, kwargs=kwargs)
+            if process:
+                Proc = get_context('fork').Process if sys.platform == 'darwin' else Process
+            else:
+                Proc = Thread
+            res = Proc(target=g, args=args, kwargs=kwargs)
             res._args = (res,)+res._args
             res.start()
             return res
@@ -123,7 +127,9 @@ def parallel(f, items, *args, n_workers=defaults.cpus, total=None, progress=None
     kwpool = {}
     if threadpool: pool = ThreadPoolExecutor
     else:
-        if not method and sys.platform == 'darwin': method='fork'
+        if not method and sys.platform == 'darwin':
+            # Use fork only if function is defined in __main__ (notebooks/REPL), otherwise use spawn
+            method = 'fork' if getattr(f, '__module__', None) == '__main__' else 'spawn'
         if method: kwpool['mp_context'] = get_context(method)
         pool = ProcessPoolExecutor
     with pool(n_workers, pause=pause, **kwpool) as ex:
@@ -158,7 +164,8 @@ async def parallel_async(f, items, *args, n_workers=16,
 # %% ../nbs/03a_parallel.ipynb
 def run_procs(f, f_done, args):
     "Call `f` for each item in `args` in parallel, yielding `f_done`"
-    processes = L(args).map(Process, args=arg0, target=f)
+    Proc = get_context('fork').Process if sys.platform == 'darwin' else Process
+    processes = L(args).map(Proc, args=arg0, target=f)
     for o in processes: o.start()
     yield from f_done()
     processes.map(Self.join())

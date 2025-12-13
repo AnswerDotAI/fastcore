@@ -117,9 +117,9 @@ class L(GetAttr, CollBase, metaclass=_L_Meta):
     def _xtra(self): return None
     def _new(self, items, *args, **kwargs): return type(self)(items, *args, use_list=None, **kwargs)
     def __getitem__(self, idx):
+        "Retrieve `idx` (can be list of indices, or mask, or int) items"
         if isinstance(idx,int) and not hasattr(self.items,'iloc'): return self.items[idx]
         return self._get(idx) if is_indexer(idx) else L(self._get(idx), use_list=None)
-    def copy(self): return self._new(self.items.copy())
 
     def _get(self, i):
         if is_indexer(i) or isinstance(i,slice): return getattr(self.items,'iloc',self.items)[i]
@@ -143,7 +143,6 @@ class L(GetAttr, CollBase, metaclass=_L_Meta):
         if isinstance(b, (str,dict)) or callable(b): return False
         return all_equal(b,self)
 
-    def sorted(self, key=None, reverse=False, cmp=None, **kwargs): return self._new(sorted_ex(self, key=key, reverse=reverse, cmp=cmp, **kwargs))
     def __iter__(self): return iter(self.items.itertuples() if hasattr(self.items,'iloc') else self.items)
     def __contains__(self,b): return b in self.items
     def __reversed__(self): return self._new(reversed(self.items))
@@ -158,88 +157,6 @@ class L(GetAttr, CollBase, metaclass=_L_Meta):
         a.items += list(b)
         return a
 
-    @classmethod
-    def split(cls, s, sep=None, maxsplit=-1): return cls(s.split(sep,maxsplit))
-    @classmethod
-    def splitlines(cls, s, keepends=False): return cls(s.splitlines(keepends))
-    @classmethod
-    def range(cls, a, b=None, step=None): return cls(range_of(a, b=b, step=step))
-
-    def map(self, f, *args, **kwargs): return self._new(map_ex(self, f, *args, gen=False, **kwargs))
-    def argwhere(self, f, negate=False, **kwargs): return self._new(argwhere(self, f, negate, **kwargs))
-    def argfirst(self, f, negate=False): 
-        if negate: f = not_(f)
-        return first(i for i,o in self.enumerate() if f(o))
-    def filter(self, f=noop, negate=False, **kwargs):
-        return self._new(filter_ex(self, f=f, negate=negate, gen=False, **kwargs))
-
-    def enumerate(self): return L(enumerate(self))
-    def renumerate(self): return L(renumerate(self))
-    def unique(self, sort=False, bidir=False, start=None): return L(uniqueify(self, sort=sort, bidir=bidir, start=start))
-    def val2idx(self): return val2idx(self)
-    def cycle(self): return cycle(self)
-    def groupby(self, key, val=noop): return groupby(self, key, val=val)
-    def map_dict(self, f=noop, *args, **kwargs): return {k:f(k, *args,**kwargs) for k in self}
-    def map_first(self, f=noop, g=noop, *args, **kwargs):
-        return first(self.map(f, *args, **kwargs), g)
-
-    def itemgot(self, *idxs):
-        x = self
-        for idx in idxs: x = x.map(itemgetter(idx))
-        return x
-    def attrgot(self, k, default=None):
-        return self.map(lambda o: o.get(k,default) if isinstance(o, dict) else nested_attr(o,k,default))
-
-    def starmap(self, f, *args, **kwargs): return self._new(itertools.starmap(partial(f,*args,**kwargs), self))
-    def zip(self, cycled=False): return self._new((zip_cycle if cycled else zip)(*self))
-    def zipwith(self, *rest, cycled=False): return self._new([self, *rest]).zip(cycled=cycled)
-    def map_zip(self, f, *args, cycled=False, **kwargs): return self.zip(cycled=cycled).starmap(f, *args, **kwargs)
-    def map_zipwith(self, f, *rest, cycled=False, **kwargs): return self.zipwith(*rest, cycled=cycled).starmap(f, **kwargs)
-    def shuffle(self):
-        it = copy(self.items)
-        random.shuffle(it)
-        return self._new(it)
-
-    def concat(self): return self._new(itertools.chain.from_iterable(self.map(L)))
-    def reduce(self, f, initial=None): return reduce(f, self) if initial is None else reduce(f, self, initial)
-    def sum(self): return self.reduce(operator.add, 0)
-    def product(self): return self.reduce(operator.mul, 1)
-    def setattrs(self, attr, val): [setattr(o,attr,val) for o in self]
-
-# %% ../nbs/02_foundation.ipynb
-add_docs(L,
-         __getitem__="Retrieve `idx` (can be list of indices, or mask, or int) items",
-         range="Class Method: Same as `range`, but returns `L`. Can pass collection for `a`, to use `len(a)`",
-         split="Class Method: Same as `str.split`, but returns an `L`",
-         splitlines="Class Method: Same as `str.splitlines`, but returns an `L`",
-         copy="Same as `list.copy`, but returns an `L`",
-         sorted="New `L` sorted by `key`, using `sort_ex`. If key is str use `attrgetter`; if int use `itemgetter`",
-         unique="Unique items, in stable order",
-         val2idx="Dict from value to index",
-         filter="Create new `L` filtered by predicate `f`, passing `args` and `kwargs` to `f`",
-         argwhere="Like `filter`, but return indices for matching items",
-         argfirst="Return index of first matching item",
-         map="Create new `L` with `f` applied to all `items`, passing `args` and `kwargs` to `f`",
-         map_first="First element of `map_filter`",
-         map_dict="Like `map`, but creates a dict from `items` to function results",
-         starmap="Like `map`, but use `itertools.starmap`",
-         itemgot="Create new `L` with item `idx` of all `items`",
-         attrgot="Create new `L` with attr `k` (or value `k` for dicts) of all `items`.",
-         cycle="Same as `itertools.cycle`",
-         enumerate="Same as `enumerate`",
-         renumerate="Same as `renumerate`",
-         groupby="Same as `fastcore.basics.groupby`",
-         zip="Create new `L` with `zip(*items)`",
-         zipwith="Create new `L` with `self` zip with each of `*rest`",
-         map_zip="Combine `zip` and `starmap`",
-         map_zipwith="Combine `zipwith` and `starmap`",
-         concat="Concatenate all elements of list",
-         shuffle="Same as `random.shuffle`, but not inplace",
-         reduce="Wrapper for `functools.reduce`",
-         sum="Sum of the items",
-         product="Product of the items",
-         setattrs="Call `setattr` on all items")
-
 # %% ../nbs/02_foundation.ipynb
 # Here we are fixing the signature of L. What happens is that the __call__ method on the MetaClass of L shadows the __init__
 # giving the wrong signature (https://stackoverflow.com/questions/49740290/call-from-metaclass-shadows-signature-of-init).
@@ -248,6 +165,191 @@ L.__signature__ = inspect.signature(_f)
 
 # %% ../nbs/02_foundation.ipynb
 Sequence.register(L);
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def unique(self:L, sort=False, bidir=False, start=None):
+    "Unique items, in stable order"
+    return L(uniqueify(self, sort=sort, bidir=bidir, start=start))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def val2idx(self:L):
+    "Dict from value to index"
+    return val2idx(self)
+
+# %% ../nbs/02_foundation.ipynb
+@patch(cls_method=True)
+def split(cls:L, s, sep=None, maxsplit=-1):
+    "Class Method: Same as `str.split`, but returns an `L`"
+    return cls(s.split(sep,maxsplit))
+
+# %% ../nbs/02_foundation.ipynb
+@patch(cls_method=True)
+def splitlines(cls:L, s, keepends=False):
+    "Class Method: Same as `str.splitlines`, but returns an `L`"
+    return cls(s.splitlines(keepends))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def groupby(self:L, key, val=noop):
+    "Same as `fastcore.basics.groupby`"
+    return groupby(self, key, val=val)
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def filter(self:L, f=noop, negate=False, **kwargs):
+    "Create new `L` filtered by predicate `f`, passing `args` and `kwargs` to `f`"
+    return self._new(filter_ex(self, f=f, negate=negate, gen=False, **kwargs))
+
+# %% ../nbs/02_foundation.ipynb
+@patch(cls_method=True)
+def range(cls:L, a, b=None, step=None):
+    "Class Method: Same as `range`, but returns `L`. Can pass collection for `a`, to use `len(a)`"
+    return cls(range_of(a, b=b, step=step))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def argwhere(self:L, f, negate=False, **kwargs):
+    "Like `filter`, but return indices for matching items"
+    return self._new(argwhere(self, f, negate, **kwargs))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def enumerate(self:L):
+    "Same as `enumerate`"
+    return L(enumerate(self))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def renumerate(self:L):
+    "Same as `renumerate`"
+    return L(renumerate(self))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def argfirst(self:L, f, negate=False):
+    "Return index of first matching item"
+    if negate: f = not_(f)
+    return first(i for i,o in self.enumerate() if f(o))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def map(self:L, f, *args, **kwargs):
+    "Create new `L` with `f` applied to all `items`, passing `args` and `kwargs` to `f`"
+    return self._new(map_ex(self, f, *args, gen=False, **kwargs))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def starmap(self:L, f, *args, **kwargs):
+    "Like `map`, but use `itertools.starmap`"
+    return self._new(itertools.starmap(partial(f,*args,**kwargs), self))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def map_dict(self:L, f=noop, *args, **kwargs):
+    "Like `map`, but creates a dict from `items` to function results"
+    return {k:f(k, *args,**kwargs) for k in self}
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def zip(self:L, cycled=False):
+    "Create new `L` with `zip(*items)`"
+    return self._new((zip_cycle if cycled else zip)(*self))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def map_zip(self:L, f, *args, cycled=False, **kwargs):
+    "Combine `zip` and `starmap`"
+    return self.zip(cycled=cycled).starmap(f, *args, **kwargs)
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def zipwith(self:L, *rest, cycled=False):
+    "Create new `L` with `self` zip with each of `*rest`"
+    return self._new([self, *rest]).zip(cycled=cycled)
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def map_zipwith(self:L, f, *rest, cycled=False, **kwargs):
+    "Combine `zipwith` and `starmap`"
+    return self.zipwith(*rest, cycled=cycled).starmap(f, **kwargs)
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def itemgot(self:L, *idxs):
+    "Create new `L` with item `idx` of all `items`"
+    x = self
+    for idx in idxs: x = x.map(itemgetter(idx))
+    return x
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def attrgot(self:L, k, default=None):
+    "Create new `L` with attr `k` (or value `k` for dicts) of all `items`."
+    return self.map(lambda o: o.get(k,default) if isinstance(o, dict) else nested_attr(o,k,default))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def sorted(self:L, key=None, reverse=False, cmp=None, **kwargs):
+    "New `L` sorted by `key`, using `sort_ex`. If key is str use `attrgetter`; if int use `itemgetter`"
+    return self._new(sorted_ex(self, key=key, reverse=reverse, cmp=cmp, **kwargs))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def concat(self:L):
+    "Concatenate all elements of list"
+    return self._new(itertools.chain.from_iterable(self.map(L)))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def copy(self:L):
+    "Same as `list.copy`, but returns an `L`"
+    return self._new(self.items.copy())
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def cycle(self:L):
+    "Same as `itertools.cycle`"
+    return cycle(self)
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def shuffle(self:L):
+    "Same as `random.shuffle`, but not inplace"
+    it = copy(self.items)
+    random.shuffle(it)
+    return self._new(it)
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def reduce(self:L, f, initial=None):
+    "Wrapper for `functools.reduce`"
+    return reduce(f, self) if initial is None else reduce(f, self, initial)
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def sum(self:L):
+    "Sum of the items"
+    return self.reduce(operator.add, 0)
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def product(self:L):
+    "Product of the items"
+    return self.reduce(operator.mul, 1)
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def map_first(self:L, f=noop, g=noop, *args, **kwargs):
+    "First element of `map_filter`"
+    return first(self.map(f, *args, **kwargs), g)
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def setattrs(self:L, attr, val):
+    "Call `setattr` on all items"
+    [setattr(o,attr,val) for o in self]
 
 # %% ../nbs/02_foundation.ipynb
 def save_config_file(file, d, **kwargs):

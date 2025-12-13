@@ -2,6 +2,15 @@
 
 <!-- do not remove -->
 
+## 1.9.0
+
+### Breaking Changes
+
+- Patching a function that has a name ending in `__` now creates a method with that suffix stripped. Previously it would use the name directly.
+
+### New Features
+
+- Handle `nm` in `patch_to` and `patch`, and strip `__` suffix in `patch` ([#715](https://github.com/AnswerDotAI/fastcore/issues/715))
 
 
 ## 1.8.18

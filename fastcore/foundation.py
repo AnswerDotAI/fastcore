@@ -409,7 +409,7 @@ def sum(self:L):
 
 # %% ../nbs/02_foundation.ipynb
 @patch
-def product(self:L):
+def product__(self:L):
     "Product of the items"
     return self.reduce(operator.mul, 1)
 

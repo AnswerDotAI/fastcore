@@ -17,10 +17,10 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'nested_attr', 'nested_setdefault', 'nested_callable', 'nested_idx', 'set_nested_idx', 'val2idx',
            'uniqueify', 'loop_first_last', 'loop_first', 'loop_last', 'first_match', 'last_match', 'fastuple', 'bind',
            'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'copy_func', 'patch_to',
-           'patch', 'patch_property', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum', 'Stateful',
-           'NotStr', 'PrettyString', 'even_mults', 'num_cpus', 'add_props', 'str2bool', 'str2int', 'str2float',
-           'str2list', 'str2date', 'to_bool', 'to_int', 'to_float', 'to_list', 'to_date', 'typed', 'exec_new',
-           'exec_import', 'lt', 'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
+           'patch', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum', 'Stateful', 'NotStr', 'PrettyString',
+           'even_mults', 'num_cpus', 'add_props', 'str2bool', 'str2int', 'str2float', 'str2list', 'str2date', 'to_bool',
+           'to_int', 'to_float', 'to_list', 'to_date', 'typed', 'exec_new', 'exec_import', 'lt', 'gt', 'le', 'ge', 'eq',
+           'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
 
 # %% ../nbs/01_basics.ipynb
 from .imports import *
@@ -1051,42 +1051,46 @@ class _clsmethod:
     def __get__(self, _, f_cls): return MethodType(self.f, f_cls)
 
 # %% ../nbs/01_basics.ipynb
-def patch_to(cls, as_prop=False, cls_method=False, set_prop=False):
+def _strip_patch_name(nm):
+    "Strip trailing `__` from `nm` if it doesn't start with `_`"
+    return nm[:-2] if nm.endswith('__') and not nm.startswith('_') else nm
+
+def patch_to(cls, as_prop=False, cls_method=False, set_prop=False, nm=None):
     "Decorator: add `f` to `cls`"
     if not isinstance(cls, (tuple,list)): cls=(cls,)
     def _inner(f):
         for c_ in cls:
             nf = copy_func(f)
-            nm = f.__name__
+            fnm = nm or _strip_patch_name(f.__name__)
             # `functools.update_wrapper` when passing patched function to `Pipeline`, so we do it manually
             for o in functools.WRAPPER_ASSIGNMENTS: setattr(nf, o, getattr(f,o))
-            nf.__qualname__ = f"{c_.__name__}.{nm}"
-            if cls_method: setattr(c_, nm, _clsmethod(nf))
+            nf.__name__ = fnm
+            nf.__qualname__ = f"{c_.__name__}.{fnm}"
+            if cls_method: setattr(c_, fnm, _clsmethod(nf))
             else:
-                if set_prop: setattr(c_, nm, getattr(c_, nm).setter(nf))
-                elif as_prop: setattr(c_, nm, property(nf))
+                if set_prop: setattr(c_, fnm, getattr(c_, fnm).setter(nf))
+                elif as_prop: setattr(c_, fnm, property(nf))
                 else:
-                    onm = '_orig_'+nm
-                    if hasattr(c_, nm) and not hasattr(c_, onm): setattr(c_, onm, getattr(c_, nm))
-                    setattr(c_, nm, nf)
+                    onm = '_orig_'+fnm
+                    if hasattr(c_, fnm) and not hasattr(c_, onm): setattr(c_, onm, getattr(c_, fnm))
+                    setattr(c_, fnm, nf)
         # Avoid clobbering existing functions
-        return globals().get(nm, builtins.__dict__.get(nm, None))
+        return globals().get(fnm, builtins.__dict__.get(fnm, None))
     return _inner
 
 # %% ../nbs/01_basics.ipynb
-def patch(f=None, *, as_prop=False, cls_method=False,  set_prop=False):
+def patch(f=None, *, as_prop=False, cls_method=False, set_prop=False, nm=None):
     "Decorator: add `f` to the first parameter's class (based on f's type annotations)"
-    if f is None: return partial(patch, as_prop=as_prop, cls_method=cls_method, set_prop=set_prop)
+    if f is None: return partial(patch, as_prop=as_prop, cls_method=cls_method, set_prop=set_prop, nm=nm)
     ann,glb,loc = get_annotations_ex(f)
-    cls = union2tuple(eval_type(ann.pop('cls') if cls_method else next(iter(ann.values())), glb, loc))
-    return patch_to(cls, as_prop=as_prop, cls_method=cls_method, set_prop=set_prop)(f)
-
-# %% ../nbs/01_basics.ipynb
-def patch_property(f):
-    "Deprecated; use `patch(as_prop=True)` instead"
-    warnings.warn("`patch_property` is deprecated and will be removed; use `patch(as_prop=True)` instead")
-    cls = next(iter(f.__annotations__.values()))
-    return patch_to(cls, as_prop=True)(f)
+    if cls_method:
+        if 'cls' not in ann: raise TypeError(f"@patch with cls_method=True requires 'cls' to have a type annotation")
+        cls = ann.pop('cls')
+    else:
+        if not ann: raise TypeError(f"@patch requires the first parameter of `{f.__name__}` to have a type annotation")
+        cls = next(iter(ann.values()))
+    cls = union2tuple(eval_type(cls, glb, loc))
+    return patch_to(cls, as_prop=as_prop, cls_method=cls_method, set_prop=set_prop, nm=nm)(f)
 
 # %% ../nbs/01_basics.ipynb
 def compile_re(pat):

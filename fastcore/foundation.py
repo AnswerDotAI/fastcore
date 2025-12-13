@@ -493,7 +493,7 @@ except ImportError: batched = _batched
 
 # %% ../nbs/02_foundation.ipynb
 @patch
-def batched(self:L, n):
+def batched__(self:L, n):
     "Same as `itertools.batched`"
     return self._new(batched(self, n))
 

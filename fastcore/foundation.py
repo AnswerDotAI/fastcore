@@ -309,12 +309,6 @@ def copy(self:L):
 
 # %% ../nbs/02_foundation.ipynb
 @patch
-def cycle(self:L):
-    "Same as `itertools.cycle`"
-    return cycle(self)
-
-# %% ../nbs/02_foundation.ipynb
-@patch
 def shuffle(self:L):
     "Same as `random.shuffle`, but not inplace"
     it = copy(self.items)
@@ -350,6 +344,12 @@ def map_first(self:L, f=noop, g=noop, *args, **kwargs):
 def setattrs(self:L, attr, val):
     "Call `setattr` on all items"
     [setattr(o,attr,val) for o in self]
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def cycle(self:L):
+    "Same as `itertools.cycle`"
+    return cycle(self)
 
 # %% ../nbs/02_foundation.ipynb
 def save_config_file(file, d, **kwargs):

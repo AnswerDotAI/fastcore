@@ -409,7 +409,7 @@ def sum(self:L):
 
 # %% ../nbs/02_foundation.ipynb
 @patch
-def product__(self:L):
+def product(self:L):
     "Product of the items"
     return self.reduce(operator.mul, 1)
 
@@ -493,7 +493,7 @@ except ImportError: batched = _batched
 
 # %% ../nbs/02_foundation.ipynb
 @patch
-def batched__(self:L, n):
+def batched(self:L, n):
     "Same as `itertools.batched`"
     return self._new(batched(self, n))
 

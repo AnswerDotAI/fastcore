@@ -1051,31 +1051,25 @@ class _clsmethod:
     def __get__(self, _, f_cls): return MethodType(self.f, f_cls)
 
 # %% ../nbs/01_basics.ipynb
-def _strip_patch_name(nm):
-    "Strip trailing `__` from `nm` if it doesn't start with `_`"
-    return nm[:-2] if nm.endswith('__') and not nm.startswith('_') else nm
-
-def patch_to(cls, as_prop=False, cls_method=False, set_prop=False, nm=None):
+def patch_to(cls, as_prop=False, cls_method=False, set_prop=False, nm=None, glb=None):
     "Decorator: add `f` to `cls`"
-    if not isinstance(cls, (tuple,list)): cls=(cls,)
+    if glb is None: glb = sys._getframe(1).f_globals
     def _inner(f):
-        for c_ in cls:
+        _nm = nm or f.__name__
+        for c_ in tuplify(cls):
             nf = copy_func(f)
-            fnm = nm or _strip_patch_name(f.__name__)
-            # `functools.update_wrapper` when passing patched function to `Pipeline`, so we do it manually
             for o in functools.WRAPPER_ASSIGNMENTS: setattr(nf, o, getattr(f,o))
-            nf.__name__ = fnm
-            nf.__qualname__ = f"{c_.__name__}.{fnm}"
-            if cls_method: setattr(c_, fnm, _clsmethod(nf))
+            nf.__name__ = _nm
+            nf.__qualname__ = f"{c_.__name__}.{_nm}"
+            if cls_method:    attr = _clsmethod(nf)
+            elif set_prop:    attr = getattr(c_, _nm).setter(nf)
+            elif as_prop:     attr = property(nf)
             else:
-                if set_prop: setattr(c_, fnm, getattr(c_, fnm).setter(nf))
-                elif as_prop: setattr(c_, fnm, property(nf))
-                else:
-                    onm = '_orig_'+fnm
-                    if hasattr(c_, fnm) and not hasattr(c_, onm): setattr(c_, onm, getattr(c_, fnm))
-                    setattr(c_, fnm, nf)
-        # Avoid clobbering existing functions
-        return globals().get(fnm, builtins.__dict__.get(fnm, None))
+                onm = '_orig_'+_nm
+                if hasattr(c_, _nm) and not hasattr(c_, onm): setattr(c_, onm, getattr(c_, _nm))
+                attr = nf
+            setattr(c_, _nm, attr)
+        return glb.get(_nm, builtins.__dict__.get(_nm, None))
     return _inner
 
 # %% ../nbs/01_basics.ipynb
@@ -1090,7 +1084,7 @@ def patch(f=None, *, as_prop=False, cls_method=False, set_prop=False, nm=None):
         if not ann: raise TypeError(f"@patch requires the first parameter of `{f.__name__}` to have a type annotation")
         cls = next(iter(ann.values()))
     cls = union2tuple(eval_type(cls, glb, loc))
-    return patch_to(cls, as_prop=as_prop, cls_method=cls_method, set_prop=set_prop, nm=nm)(f)
+    return patch_to(cls, as_prop=as_prop, cls_method=cls_method, set_prop=set_prop, nm=nm, glb=sys._getframe(1).f_globals)(f)
 
 # %% ../nbs/01_basics.ipynb
 def compile_re(pat):

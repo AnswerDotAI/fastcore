@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 1.8.18
+
+### New Features
+
+- Add more itertools etc to `L` ([#714](https://github.com/AnswerDotAI/fastcore/issues/714))
+
+### Bugs Squashed
+
+- missing import in `detect_mime` ([#712](https://github.com/AnswerDotAI/fastcore/issues/712))
+
+
 ## 1.8.17
 
 ### New Features

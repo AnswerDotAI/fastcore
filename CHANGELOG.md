@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.9.1
+
+### New Features
+
+- Add pre-3.11 support for `batched` ([#716](https://github.com/AnswerDotAI/fastcore/issues/716))
+
+
 ## 1.9.0
 
 ### Breaking Changes

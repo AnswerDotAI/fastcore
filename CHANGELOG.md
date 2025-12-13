@@ -2,22 +2,17 @@
 
 <!-- do not remove -->
 
-## 1.9.1
-
-### New Features
-
-- Add pre-3.11 support for `batched` ([#716](https://github.com/AnswerDotAI/fastcore/issues/716))
-
-
-## 1.9.0
+## 1.9.2
 
 ### Breaking Changes
 
-- Patching a function that has a name ending in `__` now creates a method with that suffix stripped. Previously it would use the name directly.
+- Patching a function no long clobbers a function with the same name in the current module
 
 ### New Features
 
-- Handle `nm` in `patch_to` and `patch`, and strip `__` suffix in `patch` ([#715](https://github.com/AnswerDotAI/fastcore/issues/715))
+- Have `@patch` not overwrite existing functions ([#717](https://github.com/AnswerDotAI/fastcore/issues/717))
+- Add pre-3.11 support for `batched` ([#716](https://github.com/AnswerDotAI/fastcore/issues/716))
+- Handle `nm` in `patch_to` and `patch` ([#715](https://github.com/AnswerDotAI/fastcore/issues/715))
 
 
 ## 1.8.18

@@ -480,10 +480,22 @@ def pairwise(self:L):
     return self._new(itertools.pairwise(self))
 
 # %% ../nbs/02_foundation.ipynb
+def _batched(iterable, n):
+    "Batch data into tuples of length n. The last batch may be shorter."
+    if n < 1: raise ValueError('n must be at least one')
+    it = iter(iterable)
+    while batch := tuple(itertools.islice(it, n)):
+        yield batch
+
+# %% ../nbs/02_foundation.ipynb
+try: from itertools import batched
+except ImportError: batched = _batched
+
+# %% ../nbs/02_foundation.ipynb
 @patch
 def batched(self:L, n):
     "Same as `itertools.batched`"
-    return self._new(itertools.batched(self, n))
+    return self._new(batched(self, n))
 
 # %% ../nbs/02_foundation.ipynb
 @patch

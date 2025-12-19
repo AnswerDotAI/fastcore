@@ -251,7 +251,7 @@ def rsync_multi(ip, files, user='ubuntu', persist='5m'):
     for src,dst in files: shell(f'rsync -az -e "ssh -S {sock}" {src} {user}@{ip}:{dst}')
 
 # %% ../nbs/03_xtras.ipynb
-def run(cmd, *rest, same_in_win=False, ignore_ex=False, as_bytes=False, stderr=False):
+def run(cmd, *rest, same_in_win=False, ignore_ex=False, as_bytes=False, stderr=True):
     "Pass `cmd` (splitting with `shlex` if string) to `subprocess.run`; return `stdout`; raise `IOError` if fails"
     # Even the command is same on Windows, we have to add `cmd /c `"
     import subprocess
@@ -271,7 +271,7 @@ def run(cmd, *rest, same_in_win=False, ignore_ex=False, as_bytes=False, stderr=F
     if stderr and res.stderr: stdout += b' ;; ' + res.stderr
     if not as_bytes: stdout = stdout.decode().strip()
     if ignore_ex: return (res.returncode, stdout)
-    if res.returncode: raise IOError(stdout)
+    if res.returncode: raise IOError((res.stdout + b' ;; ' + res.stderr).decode().strip())
     return stdout
 
 # %% ../nbs/03_xtras.ipynb

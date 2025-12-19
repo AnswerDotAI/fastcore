@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.9.3
+
+### New Features
+
+- Add `unqid` ([#718](https://github.com/AnswerDotAI/fastcore/issues/718))
+
+
 ## 1.9.2
 
 ### Breaking Changes

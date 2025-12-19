@@ -10,12 +10,12 @@ __all__ = ['spark_chars', 'UNSET', 'walk', 'globtastic', 'maybe_open', 'mkdir', 
            'bunzip', 'loads', 'loads_multi', 'dumps', 'untar_dir', 'repo_details', 'shell', 'ssh', 'rsync_multi', 'run',
            'open_file', 'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards', 'dict2obj', 'obj2dict',
            'repr_dict', 'is_listy', 'mapped', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter',
-           'asave_iter', 'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link', 'truncstr', 'sparkline',
-           'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file', 'autostart', 'EventTimer',
-           'stringfmt_names', 'PartialFormatter', 'partial_format', 'utc2local', 'local2utc', 'trace', 'modified_env',
-           'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src', 'Unset', 'nullable_dc',
-           'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple', 'CachedIter',
-           'CachedAwaitable', 'reawaitable', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
+           'asave_iter', 'unqid', 'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link', 'truncstr',
+           'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file', 'autostart',
+           'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'utc2local', 'local2utc', 'trace',
+           'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src',
+           'Unset', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple',
+           'CachedIter', 'CachedAwaitable', 'reawaitable', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb
 from .imports import *
@@ -510,6 +510,15 @@ def asave_iter(g):
     @trim_wraps(g)
     def _(*args, **kwargs): return _save_iter(g, *args, **kwargs)
     return _
+
+# %% ../nbs/03_xtras.ipynb
+def unqid(seeded=False):
+    "Generate a unique id suitable for use as a Python identifier"
+    from base64 import b64encode
+    from uuid import uuid4,UUID
+    id4 = UUID(int=random.getrandbits(128), version=4) if seeded else uuid4()
+    res = b64encode(id4.bytes)
+    return '_' + res.decode().rstrip('=').translate(str.maketrans('+/', '_-'))
 
 # %% ../nbs/03_xtras.ipynb
 def friendly_name(levels=3, suffix=4):

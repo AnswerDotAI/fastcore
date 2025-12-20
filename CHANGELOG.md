@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.9.4
+
+### New Features
+
+- Added loads of curried methods to `L` ([#720](https://github.com/AnswerDotAI/fastcore/issues/720))
+- Include stderr in `run` exception details ([#719](https://github.com/AnswerDotAI/fastcore/issues/719))
+
+
 ## 1.9.3
 
 ### New Features

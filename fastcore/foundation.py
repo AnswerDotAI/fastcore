@@ -4,12 +4,13 @@
 
 # %% auto 0
 __all__ = ['working_directory', 'add_docs', 'docs', 'coll_repr', 'is_bool', 'mask2idxs', 'cycle', 'zip_cycle', 'is_indexer',
-           'product', 'CollBase', 'L', 'save_config_file', 'read_config_file', 'Config']
+           'product', 'CollBase', 'L', 'curryable', 'splitter', 'linesplitter', 'save_config_file', 'read_config_file',
+           'Config']
 
 # %% ../nbs/02_foundation.ipynb
 from .imports import *
 from .basics import *
-from functools import lru_cache
+from functools import lru_cache,wraps
 from contextlib import contextmanager
 from copy import copy
 from configparser import ConfigParser
@@ -45,7 +46,7 @@ def docs(cls):
     return cls
 
 # %% ../nbs/02_foundation.ipynb
-def coll_repr(c, max_n=20):
+def coll_repr(c, max_n=250):
     "String repr of up to `max_n` items of (possibly lazy) collection `c`"
     return f'(#{len(c)}) [' + ','.join(itertools.islice(map(repr,c), max_n)) + (
         '...' if len(c)>max_n else '') + ']'
@@ -180,71 +181,9 @@ def val2idx(self:L):
 
 # %% ../nbs/02_foundation.ipynb
 @patch(cls_method=True)
-def split(cls:L, s, sep=None, maxsplit=-1):
-    "Class Method: Same as `str.split`, but returns an `L`"
-    return cls(s.split(sep,maxsplit))
-
-# %% ../nbs/02_foundation.ipynb
-@patch(cls_method=True)
-def splitlines(cls:L, s, keepends=False):
-    "Class Method: Same as `str.splitlines`, but returns an `L`"
-    return cls(s.splitlines(keepends))
-
-# %% ../nbs/02_foundation.ipynb
-@patch
-def groupby(self:L, key, val=noop):
-    "Same as `fastcore.basics.groupby`"
-    return groupby(self, key, val=val)
-
-# %% ../nbs/02_foundation.ipynb
-@patch
-def filter(self:L, f=noop, negate=False, **kwargs):
-    "Create new `L` filtered by predicate `f`, passing `args` and `kwargs` to `f`"
-    return self._new(filter_ex(self, f=f, negate=negate, gen=False, **kwargs))
-
-# %% ../nbs/02_foundation.ipynb
-@patch
-def starfilter(self:L, f, negate=False, **kwargs):
-    "Like `filter`, but unpacks elements as args to `f`"
-    _f = lambda x: f(*x, **kwargs)
-    if negate: _f = not_(_f)
-    return self._new(filter(_f, self))
-
-# %% ../nbs/02_foundation.ipynb
-@patch
-def rstarfilter(self:L, f, negate=False, **kwargs):
-    "Like `starfilter`, but reverse the order of args"
-    _f = lambda x: f(*x[::-1], **kwargs)
-    if negate: _f = not_(_f)
-    return self._new(filter(_f, self))
-
-# %% ../nbs/02_foundation.ipynb
-@patch(cls_method=True)
 def range(cls:L, a, b=None, step=None):
     "Class Method: Same as `range`, but returns `L`. Can pass collection for `a`, to use `len(a)`"
     return cls(range_of(a, b=b, step=step))
-
-# %% ../nbs/02_foundation.ipynb
-@patch
-def argwhere(self:L, f, negate=False, **kwargs):
-    "Like `filter`, but return indices for matching items"
-    return self._new(argwhere(self, f, negate, **kwargs))
-
-# %% ../nbs/02_foundation.ipynb
-@patch
-def starargwhere(self:L, f, negate=False):
-    "Like `argwhere`, but unpacks elements as args to `f`"
-    _f = lambda x: f(*x)
-    if negate: _f = not_(_f)
-    return self._new(i for i,o in enumerate(self) if _f(o))
-
-# %% ../nbs/02_foundation.ipynb
-@patch
-def rstarargwhere(self:L, f, negate=False):
-    "Like `starargwhere`, but reverse the order of args"
-    _f = lambda x: f(*x[::-1])
-    if negate: _f = not_(_f)
-    return self._new(i for i,o in enumerate(self) if _f(o))
 
 # %% ../nbs/02_foundation.ipynb
 @patch
@@ -259,42 +198,59 @@ def renumerate(self:L):
     return L(renumerate(self))
 
 # %% ../nbs/02_foundation.ipynb
-@patch
-def argfirst(self:L, f, negate=False):
-    "Return index of first matching item"
-    if negate: f = not_(f)
-    return first(i for i,o in self.enumerate() if f(o))
+@patch(cls_method=True)
+def split(cls:L, s, sep=None, maxsplit=-1):
+    "Class Method: Same as `str.split`, but returns an `L`"
+    return cls(s.split(sep,maxsplit))
+
+# %% ../nbs/02_foundation.ipynb
+@patch(cls_method=True)
+def splitlines(cls:L, s, keepends=False):
+    "Class Method: Same as `str.splitlines`, but returns an `L`"
+    return cls(s.splitlines(keepends))
+
+# %% ../nbs/02_foundation.ipynb
+def curryable(f):
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        if not isinstance(self, L): return lambda items: f(L(items), self, *args, **kwargs)
+        return f(L(self), *args, **kwargs)
+    return wrapper
 
 # %% ../nbs/02_foundation.ipynb
 @patch
-def starargfirst(self:L, f, negate=False):
-    "Like `argfirst`, but unpacks elements as args to `f`"
-    _f = lambda x: f(*x)
-    if negate: _f = not_(_f)
-    return first(i for i,o in self.enumerate() if _f(o))
-
-# %% ../nbs/02_foundation.ipynb
-@patch
-def rstarargfirst(self:L, f, negate=False):
-    "Like `starargfirst`, but reverse the order of args"
-    _f = lambda x: f(*x[::-1])
-    if negate: _f = not_(_f)
-    return first(i for i,o in self.enumerate() if _f(o))
-
-# %% ../nbs/02_foundation.ipynb
-@patch
+@curryable
 def map(self:L, f, *args, **kwargs):
     "Create new `L` with `f` applied to all `items`, passing `args` and `kwargs` to `f`"
     return self._new(map_ex(self, f, *args, gen=False, **kwargs))
 
 # %% ../nbs/02_foundation.ipynb
+def splitter(sep=None, maxsplit=-1):
+    "Create a partial function that splits strings into `L`"
+    return partial(L.split, sep=sep, maxsplit=maxsplit)
+
+# %% ../nbs/02_foundation.ipynb
+def linesplitter(keepends=False):
+    "Create a partial function that splits strings by lines into `L`"
+    return partial(L.splitlines, keepends=keepends)
+
+# %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
+def groupby(self:L, key, val=noop):
+    "Same as `fastcore.basics.groupby`"
+    return groupby(self, key, val=val)
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+@curryable
 def starmap(self:L, f, *args, **kwargs):
     "Like `map`, but use `itertools.starmap`"
     return self._new(itertools.starmap(partial(f,*args,**kwargs), self))
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def rstarmap(self:L, f, *args, **kwargs):
     "Like `starmap`, but reverse the order of args"
     return self._new(itertools.starmap(lambda *x: f(*x[::-1], *args, **kwargs), self))
@@ -331,6 +287,82 @@ def map_zipwith(self:L, f, *rest, cycled=False, **kwargs):
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
+def filter(self:L, f=noop, negate=False, **kwargs):
+    "Create new `L` filtered by predicate `f`, passing `args` and `kwargs` to `f`"
+    return self._new(filter_ex(self, f=f, negate=negate, gen=False, **kwargs))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+@curryable
+def starfilter(self:L, f, negate=False, **kwargs):
+    "Like `filter`, but unpacks elements as args to `f`"
+    _f = lambda x: f(*x, **kwargs)
+    if negate: _f = not_(_f)
+    return self._new(filter(_f, self))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+@curryable
+def rstarfilter(self:L, f, negate=False, **kwargs):
+    "Like `starfilter`, but reverse the order of args"
+    _f = lambda x: f(*x[::-1], **kwargs)
+    if negate: _f = not_(_f)
+    return self._new(filter(_f, self))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+@curryable
+def argwhere(self:L, f, negate=False, **kwargs):
+    "Like `filter`, but return indices for matching items"
+    return self._new(argwhere(self, f, negate, **kwargs))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+@curryable
+def starargwhere(self:L, f, negate=False):
+    "Like `argwhere`, but unpacks elements as args to `f`"
+    _f = lambda x: f(*x)
+    if negate: _f = not_(_f)
+    return self._new(i for i,o in enumerate(self) if _f(o))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+@curryable
+def rstarargwhere(self:L, f, negate=False):
+    "Like `starargwhere`, but reverse the order of args"
+    _f = lambda x: f(*x[::-1])
+    if negate: _f = not_(_f)
+    return self._new(i for i,o in enumerate(self) if _f(o))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+@curryable
+def argfirst(self:L, f, negate=False):
+    "Return index of first matching item"
+    if negate: f = not_(f)
+    return first(i for i,o in self.enumerate() if f(o))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+@curryable
+def starargfirst(self:L, f, negate=False):
+    "Like `argfirst`, but unpacks elements as args to `f`"
+    _f = lambda x: f(*x)
+    if negate: _f = not_(_f)
+    return first(i for i,o in self.enumerate() if _f(o))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+@curryable
+def rstarargfirst(self:L, f, negate=False):
+    "Like `starargfirst`, but reverse the order of args"
+    _f = lambda x: f(*x[::-1])
+    if negate: _f = not_(_f)
+    return first(i for i,o in self.enumerate() if _f(o))
+
+# %% ../nbs/02_foundation.ipynb
+@patch
 def itemgot(self:L, *idxs):
     "Create new `L` with item `idx` of all `items`"
     x = self
@@ -345,18 +377,21 @@ def attrgot(self:L, k, default=None):
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def sorted(self:L, key=None, reverse=False, cmp=None, **kwargs):
     "New `L` sorted by `key`, using `sort_ex`. If key is str use `attrgetter`; if int use `itemgetter`"
     return self._new(sorted_ex(self, key=key, reverse=reverse, cmp=cmp, **kwargs))
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def starsorted(self:L, key, reverse=False):
     "Like `sorted`, but unpacks elements as args to `key`"
     return self._new(sorted(self, key=lambda x: key(*x), reverse=reverse))
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def rstarsorted(self:L, key, reverse=False):
     "Like `starsorted`, but reverse the order of args"
     return self._new(sorted(self, key=lambda x: key(*x[::-1]), reverse=reverse))
@@ -383,12 +418,14 @@ def shuffle(self:L):
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def reduce(self:L, f, initial=None):
     "Wrapper for `functools.reduce`"
     return reduce(f, self) if initial is None else reduce(f, self, initial)
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def starreduce(self:L, f, initial=None):
     "Like `reduce`, but unpacks elements as args to `f`"
     _f = lambda acc, x: f(acc, *x)
@@ -396,6 +433,7 @@ def starreduce(self:L, f, initial=None):
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def rstarreduce(self:L, f, initial=None):
     "Like `starreduce`, but reverse the order of unpacked args"
     _f = lambda acc, x: f(acc, *x[::-1])
@@ -433,42 +471,49 @@ def cycle(self:L):
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def takewhile(self:L, f):
     "Same as `itertools.takewhile`"
     return self._new(itertools.takewhile(f, self))
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def dropwhile(self:L, f):
     "Same as `itertools.dropwhile`"
     return self._new(itertools.dropwhile(f, self))
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def startakewhile(self:L, f):
     "Like `takewhile`, but unpacks elements as args to `f`"
     return self._new(itertools.takewhile(lambda x: f(*x), self))
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def rstartakewhile(self:L, f):
     "Like `startakewhile`, but reverse the order of args"
     return self._new(itertools.takewhile(lambda x: f(*x[::-1]), self))
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def stardropwhile(self:L, f):
     "Like `dropwhile`, but unpacks elements as args to `f`"
     return self._new(itertools.dropwhile(lambda x: f(*x), self))
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def rstardropwhile(self:L, f):
     "Like `stardropwhile`, but reverse the order of args"
     return self._new(itertools.dropwhile(lambda x: f(*x[::-1]), self))
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def accumulate(self:L, f=operator.add, initial=None):
     "Same as `itertools.accumulate`"
     return self._new(itertools.accumulate(self, f, initial=initial))
@@ -494,7 +539,7 @@ except ImportError: batched = _batched
 # %% ../nbs/02_foundation.ipynb
 @patch
 def batched(self:L, n):
-    "Same as `itertools.batched`"
+    "Same as `itertools.batched` (but also works on older Python versions"
     return self._new(batched(self, n))
 
 # %% ../nbs/02_foundation.ipynb
@@ -517,15 +562,16 @@ def combinations(self:L, r):
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def partition(self:L, f=noop, **kwargs):
     "Split into two `L`s based on predicate `f`: (true_items, false_items)"
     a,b = [],[]
     for o in self: (a if f(o, **kwargs) else b).append(o)
     return self._new(a),self._new(b)
 
-
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def starpartition(self:L, f, **kwargs):
     "Like `partition`, but unpacks elements as args to `f`"
     a,b = [],[]
@@ -534,6 +580,7 @@ def starpartition(self:L, f, **kwargs):
 
 # %% ../nbs/02_foundation.ipynb
 @patch
+@curryable
 def rstarpartition(self:L, f, **kwargs):
     "Like `starpartition`, but reverse the order of args"
     a,b = [],[]

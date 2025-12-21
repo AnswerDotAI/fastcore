@@ -992,7 +992,7 @@ def using_attr(f, attr):
     return partial(_using_attr, f, attr)
 
 # %% ../nbs/01_basics.ipynb
-def negate(f:callable):
+def negate(f):
     'Returns the negation of `f`'
     @functools.wraps(f)
     def _neg(*args, **kwargs): return not f(*args, **kwargs)

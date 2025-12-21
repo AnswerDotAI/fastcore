@@ -16,11 +16,11 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'zip_cycle', 'sorted_ex', 'not_', 'argwhere', 'filter_ex', 'renumerate', 'first', 'last', 'only',
            'nested_attr', 'nested_setdefault', 'nested_callable', 'nested_idx', 'set_nested_idx', 'val2idx',
            'uniqueify', 'loop_first_last', 'loop_first', 'loop_last', 'first_match', 'last_match', 'fastuple', 'bind',
-           'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'copy_func', 'patch_to',
-           'patch', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum', 'Stateful', 'NotStr', 'PrettyString',
-           'even_mults', 'num_cpus', 'add_props', 'str2bool', 'str2int', 'str2float', 'str2list', 'str2date', 'to_bool',
-           'to_int', 'to_float', 'to_list', 'to_date', 'typed', 'exec_new', 'exec_import', 'lt', 'gt', 'le', 'ge', 'eq',
-           'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
+           'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'negate', 'copy_func',
+           'patch_to', 'patch', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum', 'Stateful', 'NotStr',
+           'PrettyString', 'even_mults', 'num_cpus', 'add_props', 'str2bool', 'str2int', 'str2float', 'str2list',
+           'str2date', 'to_bool', 'to_int', 'to_float', 'to_list', 'to_date', 'typed', 'exec_new', 'exec_import', 'lt',
+           'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
 
 # %% ../nbs/01_basics.ipynb
 from .imports import *
@@ -990,6 +990,14 @@ def _using_attr(f, attr, x): return f(getattr(x,attr))
 def using_attr(f, attr):
     "Construct a function which applies `f` to the argument's attribute `attr`"
     return partial(_using_attr, f, attr)
+
+# %% ../nbs/01_basics.ipynb
+def negate(f:callable):
+    'Returns the negation of `f`'
+    @functools.wraps(f)
+    def _neg(*args, **kwargs): return not f(*args, **kwargs)
+    _neg.__doc__ = f'Returns `not {f.__name__}(...)`\n\nOriginal: {f.__doc__}'
+    return _neg
 
 # %% ../nbs/01_basics.ipynb
 class _Self:

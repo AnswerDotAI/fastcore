@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.9.5
+
+### New Features
+
+- Add kwargs to `dict2obj` ([#723](https://github.com/AnswerDotAI/fastcore/issues/723))
+- Add negate function ([#722](https://github.com/AnswerDotAI/fastcore/pull/722)), thanks to [@ncoop57](https://github.com/ncoop57)
+
+
 ## 1.9.4
 
 ### New Features

@@ -3,8 +3,11 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - master
+      - main
   workflow_dispatch:
+
+env:
+  OBJC_DISABLE_INITIALIZE_FORK_SAFETY: YES
 
 jobs:
   deploy:

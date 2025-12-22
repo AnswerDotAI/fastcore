@@ -2,12 +2,16 @@ name: CI
 on: 
   workflow_dispatch:
   pull_request:
+    types: [opened, synchronize, reopened]
   push:
     branches: 
-      - master
+      - main
 defaults:
   run:
     shell: bash
+
+env:
+    OBJC_DISABLE_INITIALIZE_FORK_SAFETY: YES
 
 jobs:
   fastcore:
@@ -15,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         os:  [ubuntu, macos]#,windows]
-        py:  ["3.9", "3.10", "3.11"]
+        py:  ["3.10", "3.11", "3.12", "3.13"]
         include:
           #- os: windows
           #  shell: "/usr/bin/bash"
@@ -47,7 +51,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: '3.9'
+        python-version: '3.12'
     - name: clone this branch [fastcore]
       uses: actions/checkout@v3
       with:
@@ -76,7 +80,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: '3.9'
+        python-version: '3.11'
     - name: clone this branch [fastcore]
       uses: actions/checkout@v3
       with:

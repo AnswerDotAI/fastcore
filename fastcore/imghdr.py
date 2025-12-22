@@ -36,8 +36,8 @@ def what(file, h=None):
 tests = []
 
 def test_jpeg(h, f):
-    """JPEG data with JFIF or Exif markers; and raw JPEG"""
-    if h[6:10] in (b'JFIF', b'Exif') or h[:4] in (b'\xff\xd8\xff\xdb',b'\xff\xd8\xff\xe2',b'\xff\xd8\xff\xe1'):
+    """JPEG data with JFIF or Exif markers; and raw JPEG including COM segments"""
+    if h[6:10] in (b'JFIF', b'Exif') or h[:4] in (b'\xff\xd8\xff\xdb',b'\xff\xd8\xff\xe2',b'\xff\xd8\xff\xe1',b'\xff\xd8\xff\xfe'):
         return 'jpeg'
 
 tests.append(test_jpeg)

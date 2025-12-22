@@ -93,23 +93,46 @@ class ParseError(Exception):
 
 
 SECTIONS = 'Summary Extended Yields Receives Other Raises Warns Warnings See Also Notes References Examples Attributes Methods'.split()
+PARAM_SECTIONS = {"Parameters", "Other Parameters", "Attributes", "Methods", "Raises", "Warns", "Yields", "Receives"}
 
 class NumpyDocString(Mapping):
     "Parses a numpydoc string to an abstract representation"
     # See the NumPy Doc Manual https://numpydoc.readthedocs.io/en/latest/format.html>
+    
     sections = {o:[] for o in SECTIONS}
     sections['Summary'] = ['']
     sections['Parameters'] = []
     sections['Returns'] = []
+    param_sections: set[str] = set(PARAM_SECTIONS)
 
-    def __init__(self, docstring, config=None):
+    def __init__(self, docstring, config=None, supported_sections = SECTIONS, supports_params = PARAM_SECTIONS):
+        
+        if supports_params is None: supports_params = set(PARAM_SECTIONS)
+        else:
+            missing = set(supports_params) - set(self.param_sections)
+            for sec in missing: self.param_sections.add(sec)
+            
+        
+        if supported_sections is None: supported_sections = set(SECTIONS)
+        else:
+            missing = set(supported_sections) - set(self.sections.keys())
+            for sec in missing: self.sections[sec] = []
+           
+        
         docstring = textwrap.dedent(docstring).split('\n')
         self._doc = Reader(docstring)
         self._parsed_data = copy.deepcopy(self.sections)
         self._parse()
+        
         self['Parameters'] = {o.name:o for o in self['Parameters']}
         if self['Returns']: self['Returns'] = self['Returns'][0]
-        for section in SECTIONS: self[section] = dedent_lines(self[section], split=False)
+        
+        for sec in supports_params:
+            if sec in self._parsed_data:
+                self._parsed_data[sec] = self._normalize_param_section(self._parsed_data[sec])
+        
+        for section in SECTIONS: 
+            self[section] = dedent_lines(self[section], split=False)
 
     def __iter__(self): return iter(self._parsed_data)
     def __len__(self): return len(self._parsed_data)
@@ -174,6 +197,12 @@ class NumpyDocString(Mapping):
             params.append(Parameter(arg_name, arg_type, desc))
         return params
 
+    def _normalize_param_section(self, val):
+        """Convert lists of `Parameter` objects into a dict or clean list."""
+        if not isinstance(val, list) or not val: return val
+        if not isinstance(val[0], Parameter): return val 
+        return {p.name: p for p in val} 
+    
     def _parse_summary(self):
         """Grab signature (if given) and summary"""
         if self._is_at_section(): return

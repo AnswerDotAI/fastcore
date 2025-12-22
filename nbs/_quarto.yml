@@ -1,0 +1,38 @@
+project:
+  type: website
+  pre-render: 
+    - pysym2md --output_file apilist.txt fastcore
+  post-render: 
+    - llms_txt2ctx llms.txt --optional true --save_nbdev_fname llms-ctx-full.txt
+    - llms_txt2ctx llms.txt --save_nbdev_fname llms-ctx.txt
+  resources: 
+    - "*.txt"
+  preview:
+    navigate: false
+    port: 3000
+
+format:
+  html:
+    theme:
+      - cosmo
+    css: styles.css
+    toc: true
+    keep-md: true
+  commonmark: default
+
+website:
+  twitter-card: true
+  open-graph: true
+  repo-actions: [issue]
+  navbar:
+    title: fastcore
+    background: primary
+    search: true
+    right:
+      - icon: github
+        href: "https://github.com/fastai/fastcore"
+      - icon: twitter
+        href: https://x.com/fastdotai
+        aria-label: Fast.ai Twitter
+
+metadata-files: [nbdev.yml, sidebar.yml]

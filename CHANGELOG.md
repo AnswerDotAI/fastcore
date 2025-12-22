@@ -2,6 +2,568 @@
 
 <!-- do not remove -->
 
+## 1.9.4
+
+### New Features
+
+- Added loads of curried methods to `L` ([#720](https://github.com/AnswerDotAI/fastcore/issues/720))
+- Include stderr in `run` exception details ([#719](https://github.com/AnswerDotAI/fastcore/issues/719))
+
+
+## 1.9.3
+
+### New Features
+
+- Add `unqid` ([#718](https://github.com/AnswerDotAI/fastcore/issues/718))
+
+
+## 1.9.2
+
+### Breaking Changes
+
+- Patching a function no long clobbers a function with the same name in the current module
+
+### New Features
+
+- Have `@patch` not overwrite existing functions ([#717](https://github.com/AnswerDotAI/fastcore/issues/717))
+- Add pre-3.11 support for `batched` ([#716](https://github.com/AnswerDotAI/fastcore/issues/716))
+- Handle `nm` in `patch_to` and `patch` ([#715](https://github.com/AnswerDotAI/fastcore/issues/715))
+
+
+## 1.8.18
+
+### New Features
+
+- Add more itertools etc to `L` ([#714](https://github.com/AnswerDotAI/fastcore/issues/714))
+
+### Bugs Squashed
+
+- missing import in `detect_mime` ([#712](https://github.com/AnswerDotAI/fastcore/issues/712))
+
+
+## 1.8.17
+
+### New Features
+
+- Add `detect_mime`, thanks to @KeremTurgutlu ([#711](https://github.com/AnswerDotAI/fastcore/issues/711))
+- Support setting zero and empty string as element attrs ([#709](https://github.com/AnswerDotAI/fastcore/pull/709)), thanks to [@erikgaas](https://github.com/erikgaas)
+- Add `img_bytes` ([#707](https://github.com/AnswerDotAI/fastcore/issues/707))
+
+
+## 1.8.16
+
+### New Features
+
+- Add `__getitem__` to `NotStr` ([#705](https://github.com/AnswerDotAI/fastcore/issues/705))
+
+
+## 1.8.15
+
+### Bugs Squashed
+
+- Incorrect json block in AttrDict ([#704](https://github.com/AnswerDotAI/fastcore/issues/704))
+
+
+## 1.8.14
+
+### New Features
+
+- Add docments renderers (moved from nbdev) ([#703](https://github.com/AnswerDotAI/fastcore/issues/703))
+- add `write_json` ([#702](https://github.com/AnswerDotAI/fastcore/pull/702)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+
+
+## 1.8.13
+
+### New Features
+
+- Add pad to `chunked` ([#701](https://github.com/AnswerDotAI/fastcore/issues/701))
+- Implement `__eq__` and `__hash__` for fastcore.xml.FT for value-based comparison
+
+
+## 1.8.12
+
+### New Features
+
+- Add `friendly_name` ([#698](https://github.com/AnswerDotAI/fastcore/issues/698))
+- Add `product` ([#698](https://github.com/AnswerDotAI/fastcore/issues/698))
+- Add `shell`, `ssh`, and `rsync_multi` ([#699](https://github.com/AnswerDotAI/fastcore/issues/699))
+
+
+## 1.8.11
+
+### New Features
+
+- Add sort param to globtastic ([#697](https://github.com/AnswerDotAI/fastcore/issues/697))
+
+
+## 1.8.10
+
+### New Features
+
+- Require py 3.10 now that 3.9 is EOL ([#696](https://github.com/AnswerDotAI/fastcore/issues/696))
+- Add `fastcore.tools` ([#695](https://github.com/AnswerDotAI/fastcore/issues/695))
+
+
+## 1.8.9
+
+### New Features
+
+- Strip terminal queries in fastcore.ansi ([#693](https://github.com/AnswerDotAI/fastcore/issues/693))
+
+
+## 1.8.8
+
+### New Features
+
+- Add `vars_pub` ([#692](https://github.com/AnswerDotAI/fastcore/issues/692))
+- Add `__skipped__` and `__flds__` to `asdict` ([#692](https://github.com/AnswerDotAI/fastcore/issues/692))
+
+
+## 1.8.7
+
+### New Features
+
+- Add uid and gid to `mk_write` as optional parameters ([#691](https://github.com/AnswerDotAI/fastcore/pull/691)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+
+
+## 1.8.6
+
+### New Features
+
+- Add `exc` param to `test_fail` ([#690](https://github.com/AnswerDotAI/fastcore/issues/690))
+
+
+## 1.8.5
+
+### New Features
+
+- Auto skip non usable types in `to_xml` ([#689](https://github.com/AnswerDotAI/fastcore/issues/689))
+- Handle jpeg with COM segment ([#688](https://github.com/AnswerDotAI/fastcore/pull/688)), thanks to [@KeremTurgutlu](https://github.com/KeremTurgutlu)
+- Add `sig2str` ([#687](https://github.com/AnswerDotAI/fastcore/issues/687))
+
+
+## 1.8.4
+
+### New Features
+
+- Add `trim_wraps` and `save_iter` ([#685](https://github.com/AnswerDotAI/fastcore/issues/685))
+- Add `asave_iter` ([#686](https://github.com/AnswerDotAI/fastcore/issues/686))
+- Add `CachedIter`, `CachedAwaitable`, and `reawaitable` ([#684](https://github.com/AnswerDotAI/fastcore/issues/684))
+
+
+## 1.8.2
+
+### New Features
+
+- stringify FT with `to_xml` ([#681](https://github.com/AnswerDotAI/fastcore/issues/681))
+- render FT attrs with `to_xml` ([#680](https://github.com/AnswerDotAI/fastcore/issues/680))
+- Add sort args to delegates ([#667](https://github.com/AnswerDotAI/fastcore/pull/667)), thanks to [@pydanny](https://github.com/pydanny)
+
+### Bugs Squashed
+
+- Ensure flexicache is LRU cached ([#679](https://github.com/AnswerDotAI/fastcore/pull/679)), thanks to [@pydanny](https://github.com/pydanny)
+
+
+## 1.8.1
+
+### New Features
+
+- Empty tag handling in fastcore.xml to support Fragment ([#677](https://github.com/AnswerDotAI/fastcore/issues/677))
+- Add `headers` arg to `urljson` ([#675](https://github.com/AnswerDotAI/fastcore/pull/675)), thanks to [@CarloLepelaars](https://github.com/CarloLepelaars)
+- Add a setter to patch ([#674](https://github.com/AnswerDotAI/fastcore/pull/674)), thanks to [@galopyz](https://github.com/galopyz)
+
+
+## 1.8.0
+
+### Breaking Changes
+
+- Move dispatch and transform modules to fasttransform ([#669](https://github.com/AnswerDotAI/fastcore/pull/669)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+
+### Bugs Squashed
+
+- `list[object]` not handled correctly in docments ([#671](https://github.com/AnswerDotAI/fastcore/issues/671))
+
+
+## 1.7.29
+
+### New Features
+
+- Add `partition_dict` ([#665](https://github.com/AnswerDotAI/fastcore/issues/665))
+- Add `VAR_POSITIONAL` and `VAR_KEYWORD` to docments ([#664](https://github.com/AnswerDotAI/fastcore/issues/664))
+
+
+## 1.7.28
+
+### New Features
+
+- Support documenting args and kwargs ([#660](https://github.com/AnswerDotAI/fastcore/pull/660)), thanks to [@Isaac-Flath](https://github.com/Isaac-Flath)
+- Update Config to support ConfigParser keyword arguments ([#659](https://github.com/AnswerDotAI/fastcore/pull/659)), thanks to [@ncoop57](https://github.com/ncoop57)
+
+
+## 1.7.27
+
+### New Features
+
+- Add `L.groupby` ([#658](https://github.com/AnswerDotAI/fastcore/issues/658))
+
+
+## 1.7.26
+
+
+### Bugs Squashed
+
+- `splitlines` mis-spelled ([#656](https://github.com/AnswerDotAI/fastcore/issues/656))
+
+
+## 1.7.25
+
+### New Features
+
+- Handle tuples in `groupby` ([#654](https://github.com/AnswerDotAI/fastcore/issues/654))
+
+
+## 1.7.23
+
+### New Features
+
+- Add `cmp` and kwargs to `sort_ex` ([#652](https://github.com/AnswerDotAI/fastcore/issues/652))
+
+
+## 1.7.22
+
+### New Features
+
+- Add `last` ([#651](https://github.com/AnswerDotAI/fastcore/issues/651))
+
+
+## 1.7.20
+
+### New Features
+
+- Add ansi.py (from nbconvert) ([#647](https://github.com/fastai/fastcore/issues/647))
+- Support latest CaptureShell version ([#644](https://github.com/fastai/fastcore/issues/644))
+- Add `exec_eval` ([#643](https://github.com/fastai/fastcore/issues/643))
+
+
+## 1.7.19
+
+### Bugs Squashed
+
+- Hyperscript attrs do not work in `FT` ([#642](https://github.com/fastai/fastcore/issues/642))
+
+
+## 1.7.17
+
+### New Features
+
+- Add `FT.on` ([#640](https://github.com/fastai/fastcore/issues/640))
+
+
+## 1.7.16
+
+### Bugs Squashed
+
+- `list_func` not passed recursively in `dict2obj` ([#639](https://github.com/fastai/fastcore/issues/639))
+
+
+## 1.7.15
+
+### New Features
+
+- Add FT.set ([#638](https://github.com/fastai/fastcore/issues/638))
+
+
+## 1.7.14
+
+### New Features
+
+- Add `parallel_async` ([#637](https://github.com/fastai/fastcore/issues/637))
+
+
+## 1.7.13
+
+### New Features
+
+- Add support for type casting in the typed decorator ([#635](https://github.com/fastai/fastcore/pull/635)), thanks to [@ncoop57](https://github.com/ncoop57)
+
+
+## 1.7.12
+
+### New Features
+
+- Add `BasicRepr` ([#634](https://github.com/fastai/fastcore/issues/634))
+
+
+## 1.7.11
+
+### New Features
+
+- Show instance vars in `basic_repr()` ([#633](https://github.com/fastai/fastcore/issues/633))
+- add Path to `untar` dest ([#632](https://github.com/fastai/fastcore/pull/632)), thanks to [@hamelsmu](https://github.com/hamelsmu)
+- Nested attr supporting keys ([#631](https://github.com/fastai/fastcore/pull/631)), thanks to [@Isaac-Flath](https://github.com/Isaac-Flath)
+
+
+## 1.7.10
+
+### Bugs Squashed
+
+- `dict2obj` does not handle `list_func` correctly or pass it recursively ([#630](https://github.com/fastai/fastcore/issues/630))
+
+
+## 1.7.9
+
+### New Features
+
+- Add `Config.find` ([#628](https://github.com/fastai/fastcore/issues/628))
+
+### Bugs Squashed
+
+- Falsey attrs result in doubled tags in `to_xml` ([#629](https://github.com/fastai/fastcore/issues/629))
+
+
+## 1.7.8
+
+### New Features
+
+- Handle whitespace-sensitive situations in `to_xml` automatically ([#626](https://github.com/fastai/fastcore/issues/626))
+
+
+## 1.7.7
+
+### New Features
+
+- auto-update context ([#624](https://github.com/fastai/fastcore/pull/624)), thanks to [@hamelsmu](https://github.com/hamelsmu)
+
+
+## 1.7.6
+
+### New Features
+
+- Add llm context files ([#621](https://github.com/fastai/fastcore/pull/621)), thanks to [@hamelsmu](https://github.com/hamelsmu)
+
+### Bugs Squashed
+
+- str2bool does not return a bool ([#625](https://github.com/fastai/fastcore/issues/625))
+
+
+## 1.7.5
+
+### New Features
+
+- Add `ft_cls` to `ft` ([#620](https://github.com/fastai/fastcore/issues/620))
+
+
+## 1.7.4
+
+### New Features
+
+- Add module `__getattr__` to `fastcore.xml` ([#619](https://github.com/fastai/fastcore/issues/619))
+
+
+## 1.7.3
+
+### Bugs Squashed
+
+- Curried `risinstance` fails when passed `None` ([#618](https://github.com/fastai/fastcore/issues/618))
+
+
+## 1.7.2
+
+### New Features
+
+- Add `AttrDictDefault` and `extract_docstrings` ([#617](https://github.com/fastai/fastcore/issues/617))
+- Add `do_escape` to `to_xml` ([#617](https://github.com/fastai/fastcore/issues/617))
+- add markdown to doc output ([#614](https://github.com/fastai/fastcore/issues/614))
+- move patched methods to parent class ([#612](https://github.com/fastai/fastcore/pull/612)), thanks to [@comhar](https://github.com/comhar)
+- add debug=True parameter to urlsend ([#611](https://github.com/fastai/fastcore/pull/611)), thanks to [@radam9](https://github.com/radam9)
+
+### Bugs Squashed
+
+- fix annotations generated by py2pyi ([#613](https://github.com/fastai/fastcore/pull/613)), thanks to [@comhar](https://github.com/comhar)
+
+
+## 1.7.1
+
+### New Features
+
+- Add `UNSET` singleton
+- nullable dataclass overhaul ([#607](https://github.com/fastai/fastcore/issues/607))
+    - Update `nullable_dc` to use `UNSET` instead of `None`
+    - Rename `mk_dataclass` to `flexiclass`
+    - `flexiclass` uses `UNSET` instead of `None`
+- Add `asdict`, like the `dataclasses` version but works on more types
+- Add `is_typeddict` and `is_namedtuple`
+- Flatten nested tuples in `ft`
+
+
+## 1.7.0
+
+### Breaking Changes
+
+- The FT structure has been changed so it no longer inherits from `list` ([#606](https://github.com/fastai/fastcore/issues/606))
+  - `.list` property added so you can still destructure it
+  - `__getitem__` now returns the approach child element
+  - `__add__` adds children
+
+
+## 1.6.9
+
+### New Features
+
+- Handle embedded quotes in `to_xml` ([#604](https://github.com/fastai/fastcore/issues/604))
+- Skip dict and listy valued attrs if empty in `ft` ([#603](https://github.com/fastai/fastcore/issues/603))
+
+
+## 1.6.8
+
+### New Features
+
+- stringify list values in `ft` attr vals ([#602](https://github.com/fastai/fastcore/issues/602))
+- Allow `__ft__` methods to return tuples ([#596](https://github.com/fastai/fastcore/pull/596)), thanks to [@Rahulbeniwal26119](https://github.com/Rahulbeniwal26119)
+
+
+## 1.6.7
+
+### New Features
+
+- Do not update `-` to `_` if special chars present in `ft` ([#601](https://github.com/fastai/fastcore/issues/601))
+
+
+## 1.6.6
+
+### New Features
+
+- Add `FT.get(k,default)` ([#600](https://github.com/fastai/fastcore/issues/600))
+- Add `Safe` str and return it from `to_xml` ([#599](https://github.com/fastai/fastcore/issues/599))
+- Feat: add an `indent` flag for `to_xml()` ([#594](https://github.com/fastai/fastcore/pull/594)), thanks to [@phact](https://github.com/phact)
+
+
+## 1.6.5
+
+### New Features
+
+- Add `valmap` to `ft` ([#598](https://github.com/fastai/fastcore/issues/598))
+- Allow embedding raw HTML inside FT templates using UTF-8 encoded bytes ([#597](https://github.com/fastai/fastcore/pull/597)), thanks to [@adamritter](https://github.com/adamritter)
+- Inline flag for `to_xml()` ([#594](https://github.com/fastai/fastcore/pull/594)), thanks to [@phact](https://github.com/phact)
+
+
+## 1.6.4
+
+### New Features
+
+- `attrmap` and hyperscript support in fastcore.xml.FT ([#595](https://github.com/fastai/fastcore/issues/595))
+
+
+## 1.6.3
+
+### New Features
+
+- add `ver2tuple` ([#593](https://github.com/fastai/fastcore/issues/593))
+
+
+## 1.6.2
+
+### New Features
+
+- Allow attrs to be added to `FT` using `__call__` ([#591](https://github.com/fastai/fastcore/issues/591))
+- Experimental support for `FT.__call__`, h/t @cgarciae ([#590](https://github.com/fastai/fastcore/issues/590))
+- `FT` interoperability with Django and Jinja using `__html__()` protocol ([#589](https://github.com/fastai/fastcore/pull/589)), thanks to [@collinanderson](https://github.com/collinanderson)
+
+
+## 1.6.1
+
+### Breaking Changes
+
+- Rename `XT` to `FT` ([#586](https://github.com/fastai/fastcore/issues/586))
+
+
+## 1.5.55
+
+### New Features
+
+- Add `ValEnum`
+
+### Bugs Squashed
+
+- `<!doctype html>` should be a void tag type ([#585](https://github.com/fastai/fastcore/issues/585))
+
+
+## 1.5.54
+
+### New Features
+
+- `flexicache` async support
+- Handle exceptions in `flexicache` function ([#582](https://github.com/fastai/fastcore/issues/582))
+
+
+## 1.5.53
+
+### New Features
+
+- add `flexicache`, along with policies `time_policy` and `mtime_policy` ([#581](https://github.com/fastai/fastcore/issues/581))
+
+
+## 1.5.52
+
+### New Features
+
+- Add `timed_cache` ([#580](https://github.com/fastai/fastcore/issues/580))
+
+
+## 1.5.51
+
+### New Features
+
+- Add nullable dataclass functions ([#577](https://github.com/fastai/fastcore/issues/577))
+
+
+## 1.5.48
+
+### New Features
+
+- New `expand_wildcards` function ([#576](https://github.com/fastai/fastcore/issues/576))
+- New `replace_wildcards` CLI ([#576](https://github.com/fastai/fastcore/issues/576))
+
+
+## 1.5.47
+
+### New Features
+
+- Add `void_` attr to `XT` and use for skipping closing tags in `to_xml` ([#575](https://github.com/fastai/fastcore/issues/575))
+
+
+## 1.5.46
+
+### New Features
+
+- Unwrap `NotStr` passed to `NotStr.__init__` ([#574](https://github.com/fastai/fastcore/issues/574))
+- Provide attr get/set in `XT` ([#572](https://github.com/fastai/fastcore/issues/572))
+- Handle non-str types in `to_xml` ([#571](https://github.com/fastai/fastcore/issues/571))
+
+
+## 1.5.45
+
+### New Features
+
+- Improve formatting of single child nodes in `to_xml` ([#570](https://github.com/fastai/fastcore/issues/570))
+
+
+## 1.5.44
+
+### Bugs Squashed
+
+- bool args incorrectly parsed in `fastcore.xml` ([#569](https://github.com/fastai/fastcore/issues/569))
+
+
+## 1.5.43
+
+### New Features
+
+- Add `parse_env` to provide similar functionality to `dotenv` pypi lib ([#568](https://github.com/fastai/fastcore/issues/568))
+- Add `partition` ([#567](https://github.com/fastai/fastcore/issues/567))
+- Add return value to `result` attr in `threaded` functions ([#563](https://github.com/fastai/fastcore/issues/563))
+
+
 ## 1.5.42
 
 ### New Features
@@ -56,7 +618,7 @@
 ### New Features
 
 - Add `process` param to `threaded` ([#550](https://github.com/fastai/fastcore/issues/550))
-- Check for `__xt__` in `to_xml`
+- Check for `__ft__` in `to_xml`
 
 
 ## 1.5.34

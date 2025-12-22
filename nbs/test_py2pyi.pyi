@@ -9,7 +9,7 @@ def f(a: int, b: str='a') -> str:
     """I am f"""
     ...
 
-def g(c, d: test_py2pyi.X, *, b: str='a') -> str:
+def g(c, d: X, *, b: str='a') -> str:
     """I am g"""
     ...
 
@@ -22,18 +22,17 @@ class A:
     def h(self, b: bool=False, *, d: str='a'):
         ...
 
+    def k(self, b: bool=False, *, d: str='a'):
+        ...
+
+    def m(self, b: bool=False, *, d: str='a'):
+        ...
+
+    def n(self, b: bool=False, **kwargs):
+        """No delegates here mmm'k?"""
+        ...
+
 class B:
-    ...
 
-@patch
-def k(self: (test_py2pyi.A, test_py2pyi.B), b: bool=False, *, d: str='a'):
-    ...
-
-@patch
-def m(self: test_py2pyi.A, b: bool=False, *, d: str='a'):
-    ...
-
-@patch
-def n(self: A, b: bool=False, **kwargs):
-    """No delegates here mmm'k?"""
-    ...
+    def k(self, b: bool=False, *, d: str='a'):
+        ...

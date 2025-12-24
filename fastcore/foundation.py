@@ -48,8 +48,11 @@ def docs(cls):
 # %% ../nbs/02_foundation.ipynb
 def coll_repr(c, max_n=250):
     "String repr of up to `max_n` items of (possibly lazy) collection `c`"
-    return f'(#{len(c)}) [' + ','.join(itertools.islice(map(repr,c), max_n)) + (
-        '...' if len(c)>max_n else '') + ']'
+    res = ', '.join(itertools.islice(map(repr,c), max_n))
+    res = '[' + res + ('...' if len(c)>max_n else '') + ']'
+    if len(c)>=max(7,max_n): res = f'(#{len(c)}) ' + res
+    return res
+
 
 # %% ../nbs/02_foundation.ipynb
 def is_bool(x):

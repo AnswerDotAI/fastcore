@@ -65,13 +65,17 @@ def globtastic(
     skip_folder_re:str=None, # Skip folders matching regex,
     func:callable=os.path.join, # function to apply to each matched file
     ret_folders:bool=False, # return folders, not just files
-    sort:bool=True # sort files by name within each folder
+    sort:bool=True, # sort files by name within each folder
+    exts:list|str=None
 )->L: # Paths to matched files
     "A more powerful `glob`, including regex matches, symlink handling, and skip parameters"
     from fnmatch import fnmatch
     path = Path(path)
     if path.is_file(): return L([path])
     if not recursive: skip_folder_re='.'
+    if exts:
+        exts = [e if e.startswith('.') else f'.{e}' for e in listify(exts)]
+        file_re = f"({'|'.join(re.escape(e) for e in exts)})$"
     file_re,folder_re = compile_re(file_re),compile_re(folder_re)
     skip_file_re,skip_folder_re = compile_re(skip_file_re),compile_re(skip_folder_re)
     def _keep_file(root, name):

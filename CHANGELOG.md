@@ -2,6 +2,15 @@
 
 <!-- do not remove -->
 
+## 1.9.6
+
+### New Features
+
+- Add `exts` to `globtastic` ([#725](https://github.com/AnswerDotAI/fastcore/issues/725))
+- Add `flatmap` ([#724](https://github.com/AnswerDotAI/fastcore/issues/724))
+- Add negate function ([#722](https://github.com/AnswerDotAI/fastcore/pull/722)), thanks to [@ncoop57](https://github.com/ncoop57)
+
+
 ## 1.9.5
 
 ### New Features

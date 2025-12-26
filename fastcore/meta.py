@@ -8,7 +8,7 @@ __all__ = ['test_sig', 'FixSigMeta', 'PrePostInitMeta', 'AutoInit', 'NewChkMeta'
 
 # %% ../nbs/05_meta.ipynb
 from .imports import *
-from .test import *
+from .basics import *
 from contextlib import contextmanager
 from copy import copy
 import inspect
@@ -16,6 +16,7 @@ import inspect
 # %% ../nbs/05_meta.ipynb
 def test_sig(f, b):
     "Test the signature of an object"
+    from fastcore.test import test_eq
     test_eq(str(inspect.signature(f)), b)
 
 # %% ../nbs/05_meta.ipynb
@@ -121,16 +122,12 @@ def delegates(to:FunctionType=None, # Delegatee
         to_f = getattr(to_f,'__func__',to_f)
         if hasattr(from_f,'__delwrap__'): return f
         sig = inspect.signature(from_f)
-        sigd = dict(sig.parameters)
-        k = sigd.pop('kwargs')
         s2 = {k:v.replace(kind=inspect.Parameter.KEYWORD_ONLY) for k,v in inspect.signature(to_f).parameters.items()
-              if v.default != inspect.Parameter.empty and k not in sigd and k not in but}
+              if v.default != inspect.Parameter.empty and k not in sig.parameters and k not in but}
         if sort_args: s2 = dict(sorted(s2.items()))
-        anno = {k:v for k,v in getattr(to_f, "__annotations__", {}).items() if k not in sigd and k not in but}
-        sigd.update(s2)
-        if keep: sigd['kwargs'] = k
-        else: from_f.__delwrap__ = to_f
-        from_f.__signature__ = sig.replace(parameters=sigd.values())
+        anno = {k:v for k,v in getattr(to_f, "__annotations__", {}).items() if k not in sig.parameters and k not in but}
+        from_f.__signature__ = sig_with_params(sig, remove=None if keep else 'kwargs', keep='kwargs' if keep else None, **s2)
+        if not keep: from_f.__delwrap__ = to_f
         if hasattr(from_f, '__annotations__'): from_f.__annotations__.update(anno)
         return f
     return _f

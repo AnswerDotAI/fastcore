@@ -4,8 +4,8 @@
 
 # %% auto 0
 __all__ = ['working_directory', 'add_docs', 'docs', 'coll_repr', 'is_bool', 'mask2idxs', 'cycle', 'zip_cycle', 'is_indexer',
-           'product', 'CollBase', 'L', 'curryable', 'splitter', 'linesplitter', 'save_config_file', 'read_config_file',
-           'Config']
+           'product', 'flatmap', 'CollBase', 'L', 'curryable', 'splitter', 'linesplitter', 'save_config_file',
+           'read_config_file', 'Config']
 
 # %% ../nbs/02_foundation.ipynb
 from .imports import *
@@ -90,6 +90,11 @@ def is_indexer(idx):
 def product(xs):
     "The product of elements of `xs`, with `None`s removed"
     return reduce(operator.mul, [o for o in xs if o is not None], 1)
+
+# %% ../nbs/02_foundation.ipynb
+def flatmap(f, xs):
+    "Apply f to each element and flatten the results into a single list."
+    return [y for x in xs for y in f(x)]
 
 # %% ../nbs/02_foundation.ipynb
 class CollBase:
@@ -465,6 +470,12 @@ def map_first(self:L, f=noop, g=noop, *args, **kwargs):
 def setattrs(self:L, attr, val):
     "Call `setattr` on all items"
     [setattr(o,attr,val) for o in self]
+
+# %% ../nbs/02_foundation.ipynb
+@patch
+def flatmap(self:L, f):
+    "Apply f to each element and flatten the results into a single L."
+    return L(flatmap(f, self))
 
 # %% ../nbs/02_foundation.ipynb
 @patch

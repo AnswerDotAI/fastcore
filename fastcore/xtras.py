@@ -6,16 +6,17 @@
 from __future__ import annotations
 
 # %% auto 0
-__all__ = ['spark_chars', 'UNSET', 'walk', 'globtastic', 'maybe_open', 'mkdir', 'image_size', 'img_bytes', 'detect_mime',
-           'bunzip', 'loads', 'loads_multi', 'dumps', 'untar_dir', 'repo_details', 'shell', 'ssh', 'rsync_multi', 'run',
-           'open_file', 'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards', 'dict2obj', 'obj2dict',
-           'repr_dict', 'is_listy', 'mapped', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter',
-           'asave_iter', 'unqid', 'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link', 'sparkline',
-           'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file', 'autostart', 'EventTimer',
-           'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local', 'local2utc', 'trace',
-           'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src',
-           'Unset', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple',
-           'CachedIter', 'CachedAwaitable', 'reawaitable', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
+__all__ = ['spark_chars', 'UNSET', 'walk', 'exttypes', 'globtastic', 'pglob', 'maybe_open', 'mkdir', 'image_size', 'img_bytes',
+           'detect_mime', 'bunzip', 'loads', 'loads_multi', 'dumps', 'untar_dir', 'repo_details', 'shell', 'ssh',
+           'rsync_multi', 'run', 'open_file', 'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards', 'dict2obj',
+           'obj2dict', 'repr_dict', 'is_listy', 'mapped', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps',
+           'save_iter', 'asave_iter', 'unqid', 'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link',
+           'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file', 'autostart',
+           'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local', 'local2utc',
+           'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str',
+           'dataclass_src', 'Unset', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict',
+           'is_namedtuple', 'CachedIter', 'CachedAwaitable', 'reawaitable', 'flexicache', 'time_policy', 'mtime_policy',
+           'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb
 from .imports import *
@@ -53,8 +54,30 @@ def walk(
             if skip_folder(root,name): dirs.remove(name)
 
 # %% ../nbs/03_xtras.ipynb
+_exttypes = dict(
+    py=['ipynb', 'py'],
+    js=['js', 'jsx', 'mjs', 'cjs'],
+    java=['java', 'kt', 'scala', 'gradle'],
+    c=['c', 'h'],
+    cpp=['cpp', 'hpp', 'cc', 'cxx'],
+    rb=['rb', 'rake'],
+    r=['r', 'R'],
+    ex=['ex', 'exs', 'erl', 'hrl'],
+    sh=['sh', 'bash'],
+    web=['html', 'css'],
+    doc=['md', 'rst'],
+    cfg=['json', 'yaml', 'yml', 'toml', 'xml'],
+)
+
+def exttypes(types):
+    """Get exts for comma-separated or list `typ`; if not found in list, return list with just `types`.
+    Supported: py, js, java, c, cpp, rb, r, ex, sh, web, doc, cfg"""
+    typs = L(types).flatmap(Self.split(','))
+    return typs.flatmap(lambda x: _exttypes.get(x, [x]))
+
+# %% ../nbs/03_xtras.ipynb
 def globtastic(
-    path:Path|str, # path to start searching
+    path:Path|str='.', # path to start searching
     recursive:bool=True, # search subfolders
     symlinks:bool=True, # follow symlinks?
     file_glob:str=None, # Only include files matching glob
@@ -66,13 +89,16 @@ def globtastic(
     func:callable=os.path.join, # function to apply to each matched file
     ret_folders:bool=False, # return folders, not just files
     sort:bool=True, # sort files by name within each folder
-    exts:list|str=None
+    types:str|list=None,  # list or comma-separated str of ext types from: py, js, java, c, cpp, rb, r, ex, sh, web, doc, cfg
+    exts:str|list=None, # list or comma-separated str of exts to include
 )->L: # Paths to matched files
     "A more powerful `glob`, including regex matches, symlink handling, and skip parameters"
     from fnmatch import fnmatch
     path = Path(path)
     if path.is_file(): return L([path])
     if not recursive: skip_folder_re='.'
+    exts = L(exts).flatmap(Self.split(','))
+    exts += exttypes(types)
     if exts:
         exts = [e if e.startswith('.') else f'.{e}' for e in listify(exts)]
         file_re = f"({'|'.join(re.escape(e) for e in exts)})$"
@@ -87,6 +113,16 @@ def globtastic(
     def _skip_folder(root, name): return skip_folder_re and skip_folder_re.search(name)
     return L(walk(path, symlinks=symlinks, keep_file=_keep_file, keep_folder=_keep_folder, skip_folder=_skip_folder,
                   func=func, ret_folders=ret_folders, sort=sort))
+
+# %% ../nbs/03_xtras.ipynb
+@fdelegates(globtastic)
+def pglob(
+    path:Path|str='.', # path to start searching
+    func:callable=Path, # function to apply to each matched file
+    **kwargs
+)->L: # Paths to matched files
+    "Shortcut for `globtastic(..., call=Path)`"
+    return globtastic(path, func=func, **kwargs)
 
 # %% ../nbs/03_xtras.ipynb
 @contextmanager

@@ -19,8 +19,9 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'negate', 'copy_func',
            'patch_to', 'patch', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum', 'Stateful', 'NotStr',
            'PrettyString', 'even_mults', 'num_cpus', 'add_props', 'str2bool', 'str2int', 'str2float', 'str2list',
-           'str2date', 'to_bool', 'to_int', 'to_float', 'to_list', 'to_date', 'typed', 'exec_new', 'exec_import', 'lt',
-           'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
+           'str2date', 'to_bool', 'to_int', 'to_float', 'to_list', 'to_date', 'typed', 'exec_new', 'exec_import',
+           'sig_with_params', 'fdelegates', 'lt', 'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub', 'mul', 'truediv', 'is_',
+           'is_not', 'mod']
 
 # %% ../nbs/01_basics.ipynb
 from .imports import *
@@ -1288,3 +1289,24 @@ def exec_import(mod, sym):
     "Import `sym` from `mod` in a new environment"
 #     pref = '' if __name__=='__main__' or mod[0]=='.' else '.'
     return exec_new(f'from {mod} import {sym}')
+
+# %% ../nbs/01_basics.ipynb
+def sig_with_params(sig, remove=None, keep=None, **updates):
+    sigd = dict(sig.parameters)
+    for k in listify(remove): sigd.pop(k, None)
+    kept = {k: sigd.pop(k) for k in listify(keep) if k in sigd}
+    sigd.update(updates)
+    sigd.update(kept)  # re-add at end
+    return sig.replace(parameters=sigd.values())
+
+# %% ../nbs/01_basics.ipynb
+def fdelegates(to):
+    from inspect import signature,Parameter
+    def _f(f):
+        sig = signature(f)
+        sigd = dict(sig.parameters)
+        new_params = {k:v.replace(kind=Parameter.KEYWORD_ONLY) for k,v in signature(to).parameters.items()
+                      if v.default != Parameter.empty and k not in sigd}
+        f.__signature__ = sig_with_params(sig, remove=['kwargs'], **new_params)
+        return f
+    return _f

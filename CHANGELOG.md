@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.9.8
+
+### New Features
+
+- Add `pglob` and `fdelegates` ([#727](https://github.com/AnswerDotAI/fastcore/issues/727))
+
+
 ## 1.9.7
 
 ### New Features

@@ -10,9 +10,9 @@ __all__ = ['spark_chars', 'UNSET', 'walk', 'globtastic', 'maybe_open', 'mkdir', 
            'bunzip', 'loads', 'loads_multi', 'dumps', 'untar_dir', 'repo_details', 'shell', 'ssh', 'rsync_multi', 'run',
            'open_file', 'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards', 'dict2obj', 'obj2dict',
            'repr_dict', 'is_listy', 'mapped', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter',
-           'asave_iter', 'unqid', 'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link', 'truncstr',
-           'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file', 'autostart',
-           'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'utc2local', 'local2utc', 'trace',
+           'asave_iter', 'unqid', 'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link', 'sparkline',
+           'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file', 'autostart', 'EventTimer',
+           'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local', 'local2utc', 'trace',
            'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src',
            'Unset', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple',
            'CachedIter', 'CachedAwaitable', 'reawaitable', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
@@ -592,11 +592,6 @@ def get_source_link(func):
     except: return f"{module}#L{line}"
 
 # %% ../nbs/03_xtras.ipynb
-def truncstr(s:str, maxlen:int, suf:str='…', space='')->str:
-    "Truncate `s` to length `maxlen`, adding suffix `suf` if truncated"
-    return s[:maxlen-len(suf)]+suf if len(s)+len(space)>maxlen else s+space
-
-# %% ../nbs/03_xtras.ipynb
 spark_chars = '▁▂▃▅▆▇'
 
 # %% ../nbs/03_xtras.ipynb
@@ -716,6 +711,12 @@ def partial_format(s:str, **kwargs):
     fmt = PartialFormatter()
     res = fmt.format(s, **kwargs)
     return res,list(fmt.missing),fmt.xtra
+
+# %% ../nbs/03_xtras.ipynb
+def truncstr(s:str, maxlen:int, suf:str='…', space='', sizevar:str=None)->str:
+    "Truncate `s` to length `maxlen`, adding suffix `suf` if truncated"
+    if sizevar: suf = suf.format_map({sizevar: len(s)})
+    return s[:maxlen-len(suf)]+suf if len(s)+len(space)>maxlen else s+space
 
 # %% ../nbs/03_xtras.ipynb
 def utc2local(dt:datetime)->datetime:

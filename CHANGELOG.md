@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.9.7
+
+### New Features
+
+- Add `sizevar` to `truncstr` ([#726](https://github.com/AnswerDotAI/fastcore/issues/726))
+
+
 ## 1.9.6
 
 ### New Features

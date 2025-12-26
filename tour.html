@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>A tour of fastcore – fastcore</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-000f0825b9c55ed21d14970d810c14a9.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="A tour of fastcore – fastcore">
+<meta property="og:description" content="Python supercharged for fastai development">
+<meta property="og:image" content="https://fastcore.fast.ai/images/att_00000.png">
+<meta property="og:site_name" content="fastcore">
+<meta property="og:image:height" content="334">
+<meta property="og:image:width" content="997">
+<meta name="twitter:title" content="A tour of fastcore – fastcore">
+<meta name="twitter:description" content="Python supercharged for fastai development">
+<meta name="twitter:image" content="https://fastcore.fast.ai/images/att_00000.png">
+<meta name="twitter:image-height" content="334">
+<meta name="twitter:image-width" content="997">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">fastcore</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/fastai/fastcore"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://x.com/fastdotai"> <i class="bi bi-twitter" role="img" aria-label="Fast.ai Twitter">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./tour.html">A tour of fastcore</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome to fastcore</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tour.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">A tour of fastcore</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./test.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Test</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Basic functionality</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Foundation</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./xtras.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Utility functions</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parallel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parallel</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./net.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Network functionality</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./docments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Docments</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./meta.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Meta</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./script.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Script - CLI</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./xdg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">XDG</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./style.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Style</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./xml.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">XML</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./py2pyi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Create delegated pyi</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./external.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">External modules</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tools.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">LLM tools</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#documentation" id="toc-documentation" class="nav-link active" data-scroll-target="#documentation">Documentation</a></li>
+  <li><a href="#testing" id="toc-testing" class="nav-link" data-scroll-target="#testing">Testing</a></li>
+  <li><a href="#foundations" id="toc-foundations" class="nav-link" data-scroll-target="#foundations">Foundations</a></li>
+  <li><a href="#l" id="toc-l" class="nav-link" data-scroll-target="#l">L</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/AnswerDotAI/fastcore/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="tour.html.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">A tour of fastcore</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p>Here’s a (somewhat) quick tour of a few higlights from fastcore.</p>
+<section id="documentation" class="level3">
+<h3 class="anchored" data-anchor-id="documentation">Documentation</h3>
+<p>All fast.ai projects, including this one, are built with <a href="https://nbdev.fast.ai">nbdev</a>, which is a full literate programming environment built on Jupyter Notebooks. That means that every piece of documentation, including the page you’re reading now, can be accessed as interactive Jupyter notebooks. In fact, you can even grab a link directly to a notebook running interactively on Google Colab - if you want to follow along with this tour, click the link below:</p>
+<div id="00336b56" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>colab_link(<span class="st">'000_tour'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display cell-output-markdown">
+<p><a href="https://colab.research.google.com/github/AnswerDotAI/fastcore/blob/main/nbs/000_tour.ipynb">Open <code>000_tour</code> in Colab</a></p>
+</div>
+</div>
+<p>The full docs are available at <a href="https://fastcore.fast.ai">fastcore.fast.ai</a>. The code in the examples and in all fast.ai libraries follow the <a href="https://docs.fast.ai/dev/style.html">fast.ai style guide</a>. In order to support interactive programming, all fast.ai libraries are designed to allow for <code>import *</code> to be used safely, particular by ensuring that <a href="https://riptutorial.com/python/example/2894/the---all---special-variable"><code>__all__</code></a> is defined in all packages. In order to see where a function is from, just type it:</p>
+<div id="05687ae5" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>coll_repr</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>&lt;function fastcore.foundation.coll_repr(c, max_n=250)&gt;</code></pre>
+</div>
+</div>
+<p>For more details, including a link to the full documentation and source code, use <code>doc</code>, which pops up a window with this information:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>doc(coll_repr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><img src="images/att_00000.png" class="img-fluid" width="499"></p>
+<p>The documentation also contains links to any related functions or classes, which appear like this: <a href="https://fastcore.fast.ai/foundation.html#coll_repr"><code>coll_repr</code></a> (in the notebook itself you will just see a word with back-ticks around it; the links are auto-generated in the documentation site). The documentation will generally show one or more examples of use, along with any background context necessary to understand them. As you’ll see, the examples for each function and method are shown as tests, rather than example outputs, so let’s start by explaining that.</p>
+</section>
+<section id="testing" class="level3">
+<h3 class="anchored" data-anchor-id="testing">Testing</h3>
+<p>fastcore’s testing module is designed to work well with <a href="https://nbdev.fast.ai">nbdev</a>, which is a full literate programming environment built on Jupyter Notebooks. That means that your tests, docs, and code all live together in the same notebook. fastcore and nbdev’s approach to testing starts with the premise that all your tests should pass. If one fails, no more tests in a notebook are run.</p>
+<p>Tests look like this:</p>
+<div id="e194af33" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>test_eq(coll_repr(<span class="bu">range</span>(<span class="dv">1000</span>), <span class="dv">5</span>), <span class="st">'(#1000) [0, 1, 2, 3, 4...]'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>That’s an example from the docs for <a href="https://fastcore.fast.ai/foundation.html#coll_repr"><code>coll_repr</code></a>. As you see, it’s not showing you the output directly. Here’s what that would look like:</p>
+<div id="e90b1325" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>coll_repr(<span class="bu">range</span>(<span class="dv">1000</span>), <span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>'(#1000) [0, 1, 2, 3, 4...]'</code></pre>
+</div>
+</div>
+<p>So, the test is actually showing you what the output looks like, because if the function call didn’t return <code>'(#1000) [0,1,2,3,4...]'</code>, then the test would have failed.</p>
+<p>So every test shown in the docs is also showing you the behavior of the library — and vice versa!</p>
+<p>Test functions always start with <code>test_</code>, and then follow with the operation being tested. So <a href="https://fastcore.fast.ai/test.html#test_eq"><code>test_eq</code></a> tests for equality (as you saw in the example above). This includes tests for equality of arrays and tensors, lists and generators, and many more:</p>
+<div id="9630506c" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>test_eq([<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>], np.arange(<span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>When a test fails, it prints out information about what was expected:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>test_eq([<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>], np.arange(<span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<pre><code>----
+  AssertionError: ==:
+  [0, 1, 2, 3]
+  [0 1 2]</code></pre>
+<p>If you want to check that objects are the same type, rather than the just contain the same collection, use <a href="https://fastcore.fast.ai/test.html#test_eq_type"><code>test_eq_type</code></a>.</p>
+<p>You can test with any comparison function using <a href="https://fastcore.fast.ai/test.html#test"><code>test</code></a>, e.g test whether an object is less than:</p>
+<div id="d3192bb1" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>test(<span class="dv">2</span>, <span class="dv">3</span>, operator.lt)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>You can even test that exceptions are raised:</p>
+<div id="4d653100" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> divide_zero(): <span class="cf">return</span> <span class="dv">1</span><span class="op">/</span><span class="dv">0</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>test_fail(divide_zero)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>…and test that things are printed to stdout:</p>
+<div id="acfc8b62" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>test_stdout(<span class="kw">lambda</span>: <span class="bu">print</span>(<span class="st">'hi'</span>), <span class="st">'hi'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="foundations" class="level3">
+<h3 class="anchored" data-anchor-id="foundations">Foundations</h3>
+<p>fast.ai is unusual in that we often use <a href="https://en.wikipedia.org/wiki/Mixin">mixins</a> in our code. Mixins are widely used in many programming languages, such as Ruby, but not so much in Python. We use mixins to attach new behavior to existing libraries, or to allow modules to add new behavior to our own classes, such as in extension modules. One useful example of a mixin we define is <a href="https://fastcore.fast.ai/xtras.html#path.ls"><code>Path.ls</code></a>, which lists a directory and returns an <a href="https://fastcore.fast.ai/foundation.html#l"><code>L</code></a> (an extended list class which we’ll discuss shortly):</p>
+<div id="53cd9c94" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> Path(<span class="st">'images'</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>p.ls()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>[Path('images/mnist3.png'), Path('images/att_00000.png'), Path('images/att_00005.png'), Path('images/att_00007.png'), Path('images/att_00006.png'), Path('images/puppy.jpg')]</code></pre>
+</div>
+</div>
+<p>You can easily add you own mixins with the <a href="https://fastcore.fast.ai/basics.html#patch"><code>patch</code></a> <a href="https://realpython.com/primer-on-python-decorators/">decorator</a>, which takes advantage of Python 3 <a href="https://www.python.org/dev/peps/pep-3107/#parameters">function annotations</a> to say what class to patch:</p>
+<div id="1180fdcd" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="at">@patch</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> num_items(<span class="va">self</span>:Path): <span class="cf">return</span> <span class="bu">len</span>(<span class="va">self</span>.ls())</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>p.num_items()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>6</code></pre>
+</div>
+</div>
+<p>We also use <code>**kwargs</code> frequently. In python <code>**kwargs</code> in a parameter like means “<em>put any additional keyword arguments into a dict called <code>kwargs</code></em>”. Normally, using <code>kwargs</code> makes an API quite difficult to work with, because it breaks things like tab-completion and popup lists of signatures. <code>utils</code> provides <a href="https://fastcore.fast.ai/meta.html#use_kwargs"><code>use_kwargs</code></a> and <a href="https://fastcore.fast.ai/meta.html#delegates"><code>delegates</code></a> to avoid this problem. See our <a href="https://www.fast.ai/2019/08/06/delegation/">detailed article on delegation</a> on this topic.</p>
+<p><a href="https://fastcore.fast.ai/basics.html#getattr"><code>GetAttr</code></a> solves a similar problem (and is also discussed in the article linked above): it’s allows you to use Python’s exceptionally useful <a href="https://fastcore.fast.ai/xml.html#__getattr__"><code>__getattr__</code></a> magic method, but avoids the problem that normally in Python tab-completion and docs break when using this. For instance, you can see here that Python’s <code>dir</code> function, which is used to find the attributes of a python object, finds everything inside the <code>self.default</code> attribute here:</p>
+<div id="b242359e" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Author:</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, name): <span class="va">self</span>.name <span class="op">=</span> name</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ProductPage(GetAttr):</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    _default <span class="op">=</span> <span class="st">'author'</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>,author,price,cost): <span class="va">self</span>.author,<span class="va">self</span>.price,<span class="va">self</span>.cost <span class="op">=</span> author,price,cost</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> ProductPage(Author(<span class="st">"Jeremy"</span>), <span class="fl">1.50</span>, <span class="fl">0.50</span>)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>[o <span class="cf">for</span> o <span class="kw">in</span> <span class="bu">dir</span>(p) <span class="cf">if</span> <span class="kw">not</span> o.startswith(<span class="st">'_'</span>)]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>['author', 'cost', 'name', 'price']</code></pre>
+</div>
+</div>
+<p>Looking at that <code>ProductPage</code> example, it’s rather verbose and duplicates a lot of attribute names, which can lead to bugs later if you change them only in one place. <code>fastcore</code> provides <a href="https://fastcore.fast.ai/basics.html#store_attr"><code>store_attr</code></a> to simplify this common pattern. It also provides <a href="https://fastcore.fast.ai/basics.html#basic_repr"><code>basic_repr</code></a> to give simple objects a useful <code>repr</code>:</p>
+<div id="f7223633" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ProductPage:</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>,author,price,cost): store_attr()</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">__repr__</span> <span class="op">=</span> basic_repr(<span class="st">'author,price,cost'</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>ProductPage(<span class="st">"Jeremy"</span>, <span class="fl">1.50</span>, <span class="fl">0.50</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>ProductPage(author='Jeremy', price=1.5, cost=0.5)</code></pre>
+</div>
+</div>
+<p>One of the most interesting <code>fastcore</code> functions is the <a href="https://fastcore.fast.ai/meta.html#funcs_kwargs"><code>funcs_kwargs</code></a> decorator. This allows class behavior to be modified without sub-classing. This can allow folks that aren’t familiar with object-oriented programming to customize your class more easily. Here’s an example of a class that uses <a href="https://fastcore.fast.ai/meta.html#funcs_kwargs"><code>funcs_kwargs</code></a>:</p>
+<div id="4a0e346e" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="at">@funcs_kwargs</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> T:</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    _methods<span class="op">=</span>[<span class="st">'some_method'</span>]</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, <span class="op">**</span>kwargs): <span class="cf">assert</span> <span class="kw">not</span> kwargs, <span class="ss">f'Passed unknown args: </span><span class="sc">{</span>kwargs<span class="sc">}</span><span class="ss">'</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> T(some_method <span class="op">=</span> <span class="bu">print</span>)</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>p.some_method(<span class="st">"hello"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>hello</code></pre>
+</div>
+</div>
+<p>The <code>assert not kwargs</code> above is used to ensure that the user doesn’t pass an unknown parameter (i.e one that’s not in <code>_methods</code>). <code>fastai</code> uses <a href="https://fastcore.fast.ai/meta.html#funcs_kwargs"><code>funcs_kwargs</code></a> in many places, for instance, you can customize any part of a <code>DataLoader</code> by passing your own methods.</p>
+<p><code>fastcore</code> also provides many utility functions that make a Python programmer’s life easier, in <code>fastcore.utils</code>. We won’t look at many here, since you can easily look at the docs yourself. To get you started, have a look at the docs for <a href="https://fastcore.fast.ai/basics.html#chunked"><code>chunked</code></a> (remember, if you’re in a notebook, type <code>doc(chunked)</code>), which is a handy function for creating lazily generated batches from a collection.</p>
+<p>Python’s <a href="https://fastcore.fast.ai/parallel.html#processpoolexecutor"><code>ProcessPoolExecutor</code></a> is extended to allow <code>max_workers</code> to be set to <code>0</code>, to easily turn off parallel processing. This makes it easy to debug your code in serial, then run it in parallel. It also allows you to pass arguments to your parallel function, and to ensure there’s a pause between calls, in case the process you are running has race conditions. <a href="https://fastcore.fast.ai/parallel.html#parallel"><code>parallel</code></a> makes parallel processing even easier to use, and even adds an optional progress bar.</p>
+</section>
+<section id="l" class="level3">
+<h3 class="anchored" data-anchor-id="l">L</h3>
+<p>Like most languages, Python allows for very concise syntax for some very common types, such as <code>list</code>, which can be constructed with <code>[1,2,3]</code>. Perl’s designer Larry Wall explained the reasoning for this kind of syntax:</p>
+<blockquote class="blockquote">
+<p>In metaphorical honor of Huffman’s compression code that assigns smaller numbers of bits to more common bytes. In terms of syntax, it simply means that commonly used things should be shorter, but you shouldn’t waste short sequences on less common constructs.</p>
+</blockquote>
+<p>On this basis, <code>fastcore</code> has just one type that has a single letter name: <a href="https://fastcore.fast.ai/foundation.html#l"><code>L</code></a>. The reason for this is that it is designed to be a replacement for <code>list</code>, so we want it to be just as easy to use as <code>[1,2,3]</code>. Here’s how to create that as an <a href="https://fastcore.fast.ai/foundation.html#l"><code>L</code></a>:</p>
+<div id="c2a76a2d" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>L(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>[1, 2, 3]</code></pre>
+</div>
+</div>
+<p>The first thing to notice is that an <a href="https://fastcore.fast.ai/foundation.html#l"><code>L</code></a> object includes in its representation its number of elements; that’s the <code>(#3)</code> in the output above. If there’s more than 10 elements, it will automatically truncate the list:</p>
+<div id="5987aef4" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> L.<span class="bu">range</span>(<span class="dv">20</span>).shuffle()</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>p</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>[14, 19, 13, 11, 8, 9, 0, 6, 4, 15, 1, 17, 16, 5, 3, 10, 2, 7, 12, 18]</code></pre>
+</div>
+</div>
+<p><a href="https://fastcore.fast.ai/foundation.html#l"><code>L</code></a> contains many of the same indexing ideas that NumPy’s <code>array</code> does, including indexing with a list of indexes, or a boolean mask list:</p>
+<div id="754c0de2" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>p[<span class="dv">2</span>,<span class="dv">4</span>,<span class="dv">6</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>[13, 8, 0]</code></pre>
+</div>
+</div>
+<p>It also contains other methods used in <code>array</code>, such as <a href="https://fastcore.fast.ai/foundation.html#l.argwhere"><code>L.argwhere</code></a>:</p>
+<div id="bbe0cd97" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>p.argwhere(ge(<span class="dv">15</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>[1, 9, 11, 12, 19]</code></pre>
+</div>
+</div>
+<p>As you can see from this example, <code>fastcore</code> also includes a number of features that make a functional style of programming easier, such as a full range of boolean functions (e.g <code>ge</code>, <code>gt</code>, etc) which give the same answer as the functions from Python’s <code>operator</code> module if given two parameters, but return a <a href="https://en.wikipedia.org/wiki/Currying">curried function</a> if given one parameter.</p>
+<p>There’s too much functionality to show it all here, so be sure to check the docs. Many little things are added that we thought should have been in <code>list</code> in the first place, such as making this do what you’d expect (which is an error with <code>list</code>, but works fine with <a href="https://fastcore.fast.ai/foundation.html#l"><code>L</code></a>):</p>
+<div id="e00419dc" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="op">+</span> L(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<pre><code>[1, 2, 3, 4]</code></pre>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/fastcore\.fast\.ai\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/AnswerDotAI/fastcore/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.10.0
+
+### Breaking Changes
+
+- Add `_repr_html_` to `FT` that renders the component ([#728](https://github.com/AnswerDotAI/fastcore/issues/728))
+
+
 ## 1.9.8
 
 ### New Features

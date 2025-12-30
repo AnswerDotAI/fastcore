@@ -466,6 +466,12 @@ def ls(self:Path, n_max=None, file_type=None, file_exts=None):
 
 # %% ../nbs/03_xtras.ipynb
 @patch
+def normpath(self:Path):
+    "Normalize path, eliminating double slashes, etc."
+    return Path(os.path.normpath(self))
+
+# %% ../nbs/03_xtras.ipynb
+@patch
 def __repr__(self:Path):
     b = getattr(Path, 'BASE_PATH', None)
     if b:

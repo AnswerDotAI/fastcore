@@ -140,6 +140,7 @@ class L(GetAttr, CollBase, metaclass=_L_Meta):
     def __setitem__(self, idx, o):
         "Set `idx` (can be list of indices, or mask, or int) items to `o` (which is broadcast if not iterable)"
         if isinstance(idx, int): self.items[idx] = o
+        elif isinstance(idx, slice): self.items[idx] = o
         else:
             idx = idx if isinstance(idx,L) else listify(idx)
             if not is_iter(o): o = [o]*len(idx)

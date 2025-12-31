@@ -16,17 +16,17 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'zip_cycle', 'sorted_ex', 'not_', 'argwhere', 'filter_ex', 'renumerate', 'first', 'last', 'only',
            'nested_attr', 'nested_setdefault', 'nested_callable', 'nested_idx', 'set_nested_idx', 'val2idx',
            'uniqueify', 'loop_first_last', 'loop_first', 'loop_last', 'first_match', 'last_match', 'fastuple', 'bind',
-           'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'negate', 'copy_func',
-           'patch_to', 'patch', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum', 'Stateful', 'NotStr',
-           'PrettyString', 'even_mults', 'num_cpus', 'add_props', 'str2bool', 'str2int', 'str2float', 'str2list',
-           'str2date', 'to_bool', 'to_int', 'to_float', 'to_list', 'to_date', 'typed', 'exec_new', 'exec_import',
-           'sig_with_params', 'fdelegates', 'lt', 'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub', 'mul', 'truediv', 'is_',
-           'is_not', 'mod']
+           'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'negate', 'spread',
+           'dspread', 'copy_func', 'patch_to', 'patch', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum',
+           'Stateful', 'NotStr', 'PrettyString', 'even_mults', 'num_cpus', 'add_props', 'str2bool', 'str2int',
+           'str2float', 'str2list', 'str2date', 'to_bool', 'to_int', 'to_float', 'to_list', 'to_date', 'typed',
+           'exec_new', 'exec_import', 'sig_with_params', 'fdelegates', 'lt', 'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub',
+           'mul', 'truediv', 'is_', 'is_not', 'mod']
 
 # %% ../nbs/01_basics.ipynb
 from .imports import *
 import ast,builtins,pprint,types,typing
-from functools import cmp_to_key
+from functools import cmp_to_key,wraps
 from copy import copy
 from datetime import date
 try: from types import UnionType
@@ -999,6 +999,20 @@ def negate(f):
     def _neg(*args, **kwargs): return not f(*args, **kwargs)
     _neg.__doc__ = f'Returns `not {f.__name__}(...)`\n\nOriginal: {f.__doc__}'
     return _neg
+
+# %% ../nbs/01_basics.ipynb
+def spread(f):
+    "Wrap `f` to accept a single iterable and spread it as positional args"
+    @wraps(f, assigned=('__module__', '__name__', '__qualname__', '__doc__'))
+    def _f(args, **kw): return f(*args, **kw)
+    return _f
+
+# %% ../nbs/01_basics.ipynb
+def dspread(f):
+    "Wrap `f` to accept a single dict and spread it as keyword args"
+    @wraps(f, assigned=('__module__', '__name__', '__qualname__', '__doc__'))
+    def _f(kwargs, **kw): return f(**(kwargs|kw))
+    return _f
 
 # %% ../nbs/01_basics.ipynb
 class _Self:

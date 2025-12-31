@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.10.1
+
+### New Features
+
+- Add `spread` and `dspread` ([#730](https://github.com/AnswerDotAI/fastcore/issues/730))
+- Add `Path.normpath` ([#729](https://github.com/AnswerDotAI/fastcore/issues/729))
+
+
 ## 1.10.0
 
 ### Breaking Changes

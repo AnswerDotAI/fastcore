@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.10.2
+
+### New Features
+
+- add slice support for L assignment ([#731](https://github.com/AnswerDotAI/fastcore/pull/731)), thanks to [@ncoop57](https://github.com/ncoop57)
+
+
 ## 1.10.1
 
 ### New Features

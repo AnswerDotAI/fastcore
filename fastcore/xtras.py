@@ -824,6 +824,7 @@ def console_help(
 # %% ../nbs/03_xtras.ipynb
 def hl_md(s, lang='xml', show=True):
     "Syntax highlight `s` using `lang`."
+    if hasattr(s, '__html__'): s = s.__html__()
     md = f'```{lang}\n{s}\n```'
     if not show: return md
     try:

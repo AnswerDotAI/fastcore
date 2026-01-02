@@ -218,7 +218,7 @@ def to_xml(elm, lvl=0, indent=True, do_escape=True):
 # %% ../nbs/09_xml.ipynb
 @patch
 def __html__(self:FT): return to_xml(self, indent=False)
-FT.__str__ = FT.__html__
+FT.__str__ = FT.__repr__ = FT.__html__
 
 # %% ../nbs/09_xml.ipynb
 @patch

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.10.3
+
+### New Features
+
+- Use `__html__` in `hl_md` if exists ([#732](https://github.com/AnswerDotAI/fastcore/issues/732))
+
+
 ## 1.10.2
 
 ### New Features

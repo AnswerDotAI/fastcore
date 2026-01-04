@@ -21,8 +21,8 @@ from inspect import isclass,getdoc
 
 # %% auto 0
 __all__ = ['empty', 'docstring', 'parse_docstring', 'isdataclass', 'get_dataclass_source', 'get_source', 'get_name', 'qual_name',
-           'docments', 'sig2str', 'sig_source', 'extract_docstrings', 'DocmentTbl', 'ShowDocRenderer',
-           'MarkdownRenderer']
+           'docments', 'sig2str', 'sig_source', 'extract_docstrings', 'DocmentTbl', 'DocmentList', 'DocmentsText',
+           'ShowDocRenderer', 'MarkdownRenderer']
 
 # %% ../nbs/04_docments.ipynb
 def docstring(sym):
@@ -277,21 +277,26 @@ def _maybe_nm(o):
 def _list2row(l:list): return '| '+' | '.join([_maybe_nm(o) for o in l]) + ' |'
 
 # %% ../nbs/04_docments.ipynb
-class DocmentTbl:
-    # this is the column order we want these items to appear
+class _DocmentBase:
+    def __init__(self, obj):
+        self.obj,self.dm = obj, docments(obj, full=True)
+        if 'self' in self.dm: del self.dm['self']
+    
+    @property
+    def has_docment(self): return any(v.get('docment') for v in self.dm.values())
+
+# %% ../nbs/04_docments.ipynb
+class DocmentTbl(_DocmentBase):
     _map = {'anno':'Type', 'default':'Default', 'docment':'Details'}
 
     def __init__(self, obj, verbose=True, returns=True):
         "Compute the docment table string"
+        super().__init__(obj)
         self.verbose = verbose
         self.returns = False if isdataclass(obj) else returns
         try: self.params = L(signature_ex(obj, eval_str=True).parameters.keys())
         except (ValueError,TypeError): self.params=[]
-        try: _dm = docments(obj, full=True, returns=returns)
-        except: _dm = {}
-        if 'self' in _dm: del _dm['self']
-        for d in _dm.values(): d['docment'] = ifnone(d['docment'], inspect._empty)
-        self.dm = _dm
+        for d in self.dm.values(): d['docment'] = ifnone(d['docment'], inspect._empty)
 
     @property
     def _columns(self):
@@ -306,13 +311,10 @@ class DocmentTbl:
     @property
     def has_return(self): return self.returns and bool(_non_empty_keys(self.dm.get('return', {})))
 
-    def _row(self, nm, props):
-        "unpack data for single row to correspond with column names."
-        return [nm] + [props[c] for c in self._columns]
+    def _row(self, nm, props): return [nm] + [props[c] for c in self._columns]
 
     @property
     def _row_list(self):
-        "unpack data for all rows."
         ordered_params = [(p, self.dm[p]) for p in self.params if p != 'self' and p in self.dm]
         return L([self._row(nm, props) for nm,props in ordered_params])
 
@@ -321,19 +323,14 @@ class DocmentTbl:
 
     @property
     def hdr_str(self):
-        "The markdown string for the header portion of the table"
         md = _list2row(self._hdr_list)
         return md + '\n' + _list2row(['-' * len(l) for l in self._hdr_list])
 
     @property
-    def params_str(self):
-        "The markdown string for the parameters portion of the table."
-        return '\n'.join(self._row_list.map(_list2row))
+    def params_str(self): return '\n'.join(self._row_list.map(_list2row))
 
     @property
-    def return_str(self):
-        "The markdown string for the returns portion of the table."
-        return _list2row(['**Returns**']+[_bold(_maybe_nm(self.dm['return'][c])) for c in self._columns])
+    def return_str(self): return _list2row(['**Returns**']+[_bold(_maybe_nm(self.dm['return'][c])) for c in self._columns])
 
     def _repr_markdown_(self):
         if not self.has_docment: return ''
@@ -342,9 +339,46 @@ class DocmentTbl:
         return '\n'.join(_tbl)
 
     def __eq__(self,other): return self.__str__() == str(other).strip()
-
     __str__ = _repr_markdown_
     __repr__ = basic_repr()
+
+# %% ../nbs/04_docments.ipynb
+class DocmentList(_DocmentBase):
+    def _fmt(self, nm, p):
+        anno,default,doc = _maybe_nm(p.get('anno','')), p.get('default',empty), p.get('docment','')
+        s = f'`{nm}{":" + anno if anno else ""}{"=" + _maybe_nm(default) if default != empty else ""}`'
+        br = '\xa0'*3
+        return f'- {s}' + (f'{br}*{doc}*' if doc else '')
+
+    def _repr_markdown_(self): return '\n'.join(self._fmt(k,v) for k,v in self.dm.items())
+    __repr__=__str__=_repr_markdown_
+
+# %% ../nbs/04_docments.ipynb
+class DocmentsText(_DocmentBase):
+    def _fmt_param(self, nm, p):
+        anno,default = p.get('anno',empty), p.get('default',empty)
+        return nm + (f':{_maybe_nm(anno)}' if anno != empty else '') + (f'={repr(default)}' if default != empty else '')
+    
+    @property
+    def _ret_str(self):
+        ret = self.dm.get('return', {})
+        anno = f"->{_maybe_nm(ret.get('anno',empty))}" if ret.get('anno',empty) != empty else ''
+        doc = f" # {ret['docment']}" if ret.get('docment') else ''
+        return f"){anno}:{doc}"
+    
+    def __str__(self):
+        params = [(self._fmt_param(k,v), v.get('docment','')) for k,v in self.dm.items() if k != 'return']
+        lines,curr = [],[]
+        for fmt,doc in params:
+            curr.append(fmt)
+            if doc: lines.append((', '.join(curr), doc)); curr = []
+        if curr: lines.append((', '.join(curr), ''))
+        body = [f"{line}{'' if i==len(lines)-1 else ','}{f' # {doc}' if doc else ''}" for i,(line,doc) in enumerate(lines)]
+        docstr = f'    "{self.obj.__doc__}"' if self.obj.__doc__ else ''
+        return f"def {self.obj.__name__}(\n    " + "\n    ".join(body) + f"\n{self._ret_str}\n{docstr}"
+    
+    __repr__ = __str__
+    def _repr_markdown_(self): return f"```python\n{self}\n```"
 
 # %% ../nbs/04_docments.ipynb
 def _docstring(sym):
@@ -367,7 +401,7 @@ class ShowDocRenderer:
         try: self.sig = signature_ex(sym, eval_str=True)
         except (ValueError,TypeError): self.sig = None
         self.docs = _docstring(sym)
-        self.dm = DocmentTbl(sym)
+        self.dm = DocmentList(sym)
         self.fn = _fullname(sym)
 
     __repr__ = basic_repr()

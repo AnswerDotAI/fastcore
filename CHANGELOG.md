@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 1.11.0
+
+### Breaking Changes
+
+- Parameters are now documented using a list instead of a table. This shouldn't break any code, but will change rendered documentation.
+
+### New Features
+
+- Add `DocmentsList` and `DocmentsText` ([#736](https://github.com/AnswerDotAI/fastcore/issues/736))
+
+
 ## 1.10.5
 
 ### New Features

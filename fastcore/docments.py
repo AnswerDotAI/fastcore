@@ -21,7 +21,8 @@ from inspect import isclass,getdoc
 
 # %% auto 0
 __all__ = ['empty', 'docstring', 'parse_docstring', 'isdataclass', 'get_dataclass_source', 'get_source', 'get_name', 'qual_name',
-           'docments', 'sig2str', 'extract_docstrings', 'DocmentTbl', 'ShowDocRenderer', 'MarkdownRenderer']
+           'docments', 'sig2str', 'sig_source', 'extract_docstrings', 'DocmentTbl', 'ShowDocRenderer',
+           'MarkdownRenderer']
 
 # %% ../nbs/04_docments.ipynb
 def docstring(sym):
@@ -203,6 +204,15 @@ def sig2str(func):
         ret_str = f"->{getattr(ret['anno'], '__name__', str(ret['anno']))}" + (f': # {ret["docment"]}' if ret.get('docment') else ':')
     doc_str = f'    "{func.__doc__}"' if func.__doc__ else ''
     return f"def {func.__name__}(\n    " + ",\n    ".join(params) + f"\n){ret_str}\n{doc_str}"
+
+# %% ../nbs/04_docments.ipynb
+def sig_source(obj):
+    "Full source of signature line(s) for a function or class."
+    src = inspect.getsource(obj)
+    tree = ast.parse(src)
+    body_start = tree.body[0].body[0].lineno
+    if body_start == 1: return src.splitlines()[0]
+    return '\n'.join(src.splitlines()[:body_start-1])
 
 # %% ../nbs/04_docments.ipynb
 def _get_params(node):

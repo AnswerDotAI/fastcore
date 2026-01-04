@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.10.5
+
+### New Features
+
+- Add `sig_source` ([#735](https://github.com/AnswerDotAI/fastcore/issues/735))
+
+
 ## 1.10.4
 
 ### New Features

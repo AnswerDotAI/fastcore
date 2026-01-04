@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.10.4
+
+### New Features
+
+- Add `rtoken_hex` ([#734](https://github.com/AnswerDotAI/fastcore/issues/734))
+
+
 ## 1.10.3
 
 ### New Features

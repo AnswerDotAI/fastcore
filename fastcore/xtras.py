@@ -10,10 +10,10 @@ __all__ = ['spark_chars', 'UNSET', 'walk', 'exttypes', 'globtastic', 'pglob', 'm
            'detect_mime', 'bunzip', 'loads', 'loads_multi', 'dumps', 'untar_dir', 'repo_details', 'shell', 'ssh',
            'rsync_multi', 'run', 'open_file', 'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards', 'dict2obj',
            'obj2dict', 'repr_dict', 'is_listy', 'mapped', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps',
-           'save_iter', 'asave_iter', 'unqid', 'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link',
-           'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file', 'autostart',
-           'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local', 'local2utc',
-           'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str',
+           'save_iter', 'asave_iter', 'unqid', 'rtoken_hex', 'friendly_name', 'n_friendly_names', 'exec_eval',
+           'get_source_link', 'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file',
+           'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local',
+           'local2utc', 'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str',
            'dataclass_src', 'Unset', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict',
            'is_namedtuple', 'CachedIter', 'CachedAwaitable', 'reawaitable', 'flexicache', 'time_policy', 'mtime_policy',
            'timed_cache']
@@ -566,6 +566,14 @@ def unqid(seeded=False):
     id4 = UUID(int=random.getrandbits(128), version=4) if seeded else uuid4()
     res = b64encode(id4.bytes)
     return '_' + res.decode().rstrip('=').translate(str.maketrans('+/', '_-'))
+
+# %% ../nbs/03_xtras.ipynb
+def rtoken_hex(
+    nbytes:int=16 # Number of bytes to generate
+)->str: # hex string of length nbytes*2
+    "Generate a random hex string using Python's random module."
+    import random
+    return ''.join(f'{random.randint(0, 255):02x}' for _ in range(nbytes))
 
 # %% ../nbs/03_xtras.ipynb
 def friendly_name(levels=3, suffix=4):

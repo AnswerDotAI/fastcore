@@ -402,7 +402,7 @@ def signature_ex(obj, eval_str:bool=False):
         return Parameter(v.name, v.kind, annotation=ann[k], default=v.default)
 
     if not eval_str: return signature(obj)
-    if _ispy3_10(): return signature(obj, eval_str=eval_str)
+    # if _ispy3_10(): return signature(obj, eval_str=eval_str)
     sig = signature(obj)
     if sig is None: return None
     ann = type_hints(obj)

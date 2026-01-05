@@ -315,7 +315,7 @@ class DocmentList(_DocmentBase):
 
 # %% ../nbs/04_docments.ipynb
 class DocmentText(_DocmentBase):
-    def __init__(self, obj, maxline=160, docstring=True):
+    def __init__(self, obj, maxline=110, docstring=True):
         super().__init__(obj)
         self.maxline,self.docstring = maxline,docstring
 
@@ -351,7 +351,7 @@ class DocmentText(_DocmentBase):
     def _repr_markdown_(self): return f"```python\n{self}\n```"
 
 # %% ../nbs/04_docments.ipynb
-def sig2str(func, maxline=160):
+def sig2str(func, maxline=110):
     "Generate function signature with docments as comments"
     return DocmentText(func, maxline=maxline, docstring=False)
 
@@ -366,7 +366,7 @@ def _fullname(o):
     return name if module is None or module in ('__main__','builtins') else module + '.' + name
 
 class ShowDocRenderer:
-    def __init__(self, sym, name:str|None=None, title_level:int=3, maxline:int=120):
+    def __init__(self, sym, name:str|None=None, title_level:int=3, maxline:int=110):
         "Show documentation for `sym`"
         sym = getattr(sym, '__wrapped__', sym)
         sym = getattr(sym, 'fget', None) or getattr(sym, 'fset', None) or sym

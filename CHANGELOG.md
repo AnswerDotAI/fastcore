@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.11.2
+
+### New Features
+
+- Add `move_lines` and `get_callable` to tools ([#737](https://github.com/AnswerDotAI/fastcore/issues/737))
+
+
 ## 1.11.1
 
 ### Breaking Changes

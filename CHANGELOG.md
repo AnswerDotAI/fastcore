@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.11.3
+
+### New Features
+
+- Add Union type support and improve bool arg handling with negated flags in `call_parse` ([#739](https://github.com/AnswerDotAI/fastcore/issues/739))
+
+
 ## 1.11.2
 
 ### New Features

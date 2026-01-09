@@ -54,7 +54,7 @@ class Param:
             if d != inspect.Parameter.empty: self.version = d
             self.opt = True
             return
-        if self.type in (bool, bool_arg) and self.action is None:
+        if self.type==bool and self.action is None:
             self.type = None
             if d is True: self.action,self.default,self.negated = 'store_false',True,True
             else:         self.action,self.default = 'store_true',False

@@ -7,11 +7,13 @@ __all__ = ['SCRIPT_INFO', 'store_true', 'store_false', 'bool_arg', 'clean_type_s
            'call_parse']
 
 # %% ../nbs/06_script.ipynb
-import inspect,argparse,shutil
+import inspect,argparse,shutil,types
+
 from functools import wraps,partial
 from .imports import *
 from .utils import *
 from .docments import docments
+from typing import get_origin, get_args, Union
 
 # %% ../nbs/06_script.ipynb
 def store_true():
@@ -40,10 +42,11 @@ class Param:
     "A parameter in a function used in `anno_parser` or `call_parse`"
     def __init__(self, help="", type=None, opt=True, action=None, nargs=None, const=None,
                  choices=None, required=None, default=None, version=None):
-        if type in (store_true,bool):  type,action,default=None,'store_true',False
+        if type==store_true:  type,action,default=None,'store_true',False
         if type==store_false: type,action,default=None,'store_false',True
         if type and isinstance(type,typing.Type) and issubclass(type,enum.Enum) and not choices: choices=list(type)
         help = help or ""
+        self.negated = False
         store_attr()
 
     def set_default(self, d):
@@ -51,17 +54,19 @@ class Param:
             if d != inspect.Parameter.empty: self.version = d
             self.opt = True
             return
-        if self.default is None:
+        if self.type in (bool, bool_arg) and self.action is None:
+            self.type = None
+            if d is True: self.action,self.default,self.negated = 'store_false',True,True
+            else:         self.action,self.default = 'store_true',False
+        elif self.default is None:
             if d == inspect.Parameter.empty: self.opt = False
             else: self.default = d
-        if self.default is not None:
-            self.help += f" (default: {self.default})"
+        if self.default is not None: self.help += f" (default: {self.default})"
 
     @property
     def pre(self): return '--' if self.opt else ''
     @property
-    def kwargs(self): return {k:v for k,v in self.__dict__.items()
-                              if v is not None and k!='opt' and k[0]!='_'}
+    def kwargs(self): return {k:v for k,v in self.__dict__.items() if v is not None and k not in ('opt','negated') and k[0]!='_'}
     def __repr__(self):
         if not self.help and self.type is None: return ""
         if not self.help and self.type is not None: return f"{clean_type_str(self.type)}"
@@ -76,15 +81,37 @@ class _HelpFormatter(argparse.HelpFormatter):
     def _expand_help(self, action): return self._get_help_string(action)
 
 # %% ../nbs/06_script.ipynb
-def anno_parser(func,  # Function to get arguments from
-                prog:str=None):  # The name of the program
+def _is_union(t): return get_origin(t) in (Union, types.UnionType) if hasattr(types, 'UnionType') else get_origin(t) is Union
+
+def _union_parser(types):
+    "Return a parser that tries each type in sequence"
+    def _parse(v):
+        for t in types:
+            if t is type(None): continue
+            try: return t(v)
+            except: pass
+        raise ValueError(f"Could not parse {v!r} as any of {types}")
+    return _parse
+
+def _union_type(t):
+    "Get parser for Union types, or None if not a Union"
+    if not _is_union(t): return None
+    return _union_parser(get_args(t))
+
+# %% ../nbs/06_script.ipynb
+def anno_parser(func, prog:str=None):
     "Look at params (annotated with `Param`) in func and return an `ArgumentParser`"
     p = argparse.ArgumentParser(description=func.__doc__, prog=prog, formatter_class=_HelpFormatter)
     for k,v in docments(func, full=True, returns=False, eval_str=True).items():
         param = v.anno
-        if not isinstance(param,Param): param = Param(v.docment, v.anno)
+        if not isinstance(param, Param):
+            anno = _union_type(v.anno) or v.anno
+            param = Param(v.docment, anno)
         param.set_default(v.default)
-        p.add_argument(f"{param.pre}{k}", **param.kwargs)
+        name = f"no-{k}" if param.negated else k
+        kw = param.kwargs
+        if param.negated: kw['dest'] = k
+        p.add_argument(f"{param.pre}{name}", **kw)
     p.add_argument(f"--pdb", help=argparse.SUPPRESS, action='store_true')
     p.add_argument(f"--xtra", help=argparse.SUPPRESS, type=str)
     return p
@@ -98,7 +125,10 @@ def args_from_prog(func, prog):
     args = {progsp[i]:progsp[i+1] for i in range(0, len(progsp), 2)}
     annos = type_hints(func)
     for k,v in args.items():
-        t = annos.get(k, Param()).type
+        anno = annos.get(k)
+        t = getattr(anno, 'type', anno)
+        if t in (bool, bool_arg): t = str2bool
+        elif isinstance(anno, Param) and anno.action in ('store_true', 'store_false'): t = str2bool
         if t: args[k] = t(v)
     return args
 

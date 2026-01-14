@@ -231,7 +231,7 @@ def _escape_markdown(s):
 # %% ../nbs/04_docments.ipynb
 def _maybe_nm(o):
     if (o == inspect._empty): return ''
-    else: return o.__name__ if hasattr(o, '__name__') else _escape_markdown(str(o))
+    else: return o.__name__ if hasattr(o, '__name__') else str(o)
 
 # %% ../nbs/04_docments.ipynb
 def _list2row(l:list): return '| '+' | '.join([_maybe_nm(o) for o in l]) + ' |'

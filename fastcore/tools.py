@@ -52,9 +52,18 @@ def valid_path(path:str, must_exist:bool=True) -> Path:
     if must_exist and not p.exists(): raise FileNotFoundError(f'File not found: {p}')
     return p
 
+# %% ../nbs/12_tools.ipynb
+def _fmt_path(f, p):
+    'Format path with emoji for dirs/symlinks or size for files'
+    if any(part.startswith('.') for part in f.relative_to(p).parts): return None
+    if f.is_symlink(): return f'{f} 🔗'
+    if f.is_dir(): return f'{f} 📁'
+    return f'{f} ({f.stat().st_size/1024:.1f}k)'
+
+# %% ../nbs/12_tools.ipynb
 def view(
     path:str, # Path to directory or file to view
-    view_range:tuple[int,int]=None, # Optional 1-indexed (start, end) line range for files, end=-1 for EOF
+    view_range:tuple[int,int]=None, # Optional 1-indexed (start, end) line range for files, end=-1 for EOF. Do NOT use unless it's known that the file is too big to keep in context—simply view the WHOLE file when possible
     nums:bool=False # Whether to show line numbers
 ):
     'View directory or file contents with optional line range and numbers'
@@ -62,9 +71,7 @@ def view(
         p = valid_path(path)
         header = None
         if p.is_dir():
-            files = [str(f) for f in p.glob('**/*') 
-                    if not any(part.startswith('.') for part in f.relative_to(p).parts)]
-            lines = files
+            lines = [s for f in p.glob('**/*') if (s := _fmt_path(f, p))]
             header = f'Directory contents of {p}:'
         else: lines = p.read_text().splitlines()
         s, e = 1, len(lines)

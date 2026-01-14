@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.11.4
+
+### New Features
+
+- Enhanced dir view with file sizes and type indicators ([#743](https://github.com/AnswerDotAI/fastcore/issues/743))
+
+
 ## 1.11.3
 
 ### New Features

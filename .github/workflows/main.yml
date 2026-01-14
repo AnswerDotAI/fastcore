@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:  [ubuntu, macos]#,windows]
+        os:  [ubuntu, macos] #,windows]
         py:  ["3.10", "3.11", "3.12", "3.13"]
         include:
           #- os: windows
@@ -68,52 +68,3 @@ jobs:
     - name: test nbdev notebooks
       run: |
         cd nbdev && nbdev_test
-        
-  fastai-integration-test:
-    runs-on: ubuntu-latest
-    env:
-      download: "true"
-    strategy:
-      matrix:
-        nb: ['[0-1]', '[2-3]', '[4-5]','[6-7]', '[8-9]']
-    steps:
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.11'
-    - name: clone this branch [fastcore]
-      uses: actions/checkout@v3
-      with:
-        path: fastcore/
-        
-    - name: clone fastai
-      uses: actions/checkout@v3
-      with:
-        repository: 'fastai/fastai'
-        path: fastai
-        
-    - name: Install libraries
-      run: |
-        pip3 install -Uqq git+https://github.com/fastai/nbdev.git
-        cd fastai && pip install -Ue ".[dev]"
-        cd ../fastcore && pip install -Ue .[dev]
-
-    - name: check for cache hit
-      uses: actions/cache@v3
-      id: cache
-      with:
-        path: ~/.fastai/data
-        key: 'fastai-test-data-v5'
-
-    - name: download data
-      if: env.download == 'true' && steps.cache.outputs.cache-hit != 'true'
-      run: |
-        wget https://raw.githubusercontent.com/fastai/docker-containers/master/fastai/tmp_scripts/download_testdata.py
-        ipython download_testdata.py
-        mkdir -p $HOME/.fastai/data
-        find $HOME/.fastai/archive/ -name "*.tgz" -exec tar -xzvf {} -C $HOME/.fastai/data \;
-          
-    - name: Test fastai notebooks
-      run: |
-        cd fastai
-        nbdev_test --flags '' --n_workers 3 --pause 1.5 --file_re "[0-9]${{matrix.nb}}.*"

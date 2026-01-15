@@ -100,11 +100,12 @@ def _get_comment(line, arg, comments, parms):
         line -= 1
     return dedent('\n'.join(reversed(res))) if res else None
 
-def _get_full(p, docs):
+def _get_full(p, docs, eval_str=False):
     anno = p.annotation
     if anno==empty:
         if p.default!=empty: anno = type(p.default)
         elif p.kind in (Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD): anno = p.kind
+        elif eval_str: anno = None
     return AttrDict(docment=docs.get(p.name), anno=anno, default=p.default)
 
 # %% ../nbs/04_docments.ipynb
@@ -159,7 +160,7 @@ def docments(s, full=False, eval_str=False, returns=True, args_kwargs=False):
             if v not in docs: docs[v] = _get_comment(k, v, c, p)
         s = getattr(s, '__delwrap__', None)
     
-    res = {k:_get_full(v, docs) if full else docs.get(k) for k,v in sig.parameters.items()}
+    res = {k:_get_full(v, docs, eval_str=eval_str) if full else docs.get(k) for k,v in sig.parameters.items()}
     if returns:
         if full: res['return'] = AttrDict(docment=docs.get('return'), anno=sig.return_annotation, default=empty)
         else: res['return'] = docs.get('return')

@@ -53,9 +53,11 @@ def valid_path(path:str, must_exist:bool=True) -> Path:
     return p
 
 # %% ../nbs/12_tools.ipynb
-def _fmt_path(f, p):
+def _fmt_path(f, p, skip_folders=()):
     'Format path with emoji for dirs/symlinks or size for files'
-    if any(part.startswith('.') for part in f.relative_to(p).parts): return None
+    parts = f.relative_to(p).parts
+    if any(part.startswith('.') for part in parts): return None
+    if any(part in skip_folders for part in parts): return None
     if f.is_symlink(): return f'{f} 🔗'
     if f.is_dir(): return f'{f} 📁'
     return f'{f} ({f.stat().st_size/1024:.1f}k)'
@@ -64,14 +66,15 @@ def _fmt_path(f, p):
 def view(
     path:str, # Path to directory or file to view
     view_range:tuple[int,int]=None, # Optional 1-indexed (start, end) line range for files, end=-1 for EOF. Do NOT use unless it's known that the file is too big to keep in context—simply view the WHOLE file when possible
-    nums:bool=False # Whether to show line numbers
+    nums:bool=False, # Whether to show line numbers
+    skip_folders:tuple[str,...]=('_proc','__pycache__') # Folder names to skip when listing directories
 ):
     'View directory or file contents with optional line range and numbers'
     try:
         p = valid_path(path)
         header = None
         if p.is_dir():
-            lines = [s for f in p.glob('**/*') if (s := _fmt_path(f, p))]
+            lines = [s for f in p.glob('**/*') if (s := _fmt_path(f, p, skip_folders))]
             header = f'Directory contents of {p}:'
         else: lines = p.read_text().splitlines()
         s, e = 1, len(lines)

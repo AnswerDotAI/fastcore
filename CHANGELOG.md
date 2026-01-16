@@ -2,7 +2,7 @@
 
 <!-- do not remove -->
 
-## 1.11.6
+## 1.12.0
 
 ### Breaking Changes
 

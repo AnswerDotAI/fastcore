@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 1.11.5
+
+### New Features
+
+- Add kwargs support to flatmap ([#746](https://github.com/AnswerDotAI/fastcore/issues/746))
+
+### Bugs Squashed
+
+- Fix anno typing when `eval_str=True` ([#744](https://github.com/AnswerDotAI/fastcore/pull/744)), thanks to [@curtis-allan](https://github.com/curtis-allan)
+
+
 ## 1.11.4
 
 ### New Features

@@ -92,9 +92,9 @@ def product(xs):
     return reduce(operator.mul, [o for o in xs if o is not None], 1)
 
 # %% ../nbs/02_foundation.ipynb
-def flatmap(f, xs):
+def flatmap(f, xs, **kwargs):
     "Apply f to each element and flatten the results into a single list."
-    return [y for x in xs for y in f(x)]
+    return [y for x in xs for y in f(x, **kwargs)]
 
 # %% ../nbs/02_foundation.ipynb
 class CollBase:
@@ -473,9 +473,9 @@ def setattrs(self:L, attr, val):
 
 # %% ../nbs/02_foundation.ipynb
 @patch
-def flatmap(self:L, f):
+def flatmap(self:L, f, **kwargs):
     "Apply f to each element and flatten the results into a single L."
-    return L(flatmap(f, self))
+    return L(flatmap(f, self, **kwargs))
 
 # %% ../nbs/02_foundation.ipynb
 @patch

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.1
+
+### New Features
+
+- Add partial function support to `get_name` and DocmentText ([#749](https://github.com/AnswerDotAI/fastcore/issues/749))
+
+
 ## 1.12.0
 
 ### Breaking Changes

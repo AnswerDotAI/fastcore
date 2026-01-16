@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 1.11.6
+
+### Breaking Changes
+
+- listify: wrap Mapping types instead of iterating their keys ([#748](https://github.com/AnswerDotAI/fastcore/issues/748))
+
+### New Features
+
+- Add `skip_folders` param to view() to filter out `_proc` and `__pycache__` dirs ([#747](https://github.com/AnswerDotAI/fastcore/issues/747))
+
+
 ## 1.11.5
 
 ### New Features

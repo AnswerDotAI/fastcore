@@ -129,12 +129,16 @@ def _get_property_name(p):
         return p.fget.func.__qualname__ if hasattr(p.fget, 'func') else p.fget.__qualname__
     else: return next(iter(re.findall(r'\'(.*)\'', str(p)))).split('.')[-1]
 
-# %% ../nbs/04_docments.ipynb #f5efac13
+# %% ../nbs/04_docments.ipynb #da0465e3
 def get_name(obj):
     "Get the name of `obj`"
+    if isinstance(obj, partial):
+        nm = get_name(obj.func)
+        args = [repr(a) for a in obj.args] + [f'{k}={repr(v)}' for k,v in obj.keywords.items()]
+        return f"{nm}[partial: {', '.join(args)}]"
     if hasattr(obj, '__name__'):       return obj.__name__
     elif getattr(obj, '_name', False): return obj._name
-    elif hasattr(obj,'__origin__'):    return str(obj.__origin__).split('.')[-1] #for types
+    elif hasattr(obj,'__origin__'):    return str(obj.__origin__).split('.')[-1]
     elif type(obj)==property:          return _get_property_name(obj)
     else:                              return str(obj).split('.')[-1]
 
@@ -346,7 +350,7 @@ class DocmentText(_DocmentBase):
         if curr: lines.append(', '.join(curr))
         body = '\n    '.join(lines)
         docstr = f'    "{self.obj.__doc__}"' if self.docstring and self.obj.__doc__ else ''
-        return f"def {self.obj.__name__}(\n    {body}\n{self._ret_str}\n{docstr}"
+        return f"def {get_name(self.obj)}(\n    {body}\n{self._ret_str}\n{docstr}"
     
     __repr__ = __str__
     def _repr_markdown_(self): return f"```python\n{self}\n```"

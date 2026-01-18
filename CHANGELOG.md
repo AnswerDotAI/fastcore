@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.2
+
+### New Features
+
+- Add __text_signature__ support for builtin functions in DocmentText ([#750](https://github.com/AnswerDotAI/fastcore/issues/750))
+
+
 ## 1.12.1
 
 ### New Features

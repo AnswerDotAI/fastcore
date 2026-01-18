@@ -318,6 +318,12 @@ class DocmentList(_DocmentBase):
     def _repr_markdown_(self): return '\n'.join(self._fmt(k,v) for k,v in self.dm.items())
     __repr__=__str__=_repr_markdown_
 
+# %% ../nbs/04_docments.ipynb #6355b569
+def _clean_text_sig(obj):
+    if not (sig := getattr(obj, '__text_signature__', None)): return None
+    sig = re.sub(r'\$\w+,?\s*', '', sig)
+    return get_name(obj) + sig.replace('<unrepresentable>', '...')
+
 # %% ../nbs/04_docments.ipynb #4550820f
 class DocmentText(_DocmentBase):
     def __init__(self, obj, maxline=110, docstring=True):
@@ -339,18 +345,20 @@ class DocmentText(_DocmentBase):
     def params(self): return [(self._fmt_param(k,v), v.get('docment','')) for k,v in self.dm.items() if k != 'return']
 
     def __str__(self):
-        lines,curr = [],[]
-        for fmt,doc in self.params:
-            comment = f' # {doc}' if doc else ''
-            if curr and len(', '.join(curr))+len(fmt)+len(comment)>self.maxline:
-                lines.append(', '.join(curr) + ',')
-                curr = []
-            curr.append(fmt)
-            if doc: lines.append(', '.join(curr) + ',' + comment); curr = []
-        if curr: lines.append(', '.join(curr))
-        body = '\n    '.join(lines)
+        if (sig := _clean_text_sig(self.obj)) and not self.params: sig_str = f"def {sig}"
+        else:
+            lines,curr = [],[]
+            for fmt,doc in self.params:
+                comment = f' # {doc}' if doc else ''
+                if curr and len(', '.join(curr))+len(fmt)+len(comment)>self.maxline:
+                    lines.append(', '.join(curr) + ',')
+                    curr = []
+                curr.append(fmt)
+                if doc: lines.append(', '.join(curr) + ',' + comment); curr = []
+            if curr: lines.append(', '.join(curr))
+            sig_str = f"def {get_name(self.obj)}(\n    {'\n    '.join(lines)}\n{self._ret_str}"
         docstr = f'    "{self.obj.__doc__}"' if self.docstring and self.obj.__doc__ else ''
-        return f"def {get_name(self.obj)}(\n    {body}\n{self._ret_str}\n{docstr}"
+        return f"{sig_str}\n{docstr}"
     
     __repr__ = __str__
     def _repr_markdown_(self): return f"```python\n{self}\n```"

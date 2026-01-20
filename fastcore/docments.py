@@ -356,7 +356,8 @@ class DocmentText(_DocmentBase):
                 curr.append(fmt)
                 if doc: lines.append(', '.join(curr) + ',' + comment); curr = []
             if curr: lines.append(', '.join(curr))
-            sig_str = f"def {get_name(self.obj)}(\n    {'\n    '.join(lines)}\n{self._ret_str}"
+            params = '\n    '.join(lines)
+            sig_str = f"def {get_name(self.obj)}(\n    {params}\n{self._ret_str}"
         docstr = f'    "{self.obj.__doc__}"' if self.docstring and self.obj.__doc__ else ''
         return f"{sig_str}\n{docstr}"
     

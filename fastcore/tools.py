@@ -6,7 +6,7 @@
 __all__ = ['explain_exc', 'ensure', 'valid_path', 'run_cmd', 'rg', 'sed', 'view', 'create', 'insert', 'str_replace',
            'strs_replace', 'replace_lines', 'move_lines', 'get_callable']
 
-# %% ../nbs/12_tools.ipynb
+# %% ../nbs/12_tools.ipynb #578246d2
 from .imports import *
 from .xtras import truncstr
 from shlex import split
@@ -51,7 +51,7 @@ def run_cmd(
     if res and outp.stderr: res += '\n'
     return res + outp.stderr
 
-# %% ../nbs/12_tools.ipynb
+# %% ../nbs/12_tools.ipynb #eb253a39
 def rg(
     argstr:str, # All args to the command, will be split with shlex
     disallow_re:str=None, # optional regex which, if matched on argstr, will disallow the command
@@ -60,7 +60,7 @@ def rg(
     "Run the `rg` command with the args in `argstr` (no need to backslash escape)"
     return run_cmd('rg', '-n '+argstr, disallow_re=disallow_re, allow_re=allow_re)
 
-# %% ../nbs/12_tools.ipynb
+# %% ../nbs/12_tools.ipynb #09de7b32
 def sed(
     argstr:str, # All args to the command, will be split with shlex
     disallow_re:str=None, # optional regex which, if matched on argstr, will disallow the command
@@ -72,23 +72,26 @@ def sed(
 # %% ../nbs/12_tools.ipynb
 def _fmt_path(f, p):
     'Format path with emoji for dirs/symlinks or size for files'
-    if any(part.startswith('.') for part in f.relative_to(p).parts): return None
+    parts = f.relative_to(p).parts
+    if any(part.startswith('.') for part in parts): return None
+    if any(part in skip_folders for part in parts): return None
     if f.is_symlink(): return f'{f} 🔗'
     if f.is_dir(): return f'{f} 📁'
     return f'{f} ({f.stat().st_size/1024:.1f}k)'
 
-# %% ../nbs/12_tools.ipynb
+# %% ../nbs/12_tools.ipynb #f2e2f69c
 def view(
     path:str, # Path to directory or file to view
     view_range:tuple[int,int]=None, # Optional 1-indexed (start, end) line range for files, end=-1 for EOF. Do NOT use unless it's known that the file is too big to keep in context—simply view the WHOLE file when possible
-    nums:bool=False # Whether to show line numbers
+    nums:bool=False, # Whether to show line numbers
+    skip_folders:tuple[str,...]=('_proc','__pycache__') # Folder names to skip when listing directories
 ):
     'View directory or file contents with optional line range and numbers'
     try:
         p = valid_path(path)
         header = None
         if p.is_dir():
-            lines = [s for f in p.glob('**/*') if (s := _fmt_path(f, p))]
+            lines = [s for f in p.glob('**/*') if (s := _fmt_path(f, p, skip_folders))]
             header = f'Directory contents of {p}:'
         else: lines = p.read_text().splitlines()
         s, e = 1, len(lines)
@@ -102,7 +105,7 @@ def view(
         return f'{header}\n{content}' if header else content
     except: return explain_exc('viewing')
 
-# %% ../nbs/12_tools.ipynb
+# %% ../nbs/12_tools.ipynb #36f58e38
 def create(
     path: str, # Path where the new file should be created
     file_text: str, # Content to write to the file
@@ -118,7 +121,7 @@ def create(
         return f'Created file {p}.'
     except: return explain_exc('creating file')
 
-# %% ../nbs/12_tools.ipynb
+# %% ../nbs/12_tools.ipynb #434147ef
 def insert(
     path: str, # Path to the file to modify
     insert_line: int, # Line number where to insert (0-based indexing)
@@ -135,7 +138,7 @@ def insert(
         return f'Inserted text at line {insert_line} in {p}'
     except: return explain_exc('inserting text')
 
-# %% ../nbs/12_tools.ipynb
+# %% ../nbs/12_tools.ipynb #9272ff7d
 def str_replace(
     path: str, # Path to the file to modify
     old_str: str, # Text to find and replace
@@ -153,7 +156,7 @@ def str_replace(
         return f'Replaced text in {p}'
     except: return explain_exc('replacing text')
 
-# %% ../nbs/12_tools.ipynb
+# %% ../nbs/12_tools.ipynb #eb907119
 def strs_replace(
     path:str, # Path to the file to modify
     old_strs:list[str], # List of strings to find and replace
@@ -163,7 +166,7 @@ def strs_replace(
     res = [str_replace(path, old, new) for (old,new) in zip(old_strs,new_strs)]
     return 'Results for each replacement:\n' + '; '.join(res)
 
-# %% ../nbs/12_tools.ipynb
+# %% ../nbs/12_tools.ipynb #94dd09ed
 def replace_lines(
     path:str, # Path to the file to modify
     start_line:int, # Starting line number to replace (1-based indexing)
@@ -180,7 +183,7 @@ def replace_lines(
         return f"Replaced lines {start_line} to {end_line}."
     except: return explain_exc('replacing lines')
 
-# %% ../nbs/12_tools.ipynb
+# %% ../nbs/12_tools.ipynb #b136abf8
 def move_lines(
     path: str,  # Path to the file to modify
     start_line: int,  # Starting line number to move (1-based)
@@ -204,7 +207,7 @@ def move_lines(
         return f"Moved lines {start_line}-{end_line} to line {dest_line}"
     except: return explain_exc()
 
-# %% ../nbs/12_tools.ipynb
+# %% ../nbs/12_tools.ipynb #fc53b116
 def get_callable():
     "Return callable objects defined in caller's module"
     import inspect

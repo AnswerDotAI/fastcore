@@ -2,6 +2,49 @@
 
 <!-- do not remove -->
 
+## 1.12.3
+
+### Bugs Squashed
+
+- Backslash in format str not allowed in py<312 ([#753](https://github.com/AnswerDotAI/fastcore/issues/753))
+
+
+## 1.12.2
+
+### New Features
+
+- Add __text_signature__ support for builtin functions in DocmentText ([#750](https://github.com/AnswerDotAI/fastcore/issues/750))
+
+
+## 1.12.1
+
+### New Features
+
+- Add partial function support to `get_name` and DocmentText ([#749](https://github.com/AnswerDotAI/fastcore/issues/749))
+
+
+## 1.12.0
+
+### Breaking Changes
+
+- listify: wrap Mapping types instead of iterating their keys ([#748](https://github.com/AnswerDotAI/fastcore/issues/748))
+
+### New Features
+
+- Add `skip_folders` param to view() to filter out `_proc` and `__pycache__` dirs ([#747](https://github.com/AnswerDotAI/fastcore/issues/747))
+
+
+## 1.11.5
+
+### New Features
+
+- Add kwargs support to flatmap ([#746](https://github.com/AnswerDotAI/fastcore/issues/746))
+
+### Bugs Squashed
+
+- Fix anno typing when `eval_str=True` ([#744](https://github.com/AnswerDotAI/fastcore/pull/744)), thanks to [@curtis-allan](https://github.com/curtis-allan)
+
+
 ## 1.11.4
 
 ### New Features

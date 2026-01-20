@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.3
+
+### Bugs Squashed
+
+- Backslash in format str not allowed in py<312 ([#753](https://github.com/AnswerDotAI/fastcore/issues/753))
+
+
 ## 1.12.2
 
 ### New Features

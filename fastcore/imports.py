@@ -100,3 +100,17 @@ def remove_suffix(text, suffix):
     "Temporary until py39 is a prereq"
     return text[:-len(suffix)] if text.endswith(suffix) else text
 
+def is_usable_tool(func:callable):
+    "True if the function has a docstring and all parameters have types, meaning that it can be used as an LLM tool."
+    from inspect import Parameter,signature
+    if not func.__doc__ or not callable(func): return False
+    return all(p.annotation != Parameter.empty for p in signature(func).parameters.values())
+
+__llmtools__ = set()
+
+def llmtool(f):
+    assert is_usable_tool(f), f"Function {f.__name__} is not usable as a tool"
+    __llmtools__.add(f.__name__)
+    f.__llmtool__ = True
+    return f
+

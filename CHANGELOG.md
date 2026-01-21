@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.4
+
+### New Features
+
+- Add @llmtool decorator and `valid_paths` restriction for LLM tool functions ([#754](https://github.com/AnswerDotAI/fastcore/issues/754))
+
+
 ## 1.12.3
 
 ### Bugs Squashed

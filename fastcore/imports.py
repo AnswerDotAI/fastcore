@@ -108,9 +108,45 @@ def is_usable_tool(func:callable):
 
 __llmtools__ = set()
 
-def llmtool(f):
-    assert is_usable_tool(f), f"Function {f.__name__} is not usable as a tool"
-    __llmtools__.add(f.__name__)
-    f.__llmtool__ = True
-    return f
+def params(f, exclude=None):
+    "Get parameter annotations from function, excluding 'return' and any in `exclude`"
+    from .basics import annotations
+    exclude = set(exclude or []) | {'return'}
+    return {k:v for k,v in annotations(f).items() if k not in exclude}
 
+def extract_args(names, a, kw):
+    "Extract args by name from positional args `a` or kwargs `kw`, returning extracted values"
+    return [kw.pop(n) if n in kw else a[i] for i,n in enumerate(names)]
+
+def call_via(via, method_name, a, kw, via_keys):
+    "Create object via factory, then call method with remaining args"
+    via_args = extract_args(via_keys, a, kw)
+    return getattr(via(*via_args), method_name)(*a[len(via_keys):], **kw)
+
+def merge_hints(via, f, exclude=['self', 'cls']):
+    "Merge type hints from via and f into combined annotations"
+    from .basics import anno_ret
+    return {**params(via, exclude=exclude), **params(f, exclude=exclude), 'return': anno_ret(f) or str}
+
+def llmtool(f=None, *, via=None):
+    "Decorator to mark a function as an LLM tool. Use `via` for patched methods."
+    if f is None: return partial(llmtool, via=via)
+    if via is None:
+        assert is_usable_tool(f), f"Function {f.__name__} is not usable as a tool"
+        __llmtools__.add(f.__name__)
+        f.__llmtool__ = True
+        return f
+    
+    from .basics import patch
+    patch(f)
+    vps = params(via, exclude=['cls', 'self'])
+    
+    @functools.wraps(f)
+    def proxy(*a, **kw): return call_via(via, f.__name__, a, kw, vps.keys())
+    
+    proxy.__annotations__ = merge_hints(via, f)
+    proxy.__doc__ = f.__doc__
+    assert is_usable_tool(proxy), f"Function {f.__name__} is not usable as a tool"
+    __llmtools__.add(proxy.__name__)
+    proxy.__llmtool__ = True
+    return proxy

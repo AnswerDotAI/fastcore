@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.5
+
+### New Features
+
+- docments md shows function names instead of repr ([#756](https://github.com/AnswerDotAI/fastcore/issues/756))
+
+
 ## 1.12.4
 
 ### New Features

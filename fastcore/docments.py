@@ -324,7 +324,26 @@ def _clean_text_sig(obj):
     sig = re.sub(r'\$\w+,?\s*', '', sig)
     return get_name(obj) + sig.replace('<unrepresentable>', '...')
 
+# %% ../nbs/04_docments.ipynb #cfcc46bf
+def _fmt_sig(name, params, ret_str, maxline):
+    "Format function signature with params and docment comments"
+    lines,curr = [],[]
+    for fmt,doc in params:
+        comment = f' # {doc}' if doc else ''
+        if curr and len(', '.join(curr))+len(fmt)+len(comment)>maxline:
+            lines.append(', '.join(curr) + ',')
+            curr = []
+        curr.append(fmt)
+        if doc: lines.append(', '.join(curr) + ',' + comment); curr = []
+    if curr: lines.append(', '.join(curr))
+    pstr = '\n    '.join(lines)
+    return f"def {name}(\n    {pstr}\n{ret_str}"
+
 # %% ../nbs/04_docments.ipynb #4550820f
+def _fmt_default(o):
+    if o is empty: return ''
+    return o.__name__ if hasattr(o, '__name__') else repr(o)
+
 class DocmentText(_DocmentBase):
     def __init__(self, obj, maxline=110, docstring=True):
         super().__init__(obj)
@@ -332,7 +351,7 @@ class DocmentText(_DocmentBase):
 
     def _fmt_param(self, nm, p):
         anno,default = p.get('anno',empty), p.get('default',empty)
-        return nm + (f':{_maybe_nm(anno)}' if anno != empty else '') + (f'={repr(default)}' if default != empty else '')
+        return nm + (f':{_maybe_nm(anno)}' if anno != empty else '') + (f'={_fmt_default(default)}' if default != empty else '')
     
     @property
     def _ret_str(self):
@@ -346,18 +365,7 @@ class DocmentText(_DocmentBase):
 
     def __str__(self):
         if (sig := _clean_text_sig(self.obj)) and not self.params: sig_str = f"def {sig}"
-        else:
-            lines,curr = [],[]
-            for fmt,doc in self.params:
-                comment = f' # {doc}' if doc else ''
-                if curr and len(', '.join(curr))+len(fmt)+len(comment)>self.maxline:
-                    lines.append(', '.join(curr) + ',')
-                    curr = []
-                curr.append(fmt)
-                if doc: lines.append(', '.join(curr) + ',' + comment); curr = []
-            if curr: lines.append(', '.join(curr))
-            params = '\n    '.join(lines)
-            sig_str = f"def {get_name(self.obj)}(\n    {params}\n{self._ret_str}"
+        else: sig_str = _fmt_sig(get_name(self.obj), self.params, self._ret_str, self.maxline)
         docstr = f'    "{self.obj.__doc__}"' if self.docstring and self.obj.__doc__ else ''
         return f"{sig_str}\n{docstr}"
     

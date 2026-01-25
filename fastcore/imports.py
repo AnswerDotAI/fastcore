@@ -108,9 +108,14 @@ def is_usable_tool(func:callable):
 
 __llmtools__ = set()
 
-def llmtool(f):
-    assert is_usable_tool(f), f"Function {f.__name__} is not usable as a tool"
-    __llmtools__.add(f.__name__)
-    f.__llmtool__ = True
-    return f
+def llmtool(f=None, **tmpls):
+    "Decorator to mark a function as an LLM tool. Pass `**tmpls` to format the docstring."
+    def decorator(fn):
+        assert is_usable_tool(fn), f"Function {fn.__name__} is not usable as a tool"
+        if fn.__doc__ and tmpls: fn.__doc__ = fn.__doc__.format(**tmpls)
+        __llmtools__.add(fn.__name__)
+        fn.__llmtool__ = True
+        return fn
+    if f: return decorator(f)
+    return decorator
 

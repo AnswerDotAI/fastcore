@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.12.6
+
+### New Features
+
+- Return None from `detect_mime` for non-bytes input ([#758](https://github.com/AnswerDotAI/fastcore/pull/758)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+- Add template support to llmtool decorator ([#757](https://github.com/AnswerDotAI/fastcore/pull/757)), thanks to [@ncoop57](https://github.com/ncoop57)
+
+
 ## 1.12.5
 
 ### New Features

@@ -1,11 +1,35 @@
 [build-system]
-requires = ["setuptools>=64.0"]
+requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name="fastcore"
+dynamic = ["version"]
+description = "Python supercharged for fastai development"
+readme = "README.md"
 requires-python=">=3.10"
-dynamic = [ "keywords", "description", "version", "dependencies", "optional-dependencies", "readme", "license", "authors", "classifiers", "entry-points", "scripts", "urls"]
+license = {text = "Apache-2.0"}
+authors = [{name = "Jeremy Howard and Sylvain Gugger", email = "infos@fast.ai"}]
+keywords = ['python']
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = []
 
-[tool.uv]
-cache-keys = [{ file = "pyproject.toml" }, { file = "settings.ini" }, { file = "setup.py" }]
+[project.urls]
+Repository = "https://github.com/AnswerDotAI/fastcore/"
+Documentation = "https://fastcore.fast.ai/"
+
+[project.entry-points.nbdev]
+fastcore = "fastcore._modidx:d"
+
+[tool.setuptools.dynamic]
+version = {attr = "fastcore.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["fastcore"]
+
+[tool.nbdev]
+tst_flags = ''
+custom_sidebar = false

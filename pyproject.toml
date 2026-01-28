@@ -3,18 +3,15 @@ requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name="fastcore"
+name = "fastcore"
 dynamic = ["version"]
 description = "Python supercharged for fastai development"
 readme = "README.md"
-requires-python=">=3.10"
+requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
 authors = [{name = "Jeremy Howard and Sylvain Gugger", email = "infos@fast.ai"}]
 keywords = ['python']
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3 :: Only",
-]
+classifiers = ["Natural Language :: English", "Intended Audience :: Developers", "Development Status :: 5 - Production/Stable", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3 :: Only"]
 dependencies = []
 
 [project.urls]
@@ -24,16 +21,19 @@ Documentation = "https://fastcore.fast.ai/"
 [project.entry-points.nbdev]
 fastcore = "fastcore._modidx:d"
 
+[project.optional-dependencies]
+dev = ['numpy', 'nbdev>=0.2.39', 'matplotlib', 'pillow', 'torch', 'pandas', 'nbclassic', 'pysymbol_llm', 'llms-txt', 'plum-dispatch', 'toolslm']
+
+
 [project.scripts]
 py2pyi = "fastcore.py2pyi:py2pyi"
+replace_wildcards = "fastcore.py2pyi:replace_wildcards"
+
 [tool.setuptools.dynamic]
 version = {attr = "fastcore.__version__"}
 
 [tool.setuptools.packages.find]
 include = ["fastcore"]
-
-[project.optional-dependencies]
-dev = ["numpy","nbdev>=0.2.39","matplotlib","pillow","torch","pandas","nbclassic","pysymbol_llm","llms-txt","plum-dispatch","toolslm"]
 
 [tool.nbdev]
 tst_flags = ''

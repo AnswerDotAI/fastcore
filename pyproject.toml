@@ -30,6 +30,9 @@ version = {attr = "fastcore.__version__"}
 [tool.setuptools.packages.find]
 include = ["fastcore"]
 
+[project.optional-dependencies]
+dev = ["numpy","nbdev>=0.2.39","matplotlib","pillow","torch","pandas","nbclassic","pysymbol_llm","llms-txt","plum-dispatch","toolslm"]
+
 [tool.nbdev]
 tst_flags = ''
 custom_sidebar = false

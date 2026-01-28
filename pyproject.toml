@@ -24,8 +24,14 @@ Documentation = "https://fastcore.fast.ai/"
 [project.entry-points.nbdev]
 fastcore = "fastcore._modidx:d"
 
+[project.scripts]
+py2pyi=fastcore.py2pyi:py2pyi
+
 [tool.setuptools.dynamic]
 version = {attr = "fastcore.__version__"}
+
+[project.scripts]
+py2pyi=fastcore.py2pyi:py2pyi
 
 [tool.setuptools.packages.find]
 include = ["fastcore"]

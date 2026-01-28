@@ -4,7 +4,7 @@
 
 # %% auto #0
 __all__ = ['SCRIPT_INFO', 'store_true', 'store_false', 'bool_arg', 'clean_type_str', 'Param', 'anno_parser', 'args_from_prog',
-           'call_parse']
+           'set_ctx', 'call_parse']
 
 # %% ../nbs/06_script.ipynb #8a36db98
 import inspect,argparse,shutil,types
@@ -135,24 +135,39 @@ def args_from_prog(func, prog):
 # %% ../nbs/06_script.ipynb #f76b07f6
 SCRIPT_INFO = SimpleNamespace(func=None)
 
-# %% ../nbs/06_script.ipynb #3c1b3a65
+# %% ../nbs/06_script.ipynb #42c8e85f
+from contextvars import ContextVar
+from contextlib import contextmanager
+
+# %% ../nbs/06_script.ipynb #e4537112
+@contextmanager
+def set_ctx(cv, val=True):
+    token = cv.set(val)
+    try: yield
+    finally: cv.reset(token)
+
+# %% ../nbs/06_script.ipynb #fc816498
+_in_call_parse = ContextVar('_in_call_parse', default=False)
+
 def call_parse(func=None, nested=False):
     "Decorator to create a simple CLI from `func` using `anno_parser`"
     if func is None: return partial(call_parse, nested=nested)
 
     @wraps(func)
     def _f(*args, **kwargs):
-        mod = inspect.getmodule(inspect.currentframe().f_back)
-        if not mod: return func(*args, **kwargs)
-        if not SCRIPT_INFO.func and mod.__name__=="__main__": SCRIPT_INFO.func = func.__name__
-        if len(sys.argv)>1 and sys.argv[1]=='': sys.argv.pop(1)
-        p = anno_parser(func)
-        if nested: args, sys.argv[1:] = p.parse_known_args()
-        else: args = p.parse_args()
-        args = args.__dict__
-        xtra = otherwise(args.pop('xtra', ''), eq(1), p.prog)
-        tfunc = trace(func) if args.pop('pdb', False) else func
-        return tfunc(**merge(args, args_from_prog(func, xtra)))
+        if args or kwargs or _in_call_parse.get(): return func(*args, **kwargs)
+        with set_ctx(_in_call_parse):
+            mod = inspect.getmodule(inspect.currentframe().f_back)
+            if not mod: return func(*args, **kwargs)
+            if not SCRIPT_INFO.func and mod.__name__=="__main__": SCRIPT_INFO.func = func.__name__
+            if len(sys.argv)>1 and sys.argv[1]=='': sys.argv.pop(1)
+            p = anno_parser(func)
+            if nested: args, sys.argv[1:] = p.parse_known_args()
+            else: args = p.parse_args()
+            args = args.__dict__
+            xtra = otherwise(args.pop('xtra', ''), eq(1), p.prog)
+            tfunc = trace(func) if args.pop('pdb', False) else func
+            return tfunc(**merge(args, args_from_prog(func, xtra)))
 
     mod = inspect.getmodule(inspect.currentframe().f_back)
     if getattr(mod, '__name__', '') =="__main__":

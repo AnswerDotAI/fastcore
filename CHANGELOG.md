@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.7
+
+### New Features
+
+- Handle nested `call_parse` ([#759](https://github.com/AnswerDotAI/fastcore/issues/759))
+
+
 ## 1.12.6
 
 ### New Features

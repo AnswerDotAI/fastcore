@@ -670,4 +670,4 @@ class Config:
     def find(cls, cfg_name, cfg_path=None, **kwargs):
         "Search `cfg_path` and its parents to find `cfg_name`"
         p = find_file_parents(cfg_name, cfg_path)
-        return cls(p, cfg_name, **kwargs)
+        return cls(p, cfg_name, **kwargs) if p else None

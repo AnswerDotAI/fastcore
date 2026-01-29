@@ -14,5 +14,4 @@ jobs:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
     steps:
-    - uses: fastai/workflows/quarto-ghp33@master
-#      with: {pre: 1}
+    - uses: fastai/workflows/quarto-ghp3@master

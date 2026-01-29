@@ -5,7 +5,7 @@
 # %% auto #0
 __all__ = ['working_directory', 'add_docs', 'docs', 'coll_repr', 'is_bool', 'mask2idxs', 'cycle', 'zip_cycle', 'is_indexer',
            'product', 'flatmap', 'CollBase', 'L', 'curryable', 'splitter', 'linesplitter', 'save_config_file',
-           'read_config_file', 'Config']
+           'read_config_file', 'find_file_parents', 'Config']
 
 # %% ../nbs/02_foundation.ipynb #0f974791
 from .imports import *
@@ -624,6 +624,12 @@ def read_config_file(file, **kwargs):
     config.read(file, encoding='utf8')
     return config['DEFAULT']
 
+# %% ../nbs/02_foundation.ipynb #95834369
+def find_file_parents(fname, frompath=None):
+    "Search `cfg_path` and its parents to find `cfg_name`"
+    p = Path(frompath or Path.cwd()).expanduser().absolute()
+    return first(o for o in [p, *p.parents] if (o/fname).exists())
+
 # %% ../nbs/02_foundation.ipynb #e06640e8
 class Config:
     "Reading and writing `ConfigParser` ini files"
@@ -663,6 +669,5 @@ class Config:
     @classmethod
     def find(cls, cfg_name, cfg_path=None, **kwargs):
         "Search `cfg_path` and its parents to find `cfg_name`"
-        p = Path(cfg_path or Path.cwd()).expanduser().absolute()
-        return first(cls(o, cfg_name, **kwargs)
-                      for o in [p, *p.parents] if (o/cfg_name).exists())
+        p = find_file_parents(cfg_name, cfg_path)
+        return cls(p, cfg_name, **kwargs)

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.8
+
+### Bugs Squashed
+
+- update to `from importlib.metadata import entry_points` ([#760](https://github.com/AnswerDotAI/fastcore/issues/760))
+
+
 ## 1.12.7
 
 ### New Features

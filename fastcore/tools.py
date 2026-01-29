@@ -57,7 +57,7 @@ def run_cmd(
     try:
         ensure(not (disallow_re and re.search(disallow_re, argstr)), 'args disallowed')
         ensure(not (allow_re    and re.search(   allow_re, argstr)), 'args not allowed')
-        args = [str(Path(a).expanduser()) if a.startswith('~') else a for a in split(argstr)]
+        args = [str(Path(a).expanduser()) if a.startswith('~') else a for a in split(argstr, posix=False)]
         outp = run([cmd] + args, text=True, stdin=DEVNULL, capture_output=True)
     except: return explain_exc(f'running cmd')
     res = outp.stdout

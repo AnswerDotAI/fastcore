@@ -818,17 +818,15 @@ def shufflish(x, pct=0.04):
     import random
     return L(x[i] for i in sorted(range_of(x), key=lambda o: o+n*(1+random.random()*pct)))
 
-# %% ../nbs/03_xtras.ipynb #705c1a5a
-def console_help(
-    libname:str):  # name of library for console script listing
+# %% ../nbs/03_xtras.ipynb #3a527c27
+def console_help(libname: str):
     "Show help for all console scripts from `libname`"
     from fastcore.style import S
-    from pkg_resources import iter_entry_points as ep
-    for e in ep('console_scripts'): 
-        if e.module_name == libname or e.module_name.startswith(libname+'.'): 
+    from importlib.metadata import entry_points
+    for e in entry_points(group='console_scripts'):
+        if e.module == libname or e.module.startswith(libname + '.'):
             nm = S.bold.light_blue(e.name)
             print(f'{nm:45}{e.load().__doc__}')
-
 
 # %% ../nbs/03_xtras.ipynb #01a02b78
 def hl_md(s, lang='html', show=True):

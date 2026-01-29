@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 1.12.9
+
+### New Features
+
+- Add `find_file_parents` ([#762](https://github.com/AnswerDotAI/fastcore/issues/762))
+
+### Bugs Squashed
+
+- tests fail sometimes on mac ([#761](https://github.com/AnswerDotAI/fastcore/issues/761))
+
+
 ## 1.12.8
 
 ### Bugs Squashed

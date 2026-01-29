@@ -30,7 +30,8 @@ def threaded(process=False):
             _obj_td.result = res
         @wraps(f)
         def _f(*args, **kwargs):
-            res = (Thread,Process)[process](target=g, args=args, kwargs=kwargs)
+            Proc = get_context('fork').Process if sys.platform == 'darwin' else Process
+            res = (Thread,Proc)[process](target=g, args=args, kwargs=kwargs)
             res._args = (res,)+res._args
             res.start()
             return res
@@ -158,7 +159,8 @@ async def parallel_async(f, items, *args, n_workers=16,
 # %% ../nbs/03a_parallel.ipynb #da364301
 def run_procs(f, f_done, args):
     "Call `f` for each item in `args` in parallel, yielding `f_done`"
-    processes = L(args).map(Process, args=arg0, target=f)
+    Proc = get_context('fork').Process if sys.platform == 'darwin' else Process
+    processes = L(args).map(Proc, args=arg0, target=f)
     for o in processes: o.start()
     yield from f_done()
     processes.map(Self.join())

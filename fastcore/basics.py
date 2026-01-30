@@ -473,13 +473,13 @@ _camel_re2 = re.compile('([a-z0-9])([A-Z])')
 # %% ../nbs/01_basics.ipynb #dd737e81
 def camel2words(s, space=' '):
     "Convert CamelCase to 'spaced words'"
-    return re.sub(_c2w_re, rf'{space}\1', s)
+    return _c2w_re.sub(rf'{space}\1', s)
 
 # %% ../nbs/01_basics.ipynb #a588a317
 def camel2snake(name):
     "Convert CamelCase to snake_case"
-    s1   = re.sub(_camel_re1, r'\1_\2', name)
-    return re.sub(_camel_re2, r'\1_\2', s1).lower()
+    s1   = _camel_re1.sub(r'\1_\2', name)
+    return _camel_re2.sub(r'\1_\2', s1).lower()
 
 # %% ../nbs/01_basics.ipynb #bbd632b4
 def snake2camel(s):

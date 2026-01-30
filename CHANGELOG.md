@@ -2,6 +2,19 @@
 
 <!-- do not remove -->
 
+## 1.12.11
+
+### New Features
+
+- Add `splice_sig` ([#767](https://github.com/AnswerDotAI/fastcore/issues/767))
+- Support backslash by using posix=False ([#765](https://github.com/AnswerDotAI/fastcore/issues/765))
+- Expand home dir in tools cmds ([#763](https://github.com/AnswerDotAI/fastcore/issues/763))
+
+### Bugs Squashed
+
+- fix `argument should be a str or an os.PathLike object` ([#764](https://github.com/AnswerDotAI/fastcore/issues/764))
+
+
 ## 1.12.9
 
 ### New Features

@@ -4,13 +4,16 @@
 
 # %% auto #0
 __all__ = ['test_sig', 'FixSigMeta', 'PrePostInitMeta', 'AutoInit', 'NewChkMeta', 'BypassNewMeta', 'empty2none', 'anno_dict',
-           'use_kwargs_dict', 'use_kwargs', 'delegates', 'method', 'funcs_kwargs']
+           'use_kwargs_dict', 'use_kwargs', 'delegates', 'method', 'funcs_kwargs', 'splice_sig']
 
 # %% ../nbs/05_meta.ipynb #d26e95dd
 from .imports import *
 from .basics import *
 from contextlib import contextmanager
+from functools import wraps
+from inspect import signature, Parameter
 from copy import copy
+
 import inspect
 
 # %% ../nbs/05_meta.ipynb #8f330096
@@ -159,3 +162,14 @@ def funcs_kwargs(as_method=False):
     "Replace methods in `cls._methods` with those from `kwargs`"
     if callable(as_method): return _funcs_kwargs(as_method, False)
     return partial(_funcs_kwargs, as_method=as_method)
+
+# %% ../nbs/05_meta.ipynb #b69b0276
+def splice_sig(wrapper, fn, *skips):
+    "Replace *args/**kwargs in wrapper's sig with fn's params (minus skips)"
+    w_ps = list(signature(wrapper).parameters.values())
+    f_ps = [p for p in signature(fn).parameters.values() if p.name not in skips]
+    split = next((i for i, p in enumerate(w_ps) if p.kind==Parameter.VAR_POSITIONAL), len(w_ps))
+    pre = w_ps[:split]
+    post = [p for p in w_ps[split+1:] if p.kind != Parameter.VAR_KEYWORD]
+    wrapper.__signature__ = signature(wrapper).replace(parameters=[*pre, *f_ps, *post])
+    return wraps(fn)(wrapper)

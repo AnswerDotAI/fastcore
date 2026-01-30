@@ -165,7 +165,7 @@ def funcs_kwargs(as_method=False):
 
 # %% ../nbs/05_meta.ipynb #b69b0276
 def splice_sig(wrapper, fn, *skips):
-    "Replace *args/**kwargs in wrapper's sig with fn's params (minus skips)"
+    "Replace `*args`/`**kwargs` in wrapper's sig with fn's params (minus skips)"
     w_ps = list(signature(wrapper).parameters.values())
     f_ps = [p for p in signature(fn).parameters.values() if p.name not in skips]
     split = next((i for i, p in enumerate(w_ps) if p.kind==Parameter.VAR_POSITIONAL), len(w_ps))

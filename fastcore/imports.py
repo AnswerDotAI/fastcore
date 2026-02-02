@@ -84,7 +84,7 @@ def in_colab():
 def in_jupyter():
     "Check if the code is running in a jupyter notebook"
     if not in_ipython(): return False
-    return ipython_shell().__class__.__name__ == 'ZMQInteractiveShell'
+    return 'InteractiveShell' in ipython_shell().__class__.__name__
 
 def in_notebook():
     "Check if the code is running in a jupyter notebook"

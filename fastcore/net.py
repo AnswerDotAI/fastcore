@@ -22,7 +22,7 @@ from .utils import *
 from .parallel import *
 
 from functools import wraps
-import json,urllib,contextlib
+import json,urllib,contextlib,tempfile
 import socket,urllib.request,http,urllib
 from contextlib import contextmanager,ExitStack
 from urllib.request import Request,urlretrieve,install_opener,HTTPErrorProcessor,HTTPRedirectHandler

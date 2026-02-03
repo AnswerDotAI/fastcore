@@ -74,9 +74,9 @@ class HTTP5xxServerError(HTTPError):
     pass
 
 # %% ../nbs/03b_net.ipynb #128b5f4a
-def urlopener():
+def urlopener(headers=url_default_headers):
     _opener = urllib.request.build_opener()
-    _opener.addheaders = list(url_default_headers.items())
+    _opener.addheaders = list(headers.items())
     return _opener
 
 # %% ../nbs/03b_net.ipynb #e0470139
@@ -102,19 +102,19 @@ for code,msg in _httperrors:
 _all_ = ['HTTP400BadRequestError', 'HTTP401UnauthorizedError', 'HTTP402PaymentRequiredError', 'HTTP403ForbiddenError', 'HTTP404NotFoundError', 'HTTP405MethodNotAllowedError', 'HTTP406NotAcceptableError', 'HTTP407ProxyAuthRequiredError', 'HTTP408RequestTimeoutError', 'HTTP409ConflictError', 'HTTP410GoneError', 'HTTP411LengthRequiredError', 'HTTP412PreconditionFailedError', 'HTTP413PayloadTooLargeError', 'HTTP414URITooLongError', 'HTTP415UnsupportedMediaTypeError', 'HTTP416RangeNotSatisfiableError', 'HTTP417ExpectationFailedError', 'HTTP418AmAteapotError', 'HTTP421MisdirectedRequestError', 'HTTP422UnprocessableEntityError', 'HTTP423LockedError', 'HTTP424FailedDependencyError', 'HTTP425TooEarlyError', 'HTTP426UpgradeRequiredError', 'HTTP428PreconditionRequiredError', 'HTTP429TooManyRequestsError', 'HTTP431HeaderFieldsTooLargeError', 'HTTP451LegalReasonsError']
 
 # %% ../nbs/03b_net.ipynb #0d72881c
-def urlopen(url, data=None, headers=None, timeout=None, **kwargs):
+def urlopen(url, data=None, headers=url_default_headers, timeout=None, **kwargs):
     "Like `urllib.request.urlopen`, but first `urlwrap` the `url`, and encode `data`"
     if kwargs and not data: data=kwargs
     if data is not None:
         if not isinstance(data, (str,bytes)): data = urlencode(data)
         if not isinstance(data, bytes): data = data.encode('ascii')
-    try: return urlopener().open(urlwrap(url, data=data, headers=headers), timeout=timeout)
+    try: return urlopener(headers=headers).open(urlwrap(url, data=data, headers=headers), timeout=timeout)
     except HTTPError as e: 
         e.msg += f"\n====Error Body====\n{e.read().decode(errors='ignore')}"
         raise
 
 # %% ../nbs/03b_net.ipynb #fa6a4dfe
-def urlread(url, data=None, headers=None, decode=True, return_json=False, return_headers=False, timeout=None, **kwargs):
+def urlread(url, data=None, headers=url_default_headers, decode=True, return_json=False, return_headers=False, timeout=None, **kwargs):
     "Retrieve `url`, using `data` dict or `kwargs` to `POST` if present"
     try:
         with urlopen(url, data=data, headers=headers, timeout=timeout, **kwargs) as u: res,hdrs = u.read(),u.headers
@@ -133,7 +133,7 @@ def urljson(url, data=None, headers=None, timeout=None):
     return json.loads(res) if res else {}
 
 # %% ../nbs/03b_net.ipynb #cfe4aafd
-def urlcheck(url, headers=None, timeout=10):
+def urlcheck(url, headers=url_default_headers, timeout=10):
     if not url: return True
     try:
         with urlopen(url, headers=headers, timeout=timeout) as u: return u.status<400
@@ -147,7 +147,7 @@ def urlclean(url):
     return urlunparse(urlparse(str(url))[:3]+('','',''))
 
 # %% ../nbs/03b_net.ipynb #0a5565b3
-def urlretrieve(url, filename=None, reporthook=None, data=None, headers=None, timeout=None):
+def urlretrieve(url, filename=None, reporthook=None, data=None, headers=url_default_headers, timeout=None):
     "Same as `urllib.request.urlretrieve` but also works with `Request` objects"
     with contextlib.closing(urlopen(url, data, headers=headers, timeout=timeout)) as fp:
         headers = fp.info()

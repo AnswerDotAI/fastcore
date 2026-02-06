@@ -15,8 +15,8 @@ __all__ = ['spark_chars', 'UNSET', 'walk', 'exttypes', 'globtastic', 'pglob', 'm
            'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local',
            'local2utc', 'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str',
            'dataclass_src', 'Unset', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict',
-           'is_namedtuple', 'CachedIter', 'CachedAwaitable', 'reawaitable', 'flexicache', 'time_policy', 'mtime_policy',
-           'timed_cache']
+           'is_namedtuple', 'CachedIter', 'CachedAwaitable', 'reawaitable', 'is_async_callable', 'flexicache',
+           'time_policy', 'mtime_policy', 'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb #3401d507
 from .imports import *
@@ -959,6 +959,14 @@ def reawaitable(func:callable):
     @wraps(func)
     def _f(*args, **kwargs): return CachedAwaitable(func(*args, **kwargs))
     return _f
+
+# %% ../nbs/03_xtras.ipynb #1fc78492
+def is_async_callable(obj):
+    "Check if `obj` is an async callable, handling `partial` wrappers and callable instances"
+    # Implementation from Starlette; Copyright © 2018, Encode OSS Ltd.
+    from asyncio import iscoroutinefunction
+    while isinstance(obj, partial): obj = obj.func
+    return iscoroutinefunction(obj) or (callable(obj) and iscoroutinefunction(obj.__call__))
 
 # %% ../nbs/03_xtras.ipynb #d2b4fe09
 def flexicache(*funcs, maxsize=128):

@@ -74,9 +74,9 @@ class HTTP5xxServerError(HTTPError):
     pass
 
 # %% ../nbs/03b_net.ipynb #128b5f4a
-def urlopener():
+def urlopener(headers=None):
     _opener = urllib.request.build_opener()
-    _opener.addheaders = list(url_default_headers.items())
+    if headers: _opener.addheaders = list(headers.items())
     return _opener
 
 # %% ../nbs/03b_net.ipynb #e0470139
@@ -108,7 +108,7 @@ def urlopen(url, data=None, headers=None, timeout=None, **kwargs):
     if data is not None:
         if not isinstance(data, (str,bytes)): data = urlencode(data)
         if not isinstance(data, bytes): data = data.encode('ascii')
-    try: return urlopener().open(urlwrap(url, data=data, headers=headers), timeout=timeout)
+    try: return urlopener(headers=headers).open(urlwrap(url, data=data, headers=headers), timeout=timeout)
     except HTTPError as e: 
         e.msg += f"\n====Error Body====\n{e.read().decode(errors='ignore')}"
         raise

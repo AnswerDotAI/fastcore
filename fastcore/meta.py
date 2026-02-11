@@ -4,7 +4,7 @@
 
 # %% auto #0
 __all__ = ['test_sig', 'FixSigMeta', 'PrePostInitMeta', 'AutoInit', 'NewChkMeta', 'BypassNewMeta', 'empty2none', 'anno_dict',
-           'use_kwargs_dict', 'use_kwargs', 'delegates', 'method', 'funcs_kwargs', 'splice_sig']
+           'use_kwargs_dict', 'use_kwargs', 'delegates', 'method', 'delegated', 'funcs_kwargs', 'splice_sig']
 
 # %% ../nbs/05_meta.ipynb #d26e95dd
 from .imports import *
@@ -111,24 +111,44 @@ def use_kwargs(names, keep=False):
         return f
     return _f
 
-# %% ../nbs/05_meta.ipynb #11583391
-def delegates(to:FunctionType=None, # Delegatee
-              keep=False, # Keep `kwargs` in decorated function?
-              but:list=None, # Exclude these parameters from signature
-              sort_args=False): # Sort arguments alphabetically, doesn't work with call_parse
+# %% ../nbs/05_meta.ipynb #90afe67f
+def _del_funcs(
+    to, # Delegatee function/class/None
+    f   # Decorated function/class
+)->tuple: # (to_f, from_f) resolved underlying functions
+    "Resolve delegate source and target functions, unwrapping bound methods"
+    if to is None: to_f,from_f = f.__base__.__init__,f.__init__
+    else:          to_f,from_f = to.__init__ if isinstance(to,type) else to,f
+    return getattr(to_f,'__func__',to_f), getattr(from_f,'__func__',from_f)
+
+# %% ../nbs/05_meta.ipynb #7341bbbc
+def _del_params(
+    to_f,            # Delegatee function
+    sig,             # Signature of decorated function
+    but:list=None,   # Params to exclude
+    sort_args=False  # Sort params alphabetically?
+):
+    "Get keyword-only params from `to_f` not already in `sig`, excluding `but`"
+    s2 = {k:v.replace(kind=Parameter.KEYWORD_ONLY) for k,v in inspect.signature(to_f).parameters.items()
+          if v.default != Parameter.empty and k not in sig.parameters and k not in listify(but)}
+    if sort_args: s2 = dict(sorted(s2.items()))
+    return s2
+
+# %% ../nbs/05_meta.ipynb #a621d150
+def delegates(
+    to:FunctionType=None, # Delegatee
+    keep=False, # Keep `kwargs` in decorated function?
+    but:list=None, # Exclude these parameters from signature
+    sort_args=False # Sort arguments alphabetically, doesn't work with call_parse
+):
     "Decorator: replace `**kwargs` in signature with params from `to`"
-    if but is None: but = []
     def _f(f):
-        if to is None: to_f,from_f = f.__base__.__init__,f.__init__
-        else:          to_f,from_f = to.__init__ if isinstance(to,type) else to,f
-        from_f = getattr(from_f,'__func__',from_f)
-        to_f = getattr(to_f,'__func__',to_f)
+        to_f,from_f = _del_funcs(to, f)
         if hasattr(from_f,'__delwrap__'): return f
         sig = inspect.signature(from_f)
-        s2 = {k:v.replace(kind=inspect.Parameter.KEYWORD_ONLY) for k,v in inspect.signature(to_f).parameters.items()
-              if v.default != inspect.Parameter.empty and k not in sig.parameters and k not in but}
-        if sort_args: s2 = dict(sorted(s2.items()))
-        anno = {k:v for k,v in getattr(to_f, "__annotations__", {}).items() if k not in sig.parameters and k not in but}
+        s2 = _del_params(to_f, sig, but, sort_args)
+        anno = {k:v for k,v in getattr(to_f, "__annotations__", {}).items()
+            if k not in sig.parameters and k not in listify(but)}
         from_f.__signature__ = sig_with_params(sig, remove=None if keep else 'kwargs', keep='kwargs' if keep else None, **s2)
         if not keep: from_f.__delwrap__ = to_f
         if hasattr(from_f, '__annotations__'): from_f.__annotations__.update(anno)
@@ -140,6 +160,27 @@ def method(f):
     "Mark `f` as a method"
     # `1` is a dummy instance since Py3 doesn't allow `None` any more
     return MethodType(f, 1)
+
+# %% ../nbs/05_meta.ipynb #3aad059d
+def delegated(
+    to:FunctionType=None, # Delegatee
+    keep=False, # Keep `kwargs` in decorated function?
+    but:list=None, # Exclude these parameters from signature
+    sort_args=False # Sort arguments alphabetically, doesn't work with call_parse
+):
+    "Like `delegates` but also populates delegated default kwargs at call time"
+    def _f(f):
+        to_f,from_f = _del_funcs(to, f)
+        dp = _del_params(to_f, inspect.signature(from_f), but, sort_args)
+        f = delegates(to, keep=keep, but=but, sort_args=sort_args)(f)
+        dflts = {k:v.default for k,v in dp.items()}
+        @wraps(f)
+        def _inner(*args, **kwargs):
+            for k,v in dflts.items():
+                if k not in kwargs: kwargs[k] = v
+            return f(*args, **kwargs)
+        return _inner
+    return _f
 
 # %% ../nbs/05_meta.ipynb #0d934a51
 def _funcs_kwargs(cls, as_method):

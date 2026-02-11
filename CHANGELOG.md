@@ -2,6 +2,15 @@
 
 <!-- do not remove -->
 
+## 1.12.12
+
+### New Features
+
+- Add `delegated` decorator ([#772](https://github.com/AnswerDotAI/fastcore/issues/772))
+- Add `is_async_callable` from Starlette for detecting async callables ([#771](https://github.com/AnswerDotAI/fastcore/issues/771))
+- Make `run_cmd` use POSIX parsing with escaped backslashes for proper arg handling ([#768](https://github.com/AnswerDotAI/fastcore/issues/768))
+
+
 ## 1.12.11
 
 ### New Features

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.13
+
+### New Features
+
+- Add `joins` helper for joining non-string iterables with a separator ([#773](https://github.com/AnswerDotAI/fastcore/issues/773))
+
+
 ## 1.12.12
 
 ### New Features

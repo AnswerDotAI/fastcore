@@ -15,8 +15,8 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'merge', 'range_of', 'groupby', 'last_index', 'filter_dict', 'filter_keys', 'filter_values', 'cycle',
            'zip_cycle', 'sorted_ex', 'not_', 'argwhere', 'filter_ex', 'renumerate', 'first', 'last', 'only',
            'nested_attr', 'nested_setdefault', 'nested_callable', 'nested_idx', 'set_nested_idx', 'val2idx',
-           'uniqueify', 'loop_first_last', 'loop_first', 'loop_last', 'first_match', 'last_match', 'fastuple', 'bind',
-           'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'negate', 'spread',
+           'uniqueify', 'loop_first_last', 'loop_first', 'loop_last', 'first_match', 'last_match', 'joins', 'fastuple',
+           'bind', 'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'negate', 'spread',
            'dspread', 'copy_func', 'patch_to', 'patch', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum',
            'Stateful', 'NotStr', 'PrettyString', 'even_mults', 'num_cpus', 'add_props', 'str2bool', 'str2int',
            'str2float', 'str2list', 'str2date', 'to_bool', 'to_int', 'to_float', 'to_list', 'to_date', 'typed',
@@ -850,6 +850,11 @@ def first_match(lst, f, default=None):
 def last_match(lst, f, default=None):
     "Last element of `lst` matching predicate `f`, or `default` if none"
     return next((i for i in range(len(lst)-1, -1, -1) if f(lst[i])), default)
+
+# %% ../nbs/01_basics.ipynb #bd711f0d
+def joins(sep, its):
+    "Sugar for `sep.join(map(str, its))`"
+    return sep.join(map(str, its))
 
 # %% ../nbs/01_basics.ipynb #39e52ca1
 num_methods = """

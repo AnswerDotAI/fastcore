@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.14
+
+### New Features
+
+- Add `DepProp` descriptor for property-change-triggered dependency invalidation ([#774](https://github.com/AnswerDotAI/fastcore/issues/774))
+
+
 ## 1.12.13
 
 ### New Features

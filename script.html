@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="A fast way to turn your python function into a script.">
+
+<title>Script - CLI – fastcore</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-baedc78cbf92349237790bf011c153e8.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="Script - CLI – fastcore">
+<meta property="og:description" content="A fast way to turn your python function into a script.">
+<meta property="og:site_name" content="fastcore">
+<meta name="twitter:title" content="Script - CLI – fastcore">
+<meta name="twitter:description" content="A fast way to turn your python function into a script.">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">fastcore</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/fastai/fastcore"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://x.com/fastdotai"> <i class="bi bi-twitter" role="img" aria-label="Fast.ai Twitter">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./script.html">Script - CLI</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome to fastcore</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tour.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">A tour of fastcore</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./test.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Test</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./basics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Basic functionality</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./foundation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Foundation</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./xtras.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Utility functions</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./parallel.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parallel</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./net.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Network functionality</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./docments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Docments</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./meta.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Meta</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./script.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Script - CLI</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./xdg.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">XDG</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./style.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Style</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./xml.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">XML</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./py2pyi.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Create delegated pyi</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./external.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">External modules</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tools.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">LLM tools</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#example" id="toc-example" class="nav-link" data-scroll-target="#example">Example</a></li>
+  <li><a href="#param-annotations" id="toc-param-annotations" class="nav-link" data-scroll-target="#param-annotations">Param annotations</a></li>
+  <li><a href="#setuptools-scripts" id="toc-setuptools-scripts" class="nav-link" data-scroll-target="#setuptools-scripts">setuptools scripts</a></li>
+  <li><a href="#api-details" id="toc-api-details" class="nav-link" data-scroll-target="#api-details">API details</a>
+  <ul class="collapse">
+  <li><a href="#store_true" id="toc-store_true" class="nav-link" data-scroll-target="#store_true">store_true</a></li>
+  <li><a href="#store_false" id="toc-store_false" class="nav-link" data-scroll-target="#store_false">store_false</a></li>
+  <li><a href="#bool_arg" id="toc-bool_arg" class="nav-link" data-scroll-target="#bool_arg">bool_arg</a></li>
+  <li><a href="#clean_type_str" id="toc-clean_type_str" class="nav-link" data-scroll-target="#clean_type_str">clean_type_str</a></li>
+  <li><a href="#param" id="toc-param" class="nav-link" data-scroll-target="#param">Param</a></li>
+  <li><a href="#anno_parser" id="toc-anno_parser" class="nav-link" data-scroll-target="#anno_parser">anno_parser</a></li>
+  <li><a href="#args_from_prog" id="toc-args_from_prog" class="nav-link" data-scroll-target="#args_from_prog">args_from_prog</a></li>
+  <li><a href="#set_ctx" id="toc-set_ctx" class="nav-link" data-scroll-target="#set_ctx">set_ctx</a></li>
+  <li><a href="#call_parse" id="toc-call_parse" class="nav-link" data-scroll-target="#call_parse">call_parse</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/AnswerDotAI/fastcore/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="script.html.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Script - CLI</h1>
+</div>
+
+<div>
+  <div class="description">
+    A fast way to turn your python function into a script.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p>Part of <a href="https://www.fast.ai">fast.ai</a>’s toolkit for delightful developer experiences.</p>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>Sometimes, you want to create a quick script, either for yourself, or for others. But in Python, that involves a whole lot of boilerplate and ceremony, especially if you want to support command line arguments, provide help, and other niceties. You can use <a href="https://docs.python.org/3/library/argparse.html">argparse</a> for this purpose, which comes with Python, but it’s complex and verbose.</p>
+<p><code>fastcore.script</code> makes life easier. There are much fancier modules to help you write scripts (we recommend <a href="https://github.com/google/python-fire">Python Fire</a>, and <a href="https://click.palletsprojects.com/en/7.x/">Click</a> is also popular), but fastcore.script is very fast and very simple. In fact, it’s &lt;50 lines of code! Basically, it’s just a little wrapper around <code>argparse</code> that uses modern Python features and some thoughtful defaults to get rid of the boilerplate.</p>
+<p>For full details, see the <a href="https://fastcore.script.fast.ai">docs</a> for <code>core</code>.</p>
+</section>
+<section id="example" class="level2">
+<h2 class="anchored" data-anchor-id="example">Example</h2>
+<p>Here’s a complete example (available in <code>examples/test_fastcore.py</code>):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastcore.script <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="at">@call_parse</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> main(msg:<span class="bu">str</span>,     <span class="co"># The message</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>         upper:<span class="bu">bool</span>): <span class="co"># Convert to uppercase?</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Print `msg`, optionally converting to uppercase"</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(msg.upper() <span class="cf">if</span> upper <span class="cf">else</span> msg)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>If you copy that info a file and run it, you’ll see:</p>
+<pre><code>$ examples/test_fastcore.py --help
+usage: test_fastcore.py [-h] [--upper] msg
+
+Print `msg`, optionally converting to uppercase
+
+positional arguments:
+  msg          The message
+
+optional arguments:
+  -h, --help   show this help message and exit
+  --upper      Convert to uppercase? (default: False)</code></pre>
+<p>As you see, we didn’t need any <code>if __name__ == "__main__"</code>, we didn’t have to parse arguments, we just wrote a function, added a decorator to it, and added some annotations to our function’s parameters. As a bonus, we can also use this function directly from a REPL such as Jupyter Notebook - it’s not just for command line scripts!</p>
+<p>You should provide a default (after the <code>=</code>) for any <em>optional</em> parameters. If you don’t provide a default for a parameter, then it will be a <em>positional</em> parameter.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Boolean Arguments Default to False
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Arguments of type <code>bool</code> or <a href="https://fastcore.fast.ai/script.html#store_true"><code>store_true</code></a> default to <code>False</code> regardless of whether you provide a default or not. Use <a href="https://fastcore.fast.ai/script.html#bool_arg"><code>bool_arg</code></a> as the type instead of <code>bool</code> if you want to set a default value of True. For example:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="at">@call_parse</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> main(msg:<span class="bu">str</span><span class="op">=</span><span class="st">"Hi"</span>,     <span class="co"># The message</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>         upper:bool_arg<span class="op">=</span><span class="va">True</span>): <span class="co"># Convert to uppercase?</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</section>
+<section id="param-annotations" class="level2">
+<h2 class="anchored" data-anchor-id="param-annotations">Param annotations</h2>
+<p>If you want to use the full power of <code>argparse</code>, you can do so by using <a href="https://fastcore.fast.ai/script.html#param"><code>Param</code></a> annotations instead of type annotations and <a href="https://fastcore.fast.ai/docments.html">docments</a>, like so:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastcore.script <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="at">@call_parse</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> main(msg:Param(<span class="st">"The message"</span>, <span class="bu">str</span>),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>         upper:Param(<span class="st">"Convert to uppercase?"</span>, store_true)):</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Print `msg`, optionally converting to uppercase"</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(msg.upper() <span class="cf">if</span> upper <span class="cf">else</span> msg)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>If you use this approach, then each parameter in your function should have an annotation <code>Param(...)</code> (as in the example above). You can pass the following when calling <a href="https://fastcore.fast.ai/script.html#param"><code>Param</code></a>: <code>help</code>,<code>type</code>,<code>opt</code>,<code>action</code>,<code>nargs</code>,<code>const</code>,<code>choices</code>,<code>required</code> . Except for <code>opt</code>, all of these are just passed directly to <code>argparse</code>, so you have all the power of that module at your disposal. Generally you’ll want to pass at least <code>help</code> (since this is provided as the help string for that parameter) and <code>type</code> (to ensure that you get the type of data you expect). <code>opt</code> is a bool that defines whether a param is optional or required (positional) - but you’ll generally not need to set this manually, because fastcore.script will set it for you automatically based on <em>default</em> values.</p>
+</section>
+<section id="setuptools-scripts" class="level2">
+<h2 class="anchored" data-anchor-id="setuptools-scripts">setuptools scripts</h2>
+<p>There’s a really nice feature of pip/setuptools that lets you create commandline scripts directly from functions, makes them available in the <code>PATH</code>, and even makes your scripts cross-platform (e.g.&nbsp;in Windows it creates an exe). fastcore.script supports this feature too. The trick to making a function available as a script is to add a <code>console_scripts</code> section to your setup file, of the form: <code>script_name=module:function_name</code>. E.g. in this case we use: <code>test_fastcore.script=fastcore.script.test_cli:main</code>. With this, you can then just type <code>test_fastcore.script</code> at any time, from any directory, and your script will be called (once it’s installed using one of the methods below).</p>
+<p>You don’t actually have to write a <code>setup.py</code> yourself. Instead, just use <a href="https://nbdev.fast.ai">nbdev</a>. Then modify <code>settings.ini</code> as appropriate for your module/script. To install your script directly, you can type <code>pip install -e .</code>. Your script, when installed this way (it’s called an <a href="http://codumentary.blogspot.com/2014/11/python-tip-of-year-pip-install-editable.html">editable install</a>), will automatically be up to date even if you edit it - there’s no need to reinstall it after editing. With nbdev you can even make your module and script available for installation directly from pip and conda by running <code>make release</code>.</p>
+</section>
+<section id="api-details" class="level2">
+<h2 class="anchored" data-anchor-id="api-details">API details</h2>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/main/fastcore/script.py#L19" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="store_true" class="level3">
+<h3 class="anchored" data-anchor-id="store_true">store_true</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> store_true(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Placeholder to pass to <a href="https://fastcore.fast.ai/script.html#param"><code>Param</code></a> for <a href="https://fastcore.fast.ai/script.html#store_true"><code>store_true</code></a> action</em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/main/fastcore/script.py#L24" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="store_false" class="level3">
+<h3 class="anchored" data-anchor-id="store_false">store_false</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> store_false(</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Placeholder to pass to <a href="https://fastcore.fast.ai/script.html#param"><code>Param</code></a> for <a href="https://fastcore.fast.ai/script.html#store_false"><code>store_false</code></a> action</em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/main/fastcore/script.py#L29" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="bool_arg" class="level3">
+<h3 class="anchored" data-anchor-id="bool_arg">bool_arg</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bool_arg(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    v</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Use as <code>type</code> for <a href="https://fastcore.fast.ai/script.html#param"><code>Param</code></a> to get <code>bool</code> behavior</em></p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/main/fastcore/script.py#L34" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="clean_type_str" class="level3">
+<h3 class="anchored" data-anchor-id="clean_type_str">clean_type_str</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> clean_type_str(</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    x:<span class="bu">str</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="e5fa5e36" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Test: <span class="cf">pass</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>test_eq(clean_type_str(argparse.ArgumentParser), <span class="st">'argparse.ArgumentParser'</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>test_eq(clean_type_str(Test), <span class="st">'Test'</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>test_eq(clean_type_str(<span class="bu">int</span>), <span class="st">'int'</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>test_eq(clean_type_str(<span class="bu">float</span>), <span class="st">'float'</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>test_eq(clean_type_str(store_false), <span class="st">'store_false'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/main/fastcore/script.py#L41" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="param" class="level3">
+<h3 class="anchored" data-anchor-id="param">Param</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> Param(</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">help</span>:<span class="bu">str</span><span class="op">=</span><span class="st">''</span>, <span class="bu">type</span>:NoneType<span class="op">=</span><span class="va">None</span>, opt:<span class="bu">bool</span><span class="op">=</span><span class="va">True</span>, action:NoneType<span class="op">=</span><span class="va">None</span>, nargs:NoneType<span class="op">=</span><span class="va">None</span>, const:NoneType<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    choices:NoneType<span class="op">=</span><span class="va">None</span>, required:NoneType<span class="op">=</span><span class="va">None</span>, default:NoneType<span class="op">=</span><span class="va">None</span>, version:NoneType<span class="op">=</span><span class="va">None</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>A parameter in a function used in <a href="https://fastcore.fast.ai/script.html#anno_parser"><code>anno_parser</code></a> or <a href="https://fastcore.fast.ai/script.html#call_parse"><code>call_parse</code></a></em></p>
+<div id="b5065727" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>test_eq(<span class="bu">repr</span>(Param(<span class="st">"Help goes here"</span>)), <span class="st">'&lt;Help goes here&gt;'</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>test_eq(<span class="bu">repr</span>(Param(<span class="st">"Help"</span>, <span class="bu">int</span>)), <span class="st">'int &lt;Help&gt;'</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>test_eq(<span class="bu">repr</span>(Param(<span class="bu">help</span><span class="op">=</span><span class="va">None</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">int</span>)), <span class="st">'int'</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>test_eq(<span class="bu">repr</span>(Param(<span class="bu">help</span><span class="op">=</span><span class="va">None</span>, <span class="bu">type</span><span class="op">=</span><span class="va">None</span>)), <span class="st">''</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Each parameter in your function should have an annotation <code>Param(...)</code>. You can pass the following when calling <a href="https://fastcore.fast.ai/script.html#param"><code>Param</code></a>: <code>help</code>,<code>type</code>,<code>opt</code>,<code>action</code>,<code>nargs</code>,<code>const</code>,<code>choices</code>,<code>required</code>, <code>version</code> (i.e.&nbsp;it takes the same parameters as <code>argparse.ArgumentParser.add_argument</code>, plus <code>opt</code>). Except for <code>opt</code>, all of these are just passed directly to <code>argparse</code>, so you have all the power of that module at your disposal. Generally you’ll want to pass at least <code>help</code> (since this is provided as the help string for that parameter) and <code>type</code> (to ensure that you get the type of data you expect).</p>
+<p><code>opt</code> is a bool that defines whether a param is optional or required (positional) - but you’ll generally not need to set this manually, because fastcore.script will set it for you automatically based on <em>default</em> values. You should provide a default (after the <code>=</code>) for any <em>optional</em> parameters. If you don’t provide a default for a parameter, then it will be a <em>positional</em> parameter.</p>
+<p>Param’s <code>__repr__</code> also allows for more informative function annotation when looking up the function’s doc using shift+tab. You see the type annotation (if there is one) and the accompanying help documentation with it.</p>
+<div id="31fb0487" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f(required:Param(<span class="st">"Required param"</span>, <span class="bu">int</span>),</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>      a:Param(<span class="st">"param 1"</span>, bool_arg),</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>      b:Param(<span class="st">"param 2"</span>, <span class="bu">str</span>)<span class="op">=</span><span class="st">"test"</span>):</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">"my docs"</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    ...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="454f37da" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="bu">help</span>(f)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Help on function f in module __main__:
+
+f(required: int &lt;Required param&gt;, a: bool_arg &lt;param 1&gt;, b: str &lt;param 2&gt; = 'test')
+    my docs
+</code></pre>
+</div>
+</div>
+<div id="033b3924" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> Param(<span class="bu">help</span><span class="op">=</span><span class="st">"help"</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">int</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>p.set_default(<span class="dv">1</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>test_eq(p.kwargs, {<span class="st">'help'</span>: <span class="st">'help (default: 1)'</span>, <span class="st">'type'</span>: <span class="bu">int</span>, <span class="st">'default'</span>: <span class="dv">1</span>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/main/fastcore/script.py#L102" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="anno_parser" class="level3">
+<h3 class="anchored" data-anchor-id="anno_parser">anno_parser</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> anno_parser(</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    func, prog:<span class="bu">str</span><span class="op">=</span><span class="va">None</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Look at params (annotated with <a href="https://fastcore.fast.ai/script.html#param"><code>Param</code></a>) in func and return an <code>ArgumentParser</code></em></p>
+<p>This converts a function with parameter annotations of type <a href="https://fastcore.fast.ai/script.html#param"><code>Param</code></a> into an <code>argparse.ArgumentParser</code> object. Function arguments with a default provided are optional, and other arguments are positional.</p>
+<div id="eabac836" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>_en <span class="op">=</span> str_enum(<span class="st">'_en'</span>, <span class="st">'aa'</span>,<span class="st">'bb'</span>,<span class="st">'cc'</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f(required:Param(<span class="st">"Required param"</span>, <span class="bu">int</span>),</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>      a:Param(<span class="st">"param 1"</span>, bool_arg),</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>      v:Param(<span class="st">"Print version"</span>, action<span class="op">=</span><span class="st">'version'</span>, version<span class="op">=</span><span class="st">'</span><span class="sc">%(prog)s</span><span class="st"> 2.0.0'</span>),</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>      b:Param(<span class="st">"param 2"</span>, <span class="bu">str</span>)<span class="op">=</span><span class="st">"test"</span>,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>      c:Param(<span class="st">"param 3"</span>, _en)<span class="op">=</span>_en.aa):</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">"my docs"</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    ...</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> anno_parser(f, <span class="st">'progname'</span>)</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>p.print_help()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>usage: progname [-h] [--v] [--b B] [--c {aa,bb,cc}] required a
+
+my docs
+
+positional arguments:
+  required        Required param
+  a               param 1
+
+options:
+  -h, --help      show this help message and exit
+  --v             Print version
+  --b B           param 2 (default: test)
+  --c {aa,bb,cc}  param 3 (default: aa)</code></pre>
+</div>
+</div>
+<p>We can also check the version and help flags are working.</p>
+<div id="9698881d" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>: p.parse_args([<span class="st">'--v'</span>])</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span>: <span class="cf">pass</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>progname 2.0.0</code></pre>
+</div>
+</div>
+<div id="7a105d32" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>: p.parse_args([<span class="st">'-h'</span>])</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span>: <span class="cf">pass</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>usage: progname [-h] [--v] [--b B] [--c {aa,bb,cc}] required a
+
+my docs
+
+positional arguments:
+  required        Required param
+  a               param 1
+
+options:
+  -h, --help      show this help message and exit
+  --v             Print version
+  --b B           param 2 (default: test)
+  --c {aa,bb,cc}  param 3 (default: aa)</code></pre>
+</div>
+</div>
+<p>It also works with type annotations and docments:</p>
+<div id="34cd204b" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> g(required:<span class="bu">int</span>,  <span class="co"># Required param</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>      a:bool_arg,    <span class="co"># param 1</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>      b<span class="op">=</span><span class="st">"test"</span>,      <span class="co"># param 2</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>      c:_en<span class="op">=</span>_en.aa): <span class="co"># param 3</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">"my docs"</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    ...</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> anno_parser(g, <span class="st">'progname'</span>)</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>p.print_help()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>usage: progname [-h] [--b B] [--c {aa,bb,cc}] required a
+
+my docs
+
+positional arguments:
+  required        Required param
+  a               param 1
+
+options:
+  -h, --help      show this help message and exit
+  --b B           param 2 (default: test)
+  --c {aa,bb,cc}  param 3 (default: aa)</code></pre>
+</div>
+</div>
+<p>It also works with Union types:</p>
+<div id="76b7d4d0" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> h(n:<span class="bu">int</span><span class="op">|</span><span class="bu">str</span>, exts:<span class="bu">str</span><span class="op">|</span><span class="bu">list</span><span class="op">=</span><span class="va">None</span>):</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Test union types"</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> anno_parser(h, <span class="st">'test'</span>)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>p.print_help()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>usage: test [-h] [--exts EXTS] n
+
+Test union types
+
+positional arguments:
+  n
+
+options:
+  -h, --help   show this help message and exit
+  --exts EXTS</code></pre>
+</div>
+</div>
+<div id="6f802411" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>test_eq(p.parse_args([<span class="st">'42'</span>, <span class="st">'--exts'</span>, <span class="st">'py'</span>]).n, <span class="dv">42</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>test_eq(p.parse_args([<span class="st">'hello'</span>]).n, <span class="st">'hello'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Sometimes it’s convenient to extract arguments from the actual name of the called program. <a href="https://fastcore.fast.ai/script.html#args_from_prog"><code>args_from_prog</code></a> will do this, assuming that names and values of the params are separated by a <code>#</code>. Optionally there can also be a prefix separated by <code>##</code> (double underscore).</p>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/main/fastcore/script.py#L120" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="args_from_prog" class="level3">
+<h3 class="anchored" data-anchor-id="args_from_prog">args_from_prog</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> args_from_prog(</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    func, prog</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Extract args from <code>prog</code></em></p>
+<div id="b9618b7a" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>exp <span class="op">=</span> {<span class="st">'a'</span>: <span class="va">False</span>, <span class="st">'b'</span>: <span class="st">'baa'</span>}</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>test_eq(args_from_prog(f, <span class="st">'foo##a#0#b#baa'</span>), exp)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>test_eq(args_from_prog(f, <span class="st">'a#0#b#baa'</span>), exp)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/main/fastcore/script.py#L144" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="set_ctx" class="level3">
+<h3 class="anchored" data-anchor-id="set_ctx">set_ctx</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> set_ctx(</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    cv, val:<span class="bu">bool</span><span class="op">=</span><span class="va">True</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<hr>
+<p><a href="https://github.com/AnswerDotAI/fastcore/blob/main/fastcore/script.py#L152" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="call_parse" class="level3">
+<h3 class="anchored" data-anchor-id="call_parse">call_parse</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> call_parse(</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    func:NoneType<span class="op">=</span><span class="va">None</span>, nested:<span class="bu">bool</span><span class="op">=</span><span class="va">False</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><em>Decorator to create a simple CLI from <code>func</code> using <a href="https://fastcore.fast.ai/script.html#anno_parser"><code>anno_parser</code></a></em></p>
+<div id="52cddc47" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="at">@call_parse</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> test_add(</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    a:<span class="bu">int</span><span class="op">=</span><span class="dv">0</span>,  <span class="co"># param a</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    b:<span class="bu">int</span><span class="op">=</span><span class="dv">0</span>  <span class="co"># param 1</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Add up `a` and `b`"</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a <span class="op">+</span> b</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p><a href="https://fastcore.fast.ai/script.html#call_parse"><code>call_parse</code></a> decorated functions work as regular functions and also as command-line interface functions.</p>
+<div id="7e5ad056" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>test_eq(test_add(<span class="dv">1</span>,<span class="dv">2</span>), <span class="dv">3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>This is the main way to use <code>fastcore.script</code>; decorate your function with <a href="https://fastcore.fast.ai/script.html#call_parse"><code>call_parse</code></a>, add <a href="https://fastcore.fast.ai/script.html#param"><code>Param</code></a> annotations (as shown above) or type annotations and docments, and it can then be used as a script.</p>
+<p>Use the <code>nested</code> keyword argument to create nested parsers, where earlier parsers consume only their known args from <code>sys.argv</code> before later parsers are used. This is useful to create one command line application that executes another. For example:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="ex">myrunner</span> <span class="at">--keyword</span> 1 script.py <span class="at">--</span> <span class="op">&lt;</span>script.py args<span class="op">&gt;</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>A separating <code>--</code> after the first application’s args is recommended though not always required, otherwise args may be parsed in unexpected ways. For example:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="ex">myrunner</span> script.py <span class="at">-h</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>would display <code>myrunner</code>’s help and not <code>script.py</code>’s.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/fastcore\.fast\.ai\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/AnswerDotAI/fastcore/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

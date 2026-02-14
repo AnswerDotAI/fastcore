@@ -10,18 +10,18 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'custom_dir', 'AttrDict', 'AttrDictDefault', 'NS', 'get_annotations_ex', 'eval_type', 'type_hints',
            'annotations', 'anno_ret', 'signature_ex', 'union2tuple', 'argnames', 'with_cast', 'store_attr', 'attrdict',
            'properties', 'camel2words', 'camel2snake', 'snake2camel', 'class2attr', 'getcallable', 'getattrs',
-           'hasattrs', 'setattrs', 'try_attrs', 'GetAttrBase', 'GetAttr', 'delegate_attr', 'ShowPrint', 'Int', 'Str',
-           'Float', 'partition', 'partition_dict', 'flatten', 'concat', 'strcat', 'detuplify', 'replicate', 'setify',
-           'merge', 'range_of', 'groupby', 'last_index', 'filter_dict', 'filter_keys', 'filter_values', 'cycle',
-           'zip_cycle', 'sorted_ex', 'not_', 'argwhere', 'filter_ex', 'renumerate', 'first', 'last', 'only',
-           'nested_attr', 'nested_setdefault', 'nested_callable', 'nested_idx', 'set_nested_idx', 'val2idx',
-           'uniqueify', 'loop_first_last', 'loop_first', 'loop_last', 'first_match', 'last_match', 'joins', 'fastuple',
-           'bind', 'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'negate', 'spread',
-           'dspread', 'copy_func', 'patch_to', 'patch', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum',
-           'Stateful', 'NotStr', 'PrettyString', 'even_mults', 'num_cpus', 'add_props', 'str2bool', 'str2int',
-           'str2float', 'str2list', 'str2date', 'to_bool', 'to_int', 'to_float', 'to_list', 'to_date', 'typed',
-           'exec_new', 'exec_import', 'sig_with_params', 'fdelegates', 'lt', 'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub',
-           'mul', 'truediv', 'is_', 'is_not', 'mod']
+           'hasattrs', 'setattrs', 'try_attrs', 'DepProp', 'GetAttrBase', 'GetAttr', 'delegate_attr', 'ShowPrint',
+           'Int', 'Str', 'Float', 'partition', 'partition_dict', 'flatten', 'concat', 'strcat', 'detuplify',
+           'replicate', 'setify', 'merge', 'range_of', 'groupby', 'last_index', 'filter_dict', 'filter_keys',
+           'filter_values', 'cycle', 'zip_cycle', 'sorted_ex', 'not_', 'argwhere', 'filter_ex', 'renumerate', 'first',
+           'last', 'only', 'nested_attr', 'nested_setdefault', 'nested_callable', 'nested_idx', 'set_nested_idx',
+           'val2idx', 'uniqueify', 'loop_first_last', 'loop_first', 'loop_last', 'first_match', 'last_match', 'joins',
+           'fastuple', 'bind', 'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'negate',
+           'spread', 'dspread', 'copy_func', 'patch_to', 'patch', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum',
+           'ValEnum', 'Stateful', 'NotStr', 'PrettyString', 'even_mults', 'num_cpus', 'add_props', 'str2bool',
+           'str2int', 'str2float', 'str2list', 'str2date', 'to_bool', 'to_int', 'to_float', 'to_list', 'to_date',
+           'typed', 'exec_new', 'exec_import', 'sig_with_params', 'fdelegates', 'lt', 'gt', 'le', 'ge', 'eq', 'ne',
+           'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
 
 # %% ../nbs/01_basics.ipynb #0e91ed82
 from .imports import *
@@ -519,6 +519,31 @@ def try_attrs(obj, *attrs):
         try: return getattr(obj, att)
         except: pass
     raise AttributeError(attrs)
+
+# %% ../nbs/01_basics.ipynb #df28aacb
+class DepProp:
+    "Property decorator with dependency update triggering"
+    def __init__(self, fchange, fnorm=None): self.fchange, self.fnorm = fchange, fnorm
+    def __set_name__(self, owner, name): self.attr = f'_{name}'
+
+    def norm(self, fn):
+        self.fnorm = fn
+        return self
+
+    def __get__(self, o, objtype=None):
+        if o is None: return self
+        return getattr(o, self.attr, None)
+
+    def __set__(self, o, v):
+        if self.fnorm: v = self.fnorm(o, v)
+        change = not hasattr(o, self.attr) or v!=self.__get__(o)
+        setattr(o, self.attr, v)
+        if change: self.fchange(o)
+
+    def __delete__(self, o):
+        if hasattr(o, self.attr):
+            delattr(o, self.attr)
+            self.fchange(o)
 
 # %% ../nbs/01_basics.ipynb #8c571e08
 class GetAttrBase:

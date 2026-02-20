@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.15
+
+### New Features
+
+- Extract adict base class from AttrDict for lightweight attr-access dicts ([#775](https://github.com/AnswerDotAI/fastcore/issues/775))
+
+
 ## 1.12.14
 
 ### New Features

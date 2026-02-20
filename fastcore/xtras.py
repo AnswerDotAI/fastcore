@@ -15,8 +15,8 @@ __all__ = ['spark_chars', 'UNSET', 'walk', 'exttypes', 'globtastic', 'pglob', 'm
            'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local',
            'local2utc', 'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str',
            'dataclass_src', 'Unset', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict',
-           'is_namedtuple', 'CachedIter', 'CachedAwaitable', 'reawaitable', 'is_async_callable', 'flexicache',
-           'time_policy', 'mtime_policy', 'timed_cache']
+           'is_namedtuple', 'CachedIter', 'CachedAwaitable', 'reawaitable', 'is_async_callable', 'maybe_await', 'noopa',
+           'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb #3401d507
 from .imports import *
@@ -967,6 +967,17 @@ def is_async_callable(obj):
     from asyncio import iscoroutinefunction
     while isinstance(obj, partial): obj = obj.func
     return iscoroutinefunction(obj) or (callable(obj) and iscoroutinefunction(obj.__call__))
+
+# %% ../nbs/03_xtras.ipynb #f7a2e9ed
+async def maybe_await(o):
+    "Await `o` if needed, and return it"
+    from inspect import isawaitable
+    return await o if isawaitable(o) else o
+
+# %% ../nbs/03_xtras.ipynb #02f9f070
+async def noopa(x=None, *args, **kwargs):
+    "Do nothing (async)"
+    return x
 
 # %% ../nbs/03_xtras.ipynb #d2b4fe09
 def flexicache(*funcs, maxsize=128):

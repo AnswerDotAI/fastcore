@@ -7,7 +7,7 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'type_map', 'ifnone', 'maybe_attr', 'basic_repr', 'BasicRepr', 'is_array', 'listify', 'tuplify', 'true',
            'NullType', 'tonull', 'get_class', 'mk_class', 'wrap_class', 'ignore_exceptions', 'exec_local',
            'risinstance', 'ver2tuple', 'Inf', 'in_', 'ret_true', 'ret_false', 'stop', 'gen', 'chunked', 'otherwise',
-           'custom_dir', 'AttrDict', 'AttrDictDefault', 'NS', 'get_annotations_ex', 'eval_type', 'type_hints',
+           'custom_dir', 'adict', 'AttrDict', 'AttrDictDefault', 'NS', 'get_annotations_ex', 'eval_type', 'type_hints',
            'annotations', 'anno_ret', 'signature_ex', 'union2tuple', 'argnames', 'with_cast', 'store_attr', 'attrdict',
            'properties', 'camel2words', 'camel2snake', 'snake2camel', 'class2attr', 'getcallable', 'getattrs',
            'hasattrs', 'setattrs', 'try_attrs', 'DepProp', 'GetAttrBase', 'GetAttr', 'delegate_attr', 'ShowPrint',
@@ -269,18 +269,22 @@ def custom_dir(c, add):
     "Implement custom `__dir__`, adding `add` to `cls`"
     return object.__dir__(c) + listify(add)
 
-# %% ../nbs/01_basics.ipynb #48249e34
-class AttrDict(dict):
+# %% ../nbs/01_basics.ipynb #ea75f86b
+class adict(dict):
     "`dict` subclass that also provides access to keys as attrs"
     def __getattr__(self,k): return self[k] if k in self else stop(AttributeError(k))
     def __setattr__(self, k, v): (self.__setitem__,super().__setattr__)[k[0]=='_'](k,v)
     def __dir__(self): return super().__dir__() + list(self.keys())
+
+# %% ../nbs/01_basics.ipynb #28bf9743
+class AttrDict(adict):
+    "`dict` subclass that also provides access to keys as attrs, and has a pretty markdown repr"
     def _repr_markdown_(self): return f'```python\n{pprint.pformat(self, indent=2)}\n```'
     def copy(self): return AttrDict(**self)
 
 # %% ../nbs/01_basics.ipynb #cb8a0ff4
 class AttrDictDefault(AttrDict):
-    "`AttrDict` subclass that returns `None` for missing attrs"
+    "`AttrDict` subclass that returns `default_` for missing attrs"
     def __init__(self, *args, default_=None, **kwargs):
         self.default_ = default_
         super().__init__(*args, **kwargs)

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.16
+
+### New Features
+
+- Add `maybe_await` and `noopa` async helpers to xtras ([#776](https://github.com/AnswerDotAI/fastcore/issues/776))
+
+
 ## 1.12.15
 
 ### New Features

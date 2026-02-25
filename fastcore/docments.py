@@ -429,4 +429,9 @@ class MarkdownRenderer(ShowDocRenderer):
         doc = f'```python\n\n{self.dm}\n\n```'
         if self.docs: doc += f"\n\n{_ital_first(self.docs)}"
         return doc
-    __repr__=__str__=_repr_markdown_
+
+    def __repr__(self):
+        doc = str(self.dm)
+        if self.docs: doc += f'"""\n{self.docs}\n"""'
+        return doc
+    __str__=__repr__

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.17
+
+### New Features
+
+- Preserve async def prefix and respect explicit `__signature__` in ShowDocRenderer ([#777](https://github.com/AnswerDotAI/fastcore/issues/777))
+
+
 ## 1.12.16
 
 ### New Features

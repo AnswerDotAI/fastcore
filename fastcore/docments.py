@@ -325,7 +325,7 @@ def _clean_text_sig(obj):
     return get_name(obj) + sig.replace('<unrepresentable>', '...')
 
 # %% ../nbs/04_docments.ipynb #cfcc46bf
-def _fmt_sig(name, params, ret_str, maxline):
+def _fmt_sig(name, params, ret_str, maxline, prefix='def'):
     "Format function signature with params and docment comments"
     lines,curr = [],[]
     for fmt,doc in params:
@@ -337,7 +337,7 @@ def _fmt_sig(name, params, ret_str, maxline):
         if doc: lines.append(', '.join(curr) + ',' + comment); curr = []
     if curr: lines.append(', '.join(curr))
     pstr = '\n    '.join(lines)
-    return f"def {name}(\n    {pstr}\n{ret_str}"
+    return f"{prefix} {name}(\n    {pstr}\n{ret_str}"
 
 # %% ../nbs/04_docments.ipynb #4550820f
 def _fmt_default(o):
@@ -364,8 +364,9 @@ class DocmentText(_DocmentBase):
     def params(self): return [(self._fmt_param(k,v), v.get('docment','')) for k,v in self.dm.items() if k != 'return']
 
     def __str__(self):
-        if (sig := _clean_text_sig(self.obj)) and not self.params: sig_str = f"def {sig}"
-        else: sig_str = _fmt_sig(get_name(self.obj), self.params, self._ret_str, self.maxline)
+        prefix = 'async def' if inspect.iscoroutinefunction(self.obj) else 'def'
+        if (sig := _clean_text_sig(self.obj)) and not self.params: sig_str = f"{prefix} {sig}"
+        else: sig_str = _fmt_sig(get_name(self.obj), self.params, self._ret_str, self.maxline, prefix=prefix)
         docstr = f'    "{self.obj.__doc__}"' if self.docstring and self.obj.__doc__ else ''
         return f"{sig_str}\n{docstr}"
     
@@ -390,7 +391,7 @@ def _fullname(o):
 class ShowDocRenderer:
     def __init__(self, sym, name:str|None=None, title_level:int=3, maxline:int=110):
         "Show documentation for `sym`"
-        sym = getattr(sym, '__wrapped__', sym)
+        if not hasattr(sym, '__signature__'): sym = getattr(sym, '__wrapped__', sym)
         sym = getattr(sym, 'fget', None) or getattr(sym, 'fset', None) or sym
         store_attr()
         self.nm = name or qual_name(sym)

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.18
+
+### New Features
+
+- Separate MarkdownRenderer `__repr__` from `_repr_markdown_` for clean plain-text output ([#778](https://github.com/AnswerDotAI/fastcore/issues/778))
+
+
 ## 1.12.17
 
 ### New Features

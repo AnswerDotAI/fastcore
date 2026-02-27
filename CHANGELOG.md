@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.19
+
+### New Features
+
+- Strip Authorization header on cross-origin redirects ([#779](https://github.com/AnswerDotAI/fastcore/pull/779)), thanks to [@erikgaas](https://github.com/erikgaas)
+
+
 ## 1.12.18
 
 ### New Features

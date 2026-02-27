@@ -76,9 +76,11 @@ class HTTP5xxServerError(HTTPError):
 # %% ../nbs/03b_net.ipynb #128b5f4a
 class _SafeRedirectHandler(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
-        new_req = super().redirect_request(req, fp, code, msg, headers, newurl)
-        if new_req and urlparse(newurl).netloc != urlparse(req.full_url).netloc:
-            new_req.remove_header('Authorization')
+        if code in (307, 308):
+            new_req = Request(newurl, data=req.data, method=req.get_method())
+            for k,v in req.headers.items(): new_req.add_header(k, v)
+        else: new_req = super().redirect_request(req, fp, code, msg, headers, newurl)
+        if new_req and urlparse(newurl).netloc != urlparse(req.full_url).netloc: new_req.remove_header('Authorization')
         return new_req
 
 def urlopener():

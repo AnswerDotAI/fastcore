@@ -4,7 +4,7 @@
 
 # %% auto #0
 __all__ = ['threaded', 'startthread', 'startproc', 'parallelable', 'ThreadPoolExecutor', 'ProcessPoolExecutor', 'parallel',
-           'parallel_async', 'run_procs', 'parallel_gen']
+           'parallel_async', 'bg_task', 'run_procs', 'parallel_gen']
 
 # %% ../nbs/03a_parallel.ipynb #569d18c6
 from .imports import *
@@ -156,6 +156,16 @@ async def parallel_async(f, items, *args, n_workers=16,
     tasks = [limited_task(item) for item in items]
     return await asyncio.gather(*tasks)
 
+# %% ../nbs/03a_parallel.ipynb #6748aa27
+def bg_task(coro):
+    "Like `asyncio.create_task` but logs exceptions for fire-and-forget tasks"
+    import traceback
+    def _done(t):
+        if not t.cancelled() and (exc := t.exception()): traceback.print_exception(exc)
+    task = asyncio.create_task(coro)
+    task.add_done_callback(_done)
+    return task
+
 # %% ../nbs/03a_parallel.ipynb #da364301
 def run_procs(f, f_done, args):
     "Call `f` for each item in `args` in parallel, yielding `f_done`"
@@ -172,7 +182,7 @@ def _f_pg(obj, queue, batch, start_idx):
 def _done_pg(queue, items): return (queue.get() for _ in items)
 
 # %% ../nbs/03a_parallel.ipynb #1122caee
-def parallel_gen(cls, items, n_workers=defaults.cpus, **kwargs):
+def parallel_gen(cls, items, n_workers=defaults.cpus, progress=True, **kwargs):
     "Instantiate `cls` in `n_workers` procs & call each on a subset of `items` in parallel."
     if not parallelable('n_workers', n_workers): n_workers = 0
     if n_workers==0:
@@ -181,7 +191,7 @@ def parallel_gen(cls, items, n_workers=defaults.cpus, **kwargs):
     batches = L(chunked(items, n_chunks=n_workers))
     idx = L(itertools.accumulate(0 + batches.map(len)))
     queue = Queue()
-    if progress_bar: items = progress_bar(items, leave=False)
+    if progress_bar and progress: items = progress_bar(items, leave=False)
     f=partial(_f_pg, cls(**kwargs), queue)
     done=partial(_done_pg, queue, items)
     yield from run_procs(f, done, L(batches,idx).zip())

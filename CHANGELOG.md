@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.20
+
+### New Features
+
+- Add `bg_task` ([#780](https://github.com/AnswerDotAI/fastcore/issues/780))
+
+
 ## 1.12.19
 
 ### New Features

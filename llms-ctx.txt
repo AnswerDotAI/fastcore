@@ -1,0 +1,2590 @@
+<project title="fastcore">fastcore adds to Python features inspired by other languages, like mixins from Ruby, and currying, binding, and more from Haskell. It also adds some "missing features" and clean up some rough edges in the Python standard library, such as simplifying parallel processing, and bringing ideas from NumPy over to Python's list type.
+
+Here are some tips on using fastcore:
+
+- **Liberal imports**: Utilize `from fastcore.module import *` freely. The library is designed for safe wildcard imports.
+- **Enhanced list operations**: Substitute `list` with `L`. This provides advanced indexing, method chaining, and additional functionality while maintaining list-like behavior.
+- **Extend existing classes**: Apply the `@patch` decorator to add methods to classes, including built-ins, without subclassing. This enables more flexible code organization.
+- **Streamline class initialization**: In `__init__` methods, use `store_attr()` to efficiently set multiple attributes, reducing repetitive assignment code.
+- **Explicit keyword arguments**: Apply the `delegates` decorator to functions to replace `**kwargs` with specific parameters, enhancing IDE support and documentation.
+- **Optimize parallel execution**: Leverage fastcore's enhanced `ThreadPoolExecutor` and `ProcessPoolExecutor` for simplified concurrent processing.
+- **Expressive testing**: Prefer fastcore's testing functions like `test_eq`, `test_ne`, `test_close` for more readable and informative test assertions.
+- **Advanced file operations**: Use the extended `Path` class, which adds methods like `ls()`, `read_json()`, and others to `pathlib.Path`.
+- **Flexible data structures**: Convert between dictionaries and attribute-access objects using `dict2obj` and `obj2dict` for more intuitive data handling.
+- **Functional programming paradigms**: Utilize tools like `compose`, `maps`, and `filter_ex` to write more functional-style Python code.
+- **Documentation**: Use `docments` where possible to document parameters of functions and methods.
+- **Time-aware caching**: Apply the `timed_cache` decorator to add time-based expiration to the standard `lru_cache` functionality.
+- **Simplified CLI creation**: Use fastcore's console script utilities to easily transform Python functions into command-line interfaces.<tutorials><doc title="Fastcore Quick Tour" desc="A quick tour of a few higlights from fastcore."># A tour of fastcore
+
+
+
+Here’s a (somewhat) quick tour of a few higlights from fastcore.
+
+### Documentation
+
+All fast.ai projects, including this one, are built with
+[nbdev](https://nbdev.fast.ai), which is a full literate programming
+environment built on Jupyter Notebooks. That means that every piece of
+documentation, including the page you’re reading now, can be accessed as
+interactive Jupyter notebooks. In fact, you can even grab a link
+directly to a notebook running interactively on Google Colab - if you
+want to follow along with this tour, click the link below:
+
+``` python
+colab_link('000_tour')
+```
+
+[Open `000_tour` in
+Colab](https://colab.research.google.com/github/AnswerDotAI/fastcore/blob/main/nbs/000_tour.ipynb)
+
+The full docs are available at
+[fastcore.fast.ai](https://fastcore.fast.ai). The code in the examples
+and in all fast.ai libraries follow the [fast.ai style
+guide](https://docs.fast.ai/dev/style.html). In order to support
+interactive programming, all fast.ai libraries are designed to allow for
+`import *` to be used safely, particular by ensuring that
+[`__all__`](https://riptutorial.com/python/example/2894/the---all---special-variable)
+is defined in all packages. In order to see where a function is from,
+just type it:
+
+``` python
+coll_repr
+```
+
+    <function fastcore.foundation.coll_repr(c, max_n=250)>
+
+For more details, including a link to the full documentation and source
+code, use `doc`, which pops up a window with this information:
+
+``` python
+doc(coll_repr)
+```
+
+<img src="images/att_00000.png" width="499" />
+
+The documentation also contains links to any related functions or
+classes, which appear like this:
+[`coll_repr`](https://fastcore.fast.ai/foundation.html#coll_repr) (in
+the notebook itself you will just see a word with back-ticks around it;
+the links are auto-generated in the documentation site). The
+documentation will generally show one or more examples of use, along
+with any background context necessary to understand them. As you’ll see,
+the examples for each function and method are shown as tests, rather
+than example outputs, so let’s start by explaining that.
+
+### Testing
+
+fastcore’s testing module is designed to work well with
+[nbdev](https://nbdev.fast.ai), which is a full literate programming
+environment built on Jupyter Notebooks. That means that your tests,
+docs, and code all live together in the same notebook. fastcore and
+nbdev’s approach to testing starts with the premise that all your tests
+should pass. If one fails, no more tests in a notebook are run.
+
+Tests look like this:
+
+``` python
+test_eq(coll_repr(range(1000), 5), '(#1000) [0, 1, 2, 3, 4...]')
+```
+
+That’s an example from the docs for
+[`coll_repr`](https://fastcore.fast.ai/foundation.html#coll_repr). As
+you see, it’s not showing you the output directly. Here’s what that
+would look like:
+
+``` python
+coll_repr(range(1000), 5)
+```
+
+    '(#1000) [0, 1, 2, 3, 4...]'
+
+So, the test is actually showing you what the output looks like, because
+if the function call didn’t return `'(#1000) [0,1,2,3,4...]'`, then the
+test would have failed.
+
+So every test shown in the docs is also showing you the behavior of the
+library — and vice versa!
+
+Test functions always start with `test_`, and then follow with the
+operation being tested. So
+[`test_eq`](https://fastcore.fast.ai/test.html#test_eq) tests for
+equality (as you saw in the example above). This includes tests for
+equality of arrays and tensors, lists and generators, and many more:
+
+``` python
+test_eq([0,1,2,3], np.arange(4))
+```
+
+When a test fails, it prints out information about what was expected:
+
+``` python
+test_eq([0,1,2,3], np.arange(3))
+```
+
+    ----
+      AssertionError: ==:
+      [0, 1, 2, 3]
+      [0 1 2]
+
+If you want to check that objects are the same type, rather than the
+just contain the same collection, use
+[`test_eq_type`](https://fastcore.fast.ai/test.html#test_eq_type).
+
+You can test with any comparison function using
+[`test`](https://fastcore.fast.ai/test.html#test), e.g test whether an
+object is less than:
+
+``` python
+test(2, 3, operator.lt)
+```
+
+You can even test that exceptions are raised:
+
+``` python
+def divide_zero(): return 1/0
+test_fail(divide_zero)
+```
+
+…and test that things are printed to stdout:
+
+``` python
+test_stdout(lambda: print('hi'), 'hi')
+```
+
+### Foundations
+
+fast.ai is unusual in that we often use
+[mixins](https://en.wikipedia.org/wiki/Mixin) in our code. Mixins are
+widely used in many programming languages, such as Ruby, but not so much
+in Python. We use mixins to attach new behavior to existing libraries,
+or to allow modules to add new behavior to our own classes, such as in
+extension modules. One useful example of a mixin we define is
+[`Path.ls`](https://fastcore.fast.ai/xtras.html#path.ls), which lists a
+directory and returns an
+[`L`](https://fastcore.fast.ai/foundation.html#l) (an extended list
+class which we’ll discuss shortly):
+
+``` python
+p = Path('images')
+p.ls()
+```
+
+    [Path('images/mnist3.png'), Path('images/att_00000.png'), Path('images/att_00005.png'), Path('images/att_00007.png'), Path('images/att_00006.png'), Path('images/puppy.jpg')]
+
+You can easily add you own mixins with the
+[`patch`](https://fastcore.fast.ai/basics.html#patch)
+[decorator](https://realpython.com/primer-on-python-decorators/), which
+takes advantage of Python 3 [function
+annotations](https://www.python.org/dev/peps/pep-3107/#parameters) to
+say what class to patch:
+
+``` python
+@patch
+def num_items(self:Path): return len(self.ls())
+
+p.num_items()
+```
+
+    6
+
+We also use `**kwargs` frequently. In python `**kwargs` in a parameter
+like means “*put any additional keyword arguments into a dict called
+`kwargs`*”. Normally, using `kwargs` makes an API quite difficult to
+work with, because it breaks things like tab-completion and popup lists
+of signatures. `utils` provides
+[`use_kwargs`](https://fastcore.fast.ai/meta.html#use_kwargs) and
+[`delegates`](https://fastcore.fast.ai/meta.html#delegates) to avoid
+this problem. See our [detailed article on
+delegation](https://www.fast.ai/2019/08/06/delegation/) on this topic.
+
+[`GetAttr`](https://fastcore.fast.ai/basics.html#getattr) solves a
+similar problem (and is also discussed in the article linked above):
+it’s allows you to use Python’s exceptionally useful
+[`__getattr__`](https://fastcore.fast.ai/xml.html#__getattr__) magic
+method, but avoids the problem that normally in Python tab-completion
+and docs break when using this. For instance, you can see here that
+Python’s `dir` function, which is used to find the attributes of a
+python object, finds everything inside the `self.default` attribute
+here:
+
+``` python
+class Author:
+    def __init__(self, name): self.name = name
+
+class ProductPage(GetAttr):
+    _default = 'author'
+    def __init__(self,author,price,cost): self.author,self.price,self.cost = author,price,cost
+
+p = ProductPage(Author("Jeremy"), 1.50, 0.50)
+[o for o in dir(p) if not o.startswith('_')]
+```
+
+    ['author', 'cost', 'name', 'price']
+
+Looking at that `ProductPage` example, it’s rather verbose and
+duplicates a lot of attribute names, which can lead to bugs later if you
+change them only in one place. `fastcore` provides
+[`store_attr`](https://fastcore.fast.ai/basics.html#store_attr) to
+simplify this common pattern. It also provides
+[`basic_repr`](https://fastcore.fast.ai/basics.html#basic_repr) to give
+simple objects a useful `repr`:
+
+``` python
+class ProductPage:
+    def __init__(self,author,price,cost): store_attr()
+    __repr__ = basic_repr('author,price,cost')
+
+ProductPage("Jeremy", 1.50, 0.50)
+```
+
+    ProductPage(author='Jeremy', price=1.5, cost=0.5)
+
+One of the most interesting `fastcore` functions is the
+[`funcs_kwargs`](https://fastcore.fast.ai/meta.html#funcs_kwargs)
+decorator. This allows class behavior to be modified without
+sub-classing. This can allow folks that aren’t familiar with
+object-oriented programming to customize your class more easily. Here’s
+an example of a class that uses
+[`funcs_kwargs`](https://fastcore.fast.ai/meta.html#funcs_kwargs):
+
+``` python
+@funcs_kwargs
+class T:
+    _methods=['some_method']
+    def __init__(self, **kwargs): assert not kwargs, f'Passed unknown args: {kwargs}'
+
+p = T(some_method = print)
+p.some_method("hello")
+```
+
+    hello
+
+The `assert not kwargs` above is used to ensure that the user doesn’t
+pass an unknown parameter (i.e one that’s not in `_methods`). `fastai`
+uses [`funcs_kwargs`](https://fastcore.fast.ai/meta.html#funcs_kwargs)
+in many places, for instance, you can customize any part of a
+`DataLoader` by passing your own methods.
+
+`fastcore` also provides many utility functions that make a Python
+programmer’s life easier, in `fastcore.utils`. We won’t look at many
+here, since you can easily look at the docs yourself. To get you
+started, have a look at the docs for
+[`chunked`](https://fastcore.fast.ai/basics.html#chunked) (remember, if
+you’re in a notebook, type `doc(chunked)`), which is a handy function
+for creating lazily generated batches from a collection.
+
+Python’s
+[`ProcessPoolExecutor`](https://fastcore.fast.ai/parallel.html#processpoolexecutor)
+is extended to allow `max_workers` to be set to `0`, to easily turn off
+parallel processing. This makes it easy to debug your code in serial,
+then run it in parallel. It also allows you to pass arguments to your
+parallel function, and to ensure there’s a pause between calls, in case
+the process you are running has race conditions.
+[`parallel`](https://fastcore.fast.ai/parallel.html#parallel) makes
+parallel processing even easier to use, and even adds an optional
+progress bar.
+
+### L
+
+Like most languages, Python allows for very concise syntax for some very
+common types, such as `list`, which can be constructed with `[1,2,3]`.
+Perl’s designer Larry Wall explained the reasoning for this kind of
+syntax:
+
+> In metaphorical honor of Huffman’s compression code that assigns
+> smaller numbers of bits to more common bytes. In terms of syntax, it
+> simply means that commonly used things should be shorter, but you
+> shouldn’t waste short sequences on less common constructs.
+
+On this basis, `fastcore` has just one type that has a single letter
+name: [`L`](https://fastcore.fast.ai/foundation.html#l). The reason for
+this is that it is designed to be a replacement for `list`, so we want
+it to be just as easy to use as `[1,2,3]`. Here’s how to create that as
+an [`L`](https://fastcore.fast.ai/foundation.html#l):
+
+``` python
+L(1,2,3)
+```
+
+    [1, 2, 3]
+
+The first thing to notice is that an
+[`L`](https://fastcore.fast.ai/foundation.html#l) object includes in its
+representation its number of elements; that’s the `(#3)` in the output
+above. If there’s more than 10 elements, it will automatically truncate
+the list:
+
+``` python
+p = L.range(20).shuffle()
+p
+```
+
+    [14, 19, 13, 11, 8, 9, 0, 6, 4, 15, 1, 17, 16, 5, 3, 10, 2, 7, 12, 18]
+
+[`L`](https://fastcore.fast.ai/foundation.html#l) contains many of the
+same indexing ideas that NumPy’s `array` does, including indexing with a
+list of indexes, or a boolean mask list:
+
+``` python
+p[2,4,6]
+```
+
+    [13, 8, 0]
+
+It also contains other methods used in `array`, such as
+[`L.argwhere`](https://fastcore.fast.ai/foundation.html#l.argwhere):
+
+``` python
+p.argwhere(ge(15))
+```
+
+    [1, 9, 11, 12, 19]
+
+As you can see from this example, `fastcore` also includes a number of
+features that make a functional style of programming easier, such as a
+full range of boolean functions (e.g `ge`, `gt`, etc) which give the
+same answer as the functions from Python’s `operator` module if given
+two parameters, but return a [curried
+function](https://en.wikipedia.org/wiki/Currying) if given one
+parameter.
+
+There’s too much functionality to show it all here, so be sure to check
+the docs. Many little things are added that we thought should have been
+in `list` in the first place, such as making this do what you’d expect
+(which is an error with `list`, but works fine with
+[`L`](https://fastcore.fast.ai/foundation.html#l)):
+
+``` python
+1 + L(2,3,4)
+```
+
+    [1, 2, 3, 4]</doc><doc title="Blog Post" desc="A tour of some of the features of fastcore."># fastcore: An Underrated Python Library
+
+A unique python library that extends the python programming language and provides utilities that enhance productivity.
+
+Sep 1, 2020 •  Hamel Husain •  14 min read
+
+__fastcore   fastai
+
+# Background __
+
+I recently embarked on a journey to sharpen my python skills: I wanted to learn advanced patterns, idioms, and techniques. I started with reading books on advanced Python, however, the information didn't seem to stick without having somewhere to apply it. I also wanted the ability to ask questions from an expert while I was learning -- which is an arrangement that is hard to find! That's when it occurred to me: What if I could find an open source project that has fairly advanced python code and write documentation and tests? I made a bet that if I did this it would force me to learn everything very deeply, and the maintainers would be appreciative of my work and be willing to answer my questions.
+
+And that's exactly what I did over the past month! I'm pleased to report that it has been the most efficient learning experience I've ever experienced. I've discovered that writing documentation forced me to deeply understand not just what the code does but also _why the code works the way it does_ , and to explore edge cases while writing tests. Most importantly, I was able to ask questions when I was stuck, and maintainers were willing to devote extra time knowing that their mentorship was in service of making their code more accessible! It turns out the library I choose, fastcore is some of the most fascinating Python I have ever encountered as its purpose and goals are fairly unique.
+
+For the uninitiated, fastcore is a library on top of which many fast.ai projects are built on. Most importantly, fastcore extends the python programming language and strives to eliminate boilerplate and add useful functionality for common tasks. In this blog post, I'm going to highlight some of my favorite tools that fastcore provides, rather than sharing what I learned about python. My goal is to pique your interest in this library, and hopefully motivate you to check out the documentation after you are done to learn more!
+
+# Why fastcore is interesting __
+
+  1. **Get exposed to ideas from other languages without leaving python:** I’ve always heard that it is beneficial to learn other languages in order to become a better programmer. From a pragmatic point of view, I’ve found it difficult to learn other languages because I could never use them at work. Fastcore extends python to include patterns found in languages as diverse as Julia, Ruby and Haskell. Now that I understand these tools I am motivated to learn other languages.
+  2. **You get a new set of pragmatic tools** : fastcore includes utilities that will allow you to write more concise expressive code, and perhaps solve new problems.
+  3. **Learn more about the Python programming language:** Because fastcore extends the python programming language, many advanced concepts are exposed during the process. For the motivated, this is a great way to see how many of the internals of python work. 
+
+# A whirlwind tour through fastcore __
+
+Here are some things you can do with fastcore that immediately caught my attention.
+
+* * *
+
+## Making **kwargs transparent __
+
+Whenever I see a function that has the argument****kwargs** , I cringe a little. This is because it means the API is obfuscated and I have to read the source code to figure out what valid parameters might be. Consider the below example:
+
+```
+def baz(a, b=2, c=3, d=4): return a + b + c
+
+def foo(c, a, **kwargs):
+    return c + baz(a, **kwargs)
+
+inspect.signature(foo)
+
+```
+
+```
+<Signature (c, a, **kwargs)>
+```
+
+Without reading the source code, it might be hard for me to know that `foo` also accepts and additional parameters `b` and `d`. We can fix this with `delegates`:
+
+```
+def baz(a, b=2, c=3, d=4): return a + b + c
+
+@delegates(baz) # this decorator will pass down keyword arguments from baz
+def foo(c, a, **kwargs):
+    return c + baz(a, **kwargs)
+
+inspect.signature(foo)
+
+```
+
+```
+<Signature (c, a, b=2, d=4)>
+```
+
+You can customize the behavior of this decorator. For example, you can have your cake and eat it too by passing down your arguments and also keeping `**kwargs`:
+
+```
+@delegates(baz, keep=True)
+def foo(c, a, **kwargs):
+    return c + baz(a, **kwargs)
+
+inspect.signature(foo)
+
+```
+
+```
+<Signature (c, a, b=2, d=4, **kwargs)>
+```
+
+You can also exclude arguments. For example, we exclude argument `d` from delegation:
+
+```
+def basefoo(a, b=2, c=3, d=4): pass
+
+@delegates(basefoo, but=['d']) # exclude `d`
+def foo(c, a, **kwargs): pass
+
+inspect.signature(foo)
+
+```
+
+```
+<Signature (c, a, b=2)>
+```
+
+You can also delegate between classes:
+
+```
+class BaseFoo:
+    def __init__(self, e, c=2): pass
+
+@delegates()# since no argument was passsed here we delegate to the superclass
+class Foo(BaseFoo):
+    def __init__(self, a, b=1, **kwargs): super().__init__(**kwargs)
+
+inspect.signature(Foo)
+
+```
+
+```
+<Signature (a, b=1, c=2)>
+```
+
+For more information, read the docs on delegates.
+
+* * *
+
+## Avoid boilerplate when setting instance attributes __
+
+Have you ever wondered if it was possible to avoid the boilerplate involved with setting attributes in`__init__`?
+
+```
+class Test:
+    def __init__(self, a, b ,c): 
+        self.a, self.b, self.c = a, b, c
+
+```
+
+Ouch! That was painful. Look at all the repeated variable names. Do I really have to repeat myself like this when defining a class? Not Anymore! Checkout store_attr:
+
+```
+class Test:
+    def __init__(self, a, b, c): 
+        store_attr()
+
+t = Test(5,4,3)
+assert t.b == 4
+
+```
+
+You can also exclude certain attributes:
+
+```
+class Test:
+    def __init__(self, a, b, c): 
+        store_attr(but=['c'])
+
+t = Test(5,4,3)
+assert t.b == 4
+assert not hasattr(t, 'c')
+
+```
+
+There are many more ways of customizing and using `store_attr` than I highlighted here. Check out the docs for more detail.
+
+P.S. you might be thinking that Python dataclasses also allow you to avoid this boilerplate. While true in some cases, `store_attr` is more flexible.1
+
+1\. For example, store_attr does not rely on inheritance, which means you won't get stuck using multiple inheritance when using this with your own classes. Also, unlike dataclasses, store_attr does not require python 3.7 or higher. Furthermore, you can use store_attr anytime in the object lifecycle, and in any location in your class to customize the behavior of how and when variables are stored.↩
+
+* * *
+
+## Avoiding subclassing boilerplate __
+
+One thing I hate about python is the`__super__().__init__()` boilerplate associated with subclassing. For example:
+
+```
+class ParentClass:
+    def __init__(self): self.some_attr = 'hello'
+
+class ChildClass(ParentClass):
+    def __init__(self):
+        super().__init__()
+
+cc = ChildClass()
+assert cc.some_attr == 'hello' # only accessible b/c you used super
+
+```
+
+We can avoid this boilerplate by using the metaclass PrePostInitMeta. We define a new class called `NewParent` that is a wrapper around the `ParentClass`:
+
+```
+class NewParent(ParentClass, metaclass=PrePostInitMeta):
+    def __pre_init__(self, *args, **kwargs): super().__init__()
+
+class ChildClass(NewParent):
+    def __init__(self):pass
+
+sc = ChildClass()
+assert sc.some_attr == 'hello' 
+
+```
+
+* * *
+
+## Type Dispatch __
+
+Type dispatch, orMultiple dispatch, allows you to change the way a function behaves based upon the input types it receives. This is a prominent feature in some programming languages like Julia. For example, this is a conceptual example of how multiple dispatch works in Julia, returning different values depending on the input types of x and y:
+
+```
+collide_with(x::Asteroid, y::Asteroid) = ... 
+# deal with asteroid hitting asteroid
+
+collide_with(x::Asteroid, y::Spaceship) = ... 
+# deal with asteroid hitting spaceship
+
+collide_with(x::Spaceship, y::Asteroid) = ... 
+# deal with spaceship hitting asteroid
+
+collide_with(x::Spaceship, y::Spaceship) = ... 
+# deal with spaceship hitting spaceship
+
+```
+
+Type dispatch can be especially useful in data science, where you might allow different input types (i.e. Numpy arrays and Pandas dataframes) to a function that processes data. Type dispatch allows you to have a common API for functions that do similar tasks.
+
+Unfortunately, Python does not support this out-of-the box. Fortunately, there is the @typedispatch decorator to the rescue. This decorator relies upon type hints in order to route inputs the correct version of the function:
+
+```
+@typedispatch
+def f(x:str, y:str): return f'{x}{y}'
+
+@typedispatch
+def f(x:np.ndarray): return x.sum()
+
+@typedispatch
+def f(x:int, y:int): return x+y
+
+```
+
+Below is a demonstration of type dispatch at work for the function `f`:
+
+```
+f('Hello ', 'World!')
+
+```
+
+```
+'Hello World!'
+```
+
+```
+f(2,3)
+
+```
+
+```
+5
+```
+
+```
+f(np.array([5,5,5,5]))
+
+```
+
+```
+20
+```
+
+There are limitations of this feature, as well as other ways of using this functionality that you can read about here. In the process of learning about typed dispatch, I also found a python library called multipledispatch made by Mathhew Rocklin (the creator of Dask).
+
+After using this feature, I am now motivated to learn languages like Julia to discover what other paradigms I might be missing.
+
+* * *
+
+## A better version of functools.partial __
+
+`functools.partial` is a great utility that creates functions from other functions that lets you set default values. Lets take this function for example that filters a list to only contain values >= `val`:
+
+```
+test_input = [1,2,3,4,5,6]
+def f(arr, val): 
+    "Filter a list to remove any values that are less than val."
+    return [x for x in arr if x >= val]
+
+f(test_input, 3)
+
+```
+
+```
+[3, 4, 5, 6]
+```
+
+You can create a new function out of this function using `partial` that sets the default value to 5:
+
+```
+filter5 = partial(f, val=5)
+filter5(test_input)
+
+```
+
+```
+[5, 6]
+```
+
+One problem with `partial` is that it removes the original docstring and replaces it with a generic docstring:
+
+```
+filter5.__doc__
+
+```
+
+```
+'partial(func, *args, **keywords) - new function with partial application\n    of the given arguments and keywords.\n'
+```
+
+fastcore.utils.partialler fixes this, and makes sure the docstring is retained such that the new API is transparent:
+
+```
+filter5 = partialler(f, val=5)
+filter5.__doc__
+
+```
+
+```
+'Filter a list to remove any values that are less than val.'
+```
+
+* * *
+
+## Composition of functions __
+
+A technique that is pervasive in functional programming languages is function composition, whereby you chain a bunch of functions together to achieve some kind of result. This is especially useful when applying various data transformations. Consider a toy example where I have three functions: (1) Removes elements of a list less than 5 (from the prior section) (2) adds 2 to each number (3) sums all the numbers:
+
+```
+def add(arr, val): return [x + val for x in arr]
+def arrsum(arr): return sum(arr)
+
+# See the previous section on partialler
+add2 = partialler(add, val=2)
+
+transform = compose(filter5, add2, arrsum)
+transform([1,2,3,4,5,6])
+
+```
+
+```
+15
+```
+
+But why is this useful? You might me thinking, I can accomplish the same thing with:
+
+```
+arrsum(add2(filter5([1,2,3,4,5,6])))
+
+```
+
+You are not wrong! However, composition gives you a convenient interface in case you want to do something like the following:
+
+```
+def fit(x, transforms:list):
+    "fit a model after performing transformations"
+    x = compose(*transforms)(x)
+    y = [np.mean(x)] * len(x) # its a dumb model.  Don't judge me
+    return y
+
+# filters out elements < 5, adds 2, then predicts the mean
+fit(x=[1,2,3,4,5,6], transforms=[filter5, add2])
+
+```
+
+```
+[7.5, 7.5]
+```
+
+For more information about `compose`, read the docs.
+
+* * *
+
+## A more useful `__repr__`__
+
+In python,`__repr__` helps you get information about an object for logging and debugging. Below is what you get by default when you define a new class. (Note: we are using `store_attr`, which was discussed earlier).
+
+```
+class Test:
+    def __init__(self, a, b=2, c=3): store_attr() # `store_attr` was discussed previously
+
+Test(1)
+
+```
+
+```
+<__main__.Test at 0x7ffcd766cee0>
+```
+
+We can use basic_repr to quickly give us a more sensible default:
+
+```
+class Test:
+    def __init__(self, a, b=2, c=3): store_attr() 
+    __repr__ = basic_repr('a,b,c')
+
+Test(2)
+
+```
+
+```
+Test(a=2, b=2, c=3)
+```
+
+* * *
+
+## Monkey Patching With A Decorator __
+
+It can be convenient tomonkey patch with a decorator, which is especially helpful when you want to patch an external library you are importing. We can use the decorator @patch from `fastcore.foundation` along with type hints like so:
+
+```
+class MyClass(int): pass  
+
+@patch
+def func(self:MyClass, a): return self+a
+
+mc = MyClass(3)
+
+```
+
+Now, `MyClass` has an additional method named `func`:
+
+```
+mc.func(10)
+
+```
+
+```
+13
+```
+
+Still not convinced? I'll show you another example of this kind of patching in the next section.
+
+* * *
+
+## A better pathlib.Path __
+
+When you seethese extensions to pathlib.path you won't ever use vanilla pathlib again! A number of additional methods have been added to pathlib, such as:
+
+  * `Path.readlines`: same as `with open('somefile', 'r') as f: f.readlines()`
+  * `Path.read`: same as `with open('somefile', 'r') as f: f.read()`
+  * `Path.save`: saves file as pickle
+  * `Path.load`: loads pickle file
+  * `Path.ls`: shows the contents of the path as a list. 
+  * etc.
+
+Read more about this here. Here is a demonstration of `ls`:
+
+```
+from fastcore.utils import *
+from pathlib import Path
+p = Path('.')
+p.ls() # you don't get this with vanilla Pathlib.Path!!
+
+```
+
+```
+(#7) [Path('2020-09-01-fastcore.ipynb'),Path('README.md'),Path('fastcore_imgs'),Path('2020-02-20-test.ipynb'),Path('.ipynb_checkpoints'),Path('2020-02-21-introducing-fastpages.ipynb'),Path('my_icons')]
+```
+
+Wait! What's going on here? We just imported `pathlib.Path` \- why are we getting this new functionality? Thats because we imported the `fastcore.utils` module, which patches this module via the `@patch` decorator discussed earlier. Just to drive the point home on why the `@patch` decorator is useful, I'll go ahead and add another method to `Path` right now:
+
+```
+@patch
+def fun(self:Path): return "This is fun!"
+
+p.fun()
+
+```
+
+```
+'This is fun!'
+```
+
+That is magical, right? I know! That's why I'm writing about it!
+
+* * *
+
+## An Even More Concise Way To Create Lambdas __
+
+`Self`, with an uppercase S, is an even more concise way to create lambdas that are calling methods on an object. For example, let's create a lambda for taking the sum of a Numpy array:
+
+```
+arr=np.array([5,4,3,2,1])
+f = lambda a: a.sum()
+assert f(arr) == 15
+
+```
+
+You can use `Self` in the same way:
+
+```
+f = Self.sum()
+assert f(arr) == 15
+
+```
+
+Let's create a lambda that does a groupby and max of a Pandas dataframe:
+
+```
+import pandas as pd
+df=pd.DataFrame({'Some Column': ['a', 'a', 'b', 'b', ], 
+                 'Another Column': [5, 7, 50, 70]})
+
+f = Self.groupby('Some Column').mean()
+f(df)
+
+```
+
+| Another Column  
+---|---  
+Some Column |   
+a | 6  
+b | 60  
+  
+Read more about `Self` in the docs).
+
+* * *
+
+## Notebook Functions __
+
+These are simple but handy, and allow you to know whether or not code is executing in a Jupyter Notebook, Colab, or an Ipython Shell:
+
+```
+from fastcore.imports import in_notebook, in_colab, in_ipython
+in_notebook(), in_colab(), in_ipython()
+
+```
+
+```
+(True, False, True)
+```
+
+This is useful if you are displaying certain types of visualizations, progress bars or animations in your code that you may want to modify or toggle depending on the environment.
+
+* * *
+
+## A Drop-In Replacement For List __
+
+You might be pretty happy with Python's`list`. This is one of those situations that you don't know you needed a better list until someone showed one to you. Enter `L`, a list like object with many extra goodies.
+
+The best way I can describe `L` is to pretend that `list` and `numpy` had a pretty baby:
+
+define a list (check out the nice `__repr__` that shows the length of the list!)
+
+```
+L(1,2,3)
+
+```
+
+```
+(#3) [1,2,3]
+```
+
+Shuffle a list:
+
+```
+p = L.range(20).shuffle()
+p
+
+```
+
+```
+(#20) [8,7,5,12,14,16,2,15,19,6...]
+```
+
+Index into a list:
+
+```
+p[2,4,6]
+
+```
+
+```
+(#3) [5,14,2]
+```
+
+L has sensible defaults, for example appending an element to a list:
+
+```
+1 + L(2,3,4)
+
+```
+
+```
+(#4) [1,2,3,4]
+```
+
+There is much more `L` has to offer. Read the docs to learn more.
+
+# But Wait ... There's More!__
+
+There are more things I would like to show you about fastcore, but there is no way they would reasonably fit into a blog post. Here is a list of some of my favorite things that I didn't demo in this blog post:
+
+## Utilities __
+
+TheBasics section contain many shortcuts to perform common tasks or provide an additional interface to what standard python provides.
+
+  * mk_class: quickly add a bunch of attributes to a class
+  * wrap_class: add new methods to a class with a simple decorator
+  * groupby: similar to Scala's groupby
+  * merge: merge dicts
+  * fasttuple: a tuple on steroids
+  * Infinite Lists: useful for padding and testing
+  * chunked: for batching and organizing stuff
+
+## Multiprocessing __
+
+TheMultiprocessing section extends python's multiprocessing library by offering features like:
+
+  * progress bars
+  * ability to pause to mitigate race conditions with external services
+  * processing things in batches on each worker, ex: if you have a vectorized operation to perform in chunks
+
+## Functional Programming __
+
+Thefunctional programming section is my favorite part of this library.
+
+  * maps: a map that also composes functions
+  * mapped: A more robust `map`
+  * using_attr: compose a function that operates on an attribute
+
+## Transforms __
+
+Transforms is a collection of utilities for creating data transformations and associated pipelines. These transformation utilities build upon many of the building blocks discussed in this blog post.
+
+## Further Reading __
+
+**It should be noted that you should read themain page of the docs first, followed by the section on tests to fully understand the documentation.**
+
+  * The fastcore documentation site.
+  * The fastcore GitHub repo.
+  * Blog post on delegation.
+
+# Shameless plug: fastpages __
+
+This blog post was written entirely in a Jupyter Notebook, which GitHub automatically converted into to a blog post! Sound interesting?Check out fastpages.</doc></tutorials><api><doc title="API List" desc="A succint list of all functions and methods in fastcore."># fastcore Module Documentation
+
+## fastcore.ansi
+
+> Filters for processing ANSI colors.
+
+- `def strip_ansi(source)`
+    Remove ANSI escape codes from text.
+
+- `def ansi2html(text)`
+    Convert ANSI colors to HTML colors.
+
+- `def ansi2latex(text)`
+    Convert ANSI colors to LaTeX colors.
+
+## fastcore.basics
+
+> Basic functionality used in the fastai library
+
+- `def ifnone(a, b)`
+    `b` if `a` is None else `a`
+
+- `def maybe_attr(o, attr)`
+    `getattr(o,attr,o)`
+
+- `def basic_repr(flds)`
+    Minimal `__repr__`
+
+- `class BasicRepr`
+    Base class for objects needing a basic `__repr__`
+
+
+- `def is_array(x)`
+    `True` if `x` supports `__array__` or `iloc`
+
+- `def listify(o, *rest)`
+    Convert `o` to a `list`
+
+- `def tuplify(o, use_list, match)`
+    Make `o` a tuple
+
+- `def true(x)`
+    Test whether `x` is truthy; collections with >0 elements are considered `True`
+
+- `class NullType`
+    An object that is `False` and can be called, chained, and indexed
+
+    - `def __getattr__(self, *args)`
+    - `def __call__(self, *args, **kwargs)`
+    - `def __getitem__(self, *args)`
+    - `def __bool__(self)`
+
+- `def tonull(x)`
+    Convert `None` to `null`
+
+- `def get_class(nm, *fld_names, **flds)`
+    Dynamically create a class, optionally inheriting from `sup`, containing `fld_names`
+
+- `def mk_class(nm, *fld_names, **flds)`
+    Create a class using `get_class` and add to the caller's module
+
+- `def wrap_class(nm, *fld_names, **flds)`
+    Decorator: makes function a method of a new class `nm` passing parameters to `mk_class`
+
+- `class ignore_exceptions`
+    Context manager to ignore exceptions
+
+    - `def __enter__(self)`
+    - `def __exit__(self, *args)`
+
+- `def exec_local(code, var_name)`
+    Call `exec` on `code` and return the var `var_name`
+
+- `def risinstance(types, obj)`
+    Curried `isinstance` but with args reversed
+
+- `class Inf`
+    Infinite lists
+
+
+- `def in_(x, a)`
+    `True` if `x in a`
+
+- `def ret_true(*args, **kwargs)`
+    Predicate: always `True`
+
+- `def ret_false(*args, **kwargs)`
+    Predicate: always `False`
+
+- `def stop(e)`
+    Raises exception `e` (by default `StopIteration`)
+
+- `def gen(func, seq, cond)`
+    Like `(func(o) for o in seq if cond(func(o)))` but handles `StopIteration`
+
+- `def chunked(it, chunk_sz, drop_last, n_chunks, pad, pad_val)`
+    Return batches from iterator `it` of size `chunk_sz` (or return `n_chunks` total)
+
+- `def otherwise(x, tst, y)`
+    `y if tst(x) else x`
+
+- `def custom_dir(c, add)`
+    Implement custom `__dir__`, adding `add` to `cls`
+
+- `class adict`
+    `dict` subclass that also provides access to keys as attrs
+
+    - `def __getattr__(self, k)`
+    - `def __setattr__(self, k, v)`
+    - `def __dir__(self)`
+
+- `class AttrDict`
+    `dict` subclass that also provides access to keys as attrs, and has a pretty markdown repr
+
+    - `def copy(self)`
+
+- `class AttrDictDefault`
+    `AttrDict` subclass that returns `default_` for missing attrs
+
+    - `def __init__(self, *args, **kwargs)`
+    - `def __getattr__(self, k)`
+
+- `class NS`
+    `SimpleNamespace` subclass that also adds `iter` and `dict` support
+
+    - `def __iter__(self)`
+    - `def __getitem__(self, x)`
+    - `def __setitem__(self, x, y)`
+
+- `def get_annotations_ex(obj)`
+    Backport of py3.10 `get_annotations` that returns globals/locals
+
+- `def eval_type(t, glb, loc)`
+    `eval` a type or collection of types, if needed, for annotations in py3.10+
+
+- `def type_hints(f)`
+    Like `typing.get_type_hints` but returns `{}` if not allowed type
+
+- `def annotations(o)`
+    Annotations for `o`, or `type(o)`
+
+- `def anno_ret(func)`
+    Get the return annotation of `func`
+
+- `def signature_ex(obj, eval_str)`
+    Backport of `inspect.signature(..., eval_str=True` to <py310
+
+- `def argnames(f, frame)`
+    Names of arguments to function or frame `f`
+
+- `def with_cast(f)`
+    Decorator which uses any parameter annotations as preprocessing functions
+
+- `def store_attr(names, self, but, cast, store_args, **attrs)`
+    Store params named in comma-separated `names` from calling context into attrs in `self`
+
+- `def attrdict(o, *ks)`
+    Dict from each `k` in `ks` to `getattr(o,k)`
+
+- `def properties(cls, *ps)`
+    Change attrs in `cls` with names in `ps` to properties
+
+- `def camel2words(s, space)`
+    Convert CamelCase to 'spaced words'
+
+- `def camel2snake(name)`
+    Convert CamelCase to snake_case
+
+- `def snake2camel(s)`
+    Convert snake_case to CamelCase
+
+- `def class2attr(self, cls_name)`
+    Return the snake-cased name of the class; strip ending `cls_name` if it exists.
+
+- `def getcallable(o, attr)`
+    Calls `getattr` with a default of `noop`
+
+- `def getattrs(o, *attrs)`
+    List of all `attrs` in `o`
+
+- `def hasattrs(o, attrs)`
+    Test whether `o` contains all `attrs`
+
+- `def try_attrs(obj, *attrs)`
+    Return first attr that exists in `obj`
+
+- `class DepProp`
+    Property decorator with dependency update triggering
+
+    - `def __init__(self, fchange, fnorm)`
+    - `def __set_name__(self, owner, name)`
+    - `def norm(self, fn)`
+    - `def __get__(self, o, objtype)`
+    - `def __set__(self, o, v)`
+    - `def __delete__(self, o)`
+
+- `class GetAttrBase`
+    Basic delegation of `__getattr__` and `__dir__`
+
+    - `def __getattr__(self, k)`
+    - `def __dir__(self)`
+
+- `class GetAttr`
+    Inherit from this to have all attr accesses in `self._xtra` passed down to `self.default`
+
+    - `def __getattr__(self, k)`
+    - `def __dir__(self)`
+    - `def __setstate__(self, data)`
+
+- `def delegate_attr(self, k, to)`
+    Use in `__getattr__` to delegate to attr `to` without inheriting from `GetAttr`
+
+- `class ShowPrint`
+    Base class that prints for `show`
+
+    - `def show(self, *args, **kwargs)`
+
+- `class Int`
+    An extensible `int`
+
+
+- `class Str`
+    An extensible `str`
+
+
+- `class Float`
+    An extensible `float`
+
+
+- `def partition(coll, f)`
+    Partition a collection by a predicate
+
+- `def partition_dict(d, f)`
+    Partition a dict by a predicate that takes key/value params
+
+- `def flatten(o)`
+    Concatenate all collections and items as a generator
+
+- `def concat(colls)`
+    Concatenate all collections and items as a list
+
+- `def strcat(its, sep)`
+    Concatenate stringified items `its`
+
+- `def detuplify(x)`
+    If `x` is a tuple with one thing, extract it
+
+- `def replicate(item, match)`
+    Create tuple of `item` copied `len(match)` times
+
+- `def setify(o)`
+    Turn any list like-object into a set.
+
+- `def merge(*ds)`
+    Merge all dictionaries in `ds`
+
+- `def range_of(x)`
+    All indices of collection `x` (i.e. `list(range(len(x)))`)
+
+- `def groupby(x, key, val)`
+    Like `itertools.groupby` but doesn't need to be sorted, and isn't lazy, plus some extensions
+
+- `def last_index(x, o)`
+    Finds the last index of occurence of `x` in `o` (returns -1 if no occurence)
+
+- `def filter_dict(d, func)`
+    Filter a `dict` using `func`, applied to keys and values
+
+- `def filter_keys(d, func)`
+    Filter a `dict` using `func`, applied to keys
+
+- `def filter_values(d, func)`
+    Filter a `dict` using `func`, applied to values
+
+- `def cycle(o)`
+    Like `itertools.cycle` except creates list of `None`s if `o` is empty
+
+- `def zip_cycle(x, *args)`
+    Like `itertools.zip_longest` but `cycle`s through elements of all but first argument
+
+- `def sorted_ex(iterable, key, reverse, cmp, **kwargs)`
+    Like `sorted`, but if key is str use `attrgetter`; if int use `itemgetter`; use `cmp` comparator function or `key` with `kwargs`
+
+- `def not_(f)`
+    Create new function that negates result of `f`
+
+- `def argwhere(iterable, f, negate, **kwargs)`
+    Like `filter_ex`, but return indices for matching items
+
+- `def filter_ex(iterable, f, negate, gen, **kwargs)`
+    Like `filter`, but passing `kwargs` to `f`, defaulting `f` to `noop`, and adding `negate` and `gen`
+
+- `def renumerate(iterable, start)`
+    Same as `enumerate`, but returns index as 2nd element instead of 1st
+
+- `def first(x, f, negate, **kwargs)`
+    First element of `x`, optionally filtered by `f`, or None if missing
+
+- `def last(x, f, negate, **kwargs)`
+    Last element of `x`, optionally filtered by `f`, or None if missing
+
+- `def only(o)`
+    Return the only item of `o`, raise if `o` doesn't have exactly one item
+
+- `def nested_attr(o, attr, default)`
+    Same as `getattr`, but if `attr` includes a `.`, then looks inside nested objects
+
+- `def nested_setdefault(o, attr, default)`
+    Same as `setdefault`, but if `attr` includes a `.`, then looks inside nested objects
+
+- `def nested_callable(o, attr)`
+    Same as `nested_attr` but if not found will return `noop`
+
+- `def nested_idx(coll, *idxs)`
+    Index into nested collections, dicts, etc, with `idxs`
+
+- `def set_nested_idx(coll, value, *idxs)`
+    Set value indexed like `nested_idx
+
+- `def val2idx(x)`
+    Dict from value to index
+
+- `def uniqueify(x, sort, bidir, start)`
+    Unique elements in `x`, optional `sort`, optional return reverse correspondence, optional prepend with elements.
+
+- `def loop_first_last(values)`
+    Iterate and generate a tuple with a flag for first and last value.
+
+- `def loop_first(values)`
+    Iterate and generate a tuple with a flag for first value.
+
+- `def loop_last(values)`
+    Iterate and generate a tuple with a flag for last value.
+
+- `def first_match(lst, f, default)`
+    First element of `lst` matching predicate `f`, or `default` if none
+
+- `def last_match(lst, f, default)`
+    Last element of `lst` matching predicate `f`, or `default` if none
+
+- `def joins(sep, its)`
+    Sugar for `sep.join(map(str, its))`
+
+- `class fastuple`
+    A `tuple` with elementwise ops and more friendly __init__ behavior
+
+    - `def __new__(cls, x, *rest)`
+    - `def mul(self, *args)`
+        `*` is already defined in `tuple` for replicating, so use `mul` instead
+
+    - `def add(self, *args)`
+        `+` is already defined in `tuple` for concat, so use `add` instead
+
+
+- `class bind`
+    Same as `partial`, except you can use `arg0` `arg1` etc param placeholders
+
+    - `def __init__(self, func, *pargs, **pkwargs)`
+    - `def __call__(self, *args, **kwargs)`
+
+- `def mapt(func, *iterables)`
+    Tuplified `map`
+
+- `def map_ex(iterable, f, *args, **kwargs)`
+    Like `map`, but use `bind`, and supports `str` and indexing
+
+- `def compose(*funcs)`
+    Create a function that composes all functions in `funcs`, passing along remaining `*args` and `**kwargs` to all
+
+- `def maps(*args)`
+    Like `map`, except funcs are composed first
+
+- `def partialler(f, *args, **kwargs)`
+    Like `functools.partial` but also copies over docstring
+
+- `def instantiate(t)`
+    Instantiate `t` if it's a type, otherwise do nothing
+
+- `def using_attr(f, attr)`
+    Construct a function which applies `f` to the argument's attribute `attr`
+
+- `def negate(f)`
+    Returns the negation of `f`
+
+- `def spread(f)`
+    Wrap `f` to accept a single iterable and spread it as positional args
+
+- `def dspread(f)`
+    Wrap `f` to accept a single dict and spread it as keyword args
+
+- `def copy_func(f)`
+    Copy a non-builtin function (NB `copy.copy` does not work for this)
+
+- `def patch_to(cls, as_prop, cls_method, set_prop, nm, glb)`
+    Decorator: add `f` to `cls`
+
+- `def patch(f)`
+    Decorator: add `f` to the first parameter's class (based on f's type annotations)
+
+- `def compile_re(pat)`
+    Compile `pat` if it's not None
+
+- `class ImportEnum`
+    An `Enum` that can have its values imported
+
+    - `@classmethod def imports(cls)`
+    - `@property def name(self)`
+        The name of the Enum member.
+
+    This is a reconstruction by astroid: enums are too dynamic to understand, but we at least
+    know 'name' should be a string, so this is astroid's best guess.
+
+
+- `class StrEnum`
+    An `ImportEnum` that behaves like a `str`
+
+    - `def __str__(self)`
+    - `@property def name(self)`
+        The name of the Enum member.
+
+    This is a reconstruction by astroid: enums are too dynamic to understand, but we at least
+    know 'name' should be a string, so this is astroid's best guess.
+
+
+- `def str_enum(name, *vals)`
+    Simplified creation of `StrEnum` types
+
+- `class ValEnum`
+    An `ImportEnum` that stringifies using values
+
+    - `def __str__(self)`
+    - `@property def name(self)`
+        The name of the Enum member.
+
+    This is a reconstruction by astroid: enums are too dynamic to understand, but we at least
+    know 'name' should be a string, so this is astroid's best guess.
+
+
+- `class Stateful`
+    A base class/mixin for objects that should not serialize all their state
+
+    - `def __init__(self, *args, **kwargs)`
+    - `def __getstate__(self)`
+    - `def __setstate__(self, state)`
+
+- `class NotStr`
+    Behaves like a `str`, but isn't an instance of one
+
+    - `def __init__(self, s)`
+    - `def __repr__(self)`
+    - `def __str__(self)`
+    - `def __add__(self, b)`
+    - `def __mul__(self, b)`
+    - `def __len__(self)`
+    - `def __eq__(self, b)`
+    - `def __lt__(self, b)`
+    - `def __hash__(self)`
+    - `def __bool__(self)`
+    - `def __contains__(self, b)`
+    - `def __iter__(self)`
+    - `def __getitem__(self, i)`
+
+- `class PrettyString`
+    Little hack to get strings to show properly in Jupyter.
+
+    - `def __repr__(self)`
+
+- `def even_mults(start, stop, n)`
+    Build log-stepped array from `start` to `stop` in `n` steps.
+
+- `def num_cpus()`
+    Get number of cpus
+
+- `def add_props(f, g, n)`
+    Create properties passing each of `range(n)` to f
+
+- `def str2bool(s)`
+    Case-insensitive convert string `s` too a bool (`y`,`yes`,`t`,`true`,`on`,`1`->`True`)
+
+- `def str2int(s)`
+    Convert `s` to an `int`
+
+- `def str2float(s)`
+    Convert `s` to a float
+
+- `def str2list(s)`
+    Convert `s` to a list
+
+- `def str2date(s)`
+    `date.fromisoformat` with empty string handling
+
+- `def typed(_func)`
+    Decorator to check param and return types at runtime, with optional casting
+
+- `def exec_new(code)`
+    Execute `code` in a new environment and return it
+
+- `def exec_import(mod, sym)`
+    Import `sym` from `mod` in a new environment
+
+## fastcore.docments
+
+> Document parameters using comments.
+
+- `def docstring(sym)`
+    Get docstring for `sym` for functions ad classes
+
+- `def parse_docstring(sym)`
+    Parse a numpy-style docstring in `sym`
+
+- `def isdataclass(s)`
+    Check if `s` is a dataclass but not a dataclass' instance
+
+- `def get_dataclass_source(s)`
+    Get source code for dataclass `s`
+
+- `def get_source(s)`
+    Get source code for string, function object or dataclass `s`
+
+- `def get_name(obj)`
+    Get the name of `obj`
+
+- `def qual_name(obj)`
+    Get the qualified name of `obj`
+
+- `def docments(s, full, eval_str, returns, args_kwargs)`
+    Get docments for `s`
+
+- `def sig_source(obj)`
+    Full source of signature line(s) for a function or class.
+
+- `def extract_docstrings(code)`
+    Create a dict from function/class/method names to tuples of docstrings and param lists
+
+- `class DocmentTbl`
+    - `def __init__(self, obj, verbose, returns)`
+        Compute the docment table string
+
+    - `@property def has_docment(self)`
+    - `@property def has_return(self)`
+    - `@property def hdr_str(self)`
+    - `@property def params_str(self)`
+    - `@property def return_str(self)`
+    - `def __eq__(self, other)`
+
+- `class DocmentList`
+
+- `class DocmentText`
+    - `def __init__(self, obj, maxline, docstring)`
+    - `@property def params(self)`
+    - `def __str__(self)`
+
+- `def sig2str(func, maxline)`
+    Generate function signature with docments as comments
+
+- `class ShowDocRenderer`
+    - `def __init__(self, sym, name, title_level, maxline)`
+        Show documentation for `sym`
+
+
+- `class MarkdownRenderer`
+    Markdown renderer for `show_doc`
+
+    - `def __repr__(self)`
+
+## fastcore.docscrape
+
+> Parse numpy-style docstrings
+
+- `def strip_blank_lines(l)`
+    Remove leading and trailing blank lines from a list of lines
+
+- `class Reader`
+    A line-based string reader.
+
+    - `def __init__(self, data)`
+    - `def __getitem__(self, n)`
+    - `def reset(self)`
+    - `def read(self)`
+    - `def seek_next_non_empty_line(self)`
+    - `def eof(self)`
+    - `def read_to_condition(self, condition_func)`
+    - `def read_to_next_empty_line(self)`
+    - `def read_to_next_unindented_line(self)`
+    - `def peek(self, n)`
+    - `def is_empty(self)`
+
+- `class ParseError`
+    - `def __str__(self)`
+
+- `class NumpyDocString`
+    Parses a numpydoc string to an abstract representation
+
+    - `def __init__(self, docstring, config, supported_sections, supports_params)`
+    - `def __iter__(self)`
+    - `def __len__(self)`
+    - `def __getitem__(self, key)`
+    - `def __setitem__(self, key, val)`
+
+- `def dedent_lines(lines, split)`
+    Deindent a list of lines maximally
+
+## fastcore.foundation
+
+> The `L` class and helpers for it
+
+- `@contextmanager def working_directory(path)`
+    Change working directory to `path` and return to previous on exit.
+
+- `def add_docs(cls, cls_doc, **docs)`
+    Copy values from `docs` to `cls` docstrings, and confirm all public methods are documented
+
+- `def docs(cls)`
+    Decorator version of `add_docs`, using `_docs` dict
+
+- `def coll_repr(c, max_n)`
+    String repr of up to `max_n` items of (possibly lazy) collection `c`
+
+- `def is_bool(x)`
+    Check whether `x` is a bool or None
+
+- `def mask2idxs(mask)`
+    Convert bool mask or index list to index `L`
+
+- `def is_indexer(idx)`
+    Test whether `idx` will index a single item in a list
+
+- `def product(xs)`
+    The product of elements of `xs`, with `None`s removed
+
+- `def flatmap(f, xs, **kwargs)`
+    Apply f to each element and flatten the results into a single list.
+
+- `class CollBase`
+    Base class for composing a list of `items`
+
+    - `def __init__(self, items)`
+    - `def __len__(self)`
+    - `def __getitem__(self, k)`
+    - `def __setitem__(self, k, v)`
+    - `def __delitem__(self, i)`
+    - `def __repr__(self)`
+    - `def __iter__(self)`
+
+- `class L`
+    Behaves like a list of `items` but can also index with list of indices or masks
+
+    - `def __init__(self, items, *rest)`
+    - `def __getitem__(self, idx)`
+        Retrieve `idx` (can be list of indices, or mask, or int) items
+
+    - `def __setitem__(self, idx, o)`
+        Set `idx` (can be list of indices, or mask, or int) items to `o` (which is broadcast if not iterable)
+
+    - `def __eq__(self, b)`
+    - `def __iter__(self)`
+    - `def __contains__(self, b)`
+    - `def __reversed__(self)`
+    - `def __invert__(self)`
+    - `def __repr__(self)`
+    - `def __mul__(a, b)`
+    - `def __add__(a, b)`
+    - `def __radd__(a, b)`
+    - `def __addi__(a, b)`
+
+- `@patch def unique(self, sort, bidir, start)`
+    Unique items, in stable order
+
+- `@patch(cls_method=True) def range(cls, a, b, step)`
+    Class Method: Same as `range`, but returns `L`. Can pass collection for `a`, to use `len(a)`
+
+- `@patch def enumerate(self)`
+    Same as `enumerate`
+
+- `@patch(cls_method=True) def split(cls, s, sep, maxsplit)`
+    Class Method: Same as `str.split`, but returns an `L`
+
+- `@patch(cls_method=True) def splitlines(cls, s, keepends)`
+    Class Method: Same as `str.splitlines`, but returns an `L`
+
+- `@patch @curryable def map(self, f, *args, **kwargs)`
+    Create new `L` with `f` applied to all `items`, passing `args` and `kwargs` to `f`
+
+- `def splitter(sep, maxsplit)`
+    Create a partial function that splits strings into `L`
+
+- `def linesplitter(keepends)`
+    Create a partial function that splits strings by lines into `L`
+
+- `@patch @curryable def starmap(self, f, *args, **kwargs)`
+    Like `map`, but use `itertools.starmap`
+
+- `@patch @curryable def rstarmap(self, f, *args, **kwargs)`
+    Like `starmap`, but reverse the order of args
+
+- `@patch def map_dict(self, f, *args, **kwargs)`
+    Like `map`, but creates a dict from `items` to function results
+
+- `@patch def zip(self, cycled)`
+    Create new `L` with `zip(*items)`
+
+- `@patch def map_zip(self, f, *args, **kwargs)`
+    Combine `zip` and `starmap`
+
+- `@patch def zipwith(self, *rest)`
+    Create new `L` with `self` zip with each of `*rest`
+
+- `@patch def map_zipwith(self, f, *rest, **kwargs)`
+    Combine `zipwith` and `starmap`
+
+- `@patch @curryable def filter(self, f, negate, **kwargs)`
+    Create new `L` filtered by predicate `f`, passing `args` and `kwargs` to `f`
+
+- `@patch @curryable def starfilter(self, f, negate, **kwargs)`
+    Like `filter`, but unpacks elements as args to `f`
+
+- `@patch @curryable def rstarfilter(self, f, negate, **kwargs)`
+    Like `starfilter`, but reverse the order of args
+
+- `@patch @curryable def starargwhere(self, f, negate)`
+    Like `argwhere`, but unpacks elements as args to `f`
+
+- `@patch @curryable def rstarargwhere(self, f, negate)`
+    Like `starargwhere`, but reverse the order of args
+
+- `@patch @curryable def argfirst(self, f, negate)`
+    Return index of first matching item
+
+- `@patch @curryable def starargfirst(self, f, negate)`
+    Like `argfirst`, but unpacks elements as args to `f`
+
+- `@patch @curryable def rstarargfirst(self, f, negate)`
+    Like `starargfirst`, but reverse the order of args
+
+- `@patch def itemgot(self, *idxs)`
+    Create new `L` with item `idx` of all `items`
+
+- `@patch def attrgot(self, k, default)`
+    Create new `L` with attr `k` (or value `k` for dicts) of all `items`.
+
+- `@patch @curryable def sorted(self, key, reverse, cmp, **kwargs)`
+    New `L` sorted by `key`, using `sort_ex`. If key is str use `attrgetter`; if int use `itemgetter`
+
+- `@patch @curryable def starsorted(self, key, reverse)`
+    Like `sorted`, but unpacks elements as args to `key`
+
+- `@patch @curryable def rstarsorted(self, key, reverse)`
+    Like `starsorted`, but reverse the order of args
+
+- `@patch def shuffle(self)`
+    Same as `random.shuffle`, but not inplace
+
+- `@patch @curryable def starreduce(self, f, initial)`
+    Like `reduce`, but unpacks elements as args to `f`
+
+- `@patch @curryable def rstarreduce(self, f, initial)`
+    Like `starreduce`, but reverse the order of unpacked args
+
+- `@patch def sum(self)`
+    Sum of the items
+
+- `@patch def map_first(self, f, g, *args, **kwargs)`
+    First element of `map_filter`
+
+- `@patch @curryable def takewhile(self, f)`
+    Same as `itertools.takewhile`
+
+- `@patch @curryable def dropwhile(self, f)`
+    Same as `itertools.dropwhile`
+
+- `@patch @curryable def startakewhile(self, f)`
+    Like `takewhile`, but unpacks elements as args to `f`
+
+- `@patch @curryable def rstartakewhile(self, f)`
+    Like `startakewhile`, but reverse the order of args
+
+- `@patch @curryable def stardropwhile(self, f)`
+    Like `dropwhile`, but unpacks elements as args to `f`
+
+- `@patch @curryable def rstardropwhile(self, f)`
+    Like `stardropwhile`, but reverse the order of args
+
+- `@patch @curryable def accumulate(self, f, initial)`
+    Same as `itertools.accumulate`
+
+- `@patch def pairwise(self)`
+    Same as `itertools.pairwise`
+
+- `@patch def compress(self, selectors)`
+    Same as `itertools.compress`
+
+- `@patch def permutations(self, r)`
+    Same as `itertools.permutations`
+
+- `@patch def combinations(self, r)`
+    Same as `itertools.combinations`
+
+- `@patch @curryable def starpartition(self, f, **kwargs)`
+    Like `partition`, but unpacks elements as args to `f`
+
+- `@patch @curryable def rstarpartition(self, f, **kwargs)`
+    Like `starpartition`, but reverse the order of args
+
+- `def save_config_file(file, d, **kwargs)`
+    Write settings dict to a new config file, or overwrite the existing one.
+
+- `def find_file_parents(fname, frompath)`
+    Search `cfg_path` and its parents to find `cfg_name`
+
+- `class Config`
+    Reading and writing `ConfigParser` ini files
+
+    - `def __init__(self, cfg_path, cfg_name, create, save, extra_files, types, **cfg_kwargs)`
+    - `def __repr__(self)`
+    - `def __setitem__(self, k, v)`
+    - `def __contains__(self, k)`
+    - `def save(self)`
+    - `def __getattr__(self, k)`
+    - `def __getitem__(self, k)`
+    - `def get(self, k, default)`
+    - `def path(self, k, default)`
+    - `@classmethod def find(cls, cfg_name, cfg_path, **kwargs)`
+        Search `cfg_path` and its parents to find `cfg_name`
+
+
+## fastcore.imghdr
+
+> Recognize image file formats based on their first few bytes.
+
+- `def test_jpeg(h, f)`
+    JPEG data with JFIF or Exif markers; and raw JPEG including COM segments
+
+- `def test_gif(h, f)`
+    GIF ('87 and '89 variants)
+
+- `def test_tiff(h, f)`
+    TIFF (can be in Motorola or Intel byte order)
+
+- `def test_rgb(h, f)`
+    SGI image library
+
+- `def test_pbm(h, f)`
+    PBM (portable bitmap)
+
+- `def test_pgm(h, f)`
+    PGM (portable graymap)
+
+- `def test_ppm(h, f)`
+    PPM (portable pixmap)
+
+- `def test_rast(h, f)`
+    Sun raster file
+
+- `def test_xbm(h, f)`
+    X bitmap (X10 or X11)
+
+## fastcore.imports
+
+- `def is_iter(o)`
+    Test whether `o` can be used in a `for` loop
+
+- `def is_coll(o)`
+    Test whether `o` is a collection (i.e. has a usable `len`)
+
+- `def all_equal(a, b)`
+    Compares whether `a` and `b` are the same length and have the same contents
+
+- `def noop(x, *args, **kwargs)`
+    Do nothing
+
+- `def noops(self, x, *args, **kwargs)`
+    Do nothing (method)
+
+- `def isinstance_str(x, cls_name)`
+    Like `isinstance`, except takes a type name instead of a type
+
+- `def equals(a, b)`
+    Compares `a` and `b` for equality; supports sublists, tensors and arrays too
+
+- `def ipython_shell()`
+    Same as `get_ipython` but returns `False` if not in IPython
+
+- `def in_ipython()`
+    Check if code is running in some kind of IPython environment
+
+- `def in_colab()`
+    Check if the code is running in Google Colaboratory
+
+- `def in_jupyter()`
+    Check if the code is running in a jupyter notebook
+
+- `def in_notebook()`
+    Check if the code is running in a jupyter notebook
+
+- `def remove_prefix(text, prefix)`
+    Temporary until py39 is a prereq
+
+- `def remove_suffix(text, suffix)`
+    Temporary until py39 is a prereq
+
+- `def is_usable_tool(func)`
+    True if the function has a docstring and all parameters have types, meaning that it can be used as an LLM tool.
+
+- `def llmtool(f, **tmpls)`
+    Decorator to mark a function as an LLM tool. Pass `**tmpls` to format the docstring.
+
+## fastcore.meta
+
+> Metaclasses
+
+- `def test_sig(f, b)`
+    Test the signature of an object
+
+- `class FixSigMeta`
+    A metaclass that fixes the signature on classes that override `__new__`
+
+    - `def __new__(cls, name, bases, dict)`
+
+- `class PrePostInitMeta`
+    A metaclass that calls optional `__pre_init__` and `__post_init__` methods
+
+    - `def __call__(cls, *args, **kwargs)`
+
+- `class AutoInit`
+    Same as `object`, but no need for subclasses to call `super().__init__`
+
+    - `def __pre_init__(self, *args, **kwargs)`
+
+- `class NewChkMeta`
+    Metaclass to avoid recreating object passed to constructor
+
+    - `def __call__(cls, x, *args, **kwargs)`
+
+- `class BypassNewMeta`
+    Metaclass: casts `x` to this class if it's of type `cls._bypass_type`
+
+    - `def __call__(cls, x, *args, **kwargs)`
+
+- `def empty2none(p)`
+    Replace `Parameter.empty` with `None`
+
+- `def anno_dict(f)`
+    `__annotation__ dictionary with `empty` cast to `None`, returning empty if doesn't exist
+
+- `def use_kwargs_dict(keep, **kwargs)`
+    Decorator: replace `**kwargs` in signature with `names` params
+
+- `def use_kwargs(names, keep)`
+    Decorator: replace `**kwargs` in signature with `names` params
+
+- `def delegates(to, keep, but, sort_args)`
+    Decorator: replace `**kwargs` in signature with params from `to`
+
+- `def method(f)`
+    Mark `f` as a method
+
+- `def delegated(to, keep, but, sort_args)`
+    Like `delegates` but also populates delegated default kwargs at call time
+
+- `def funcs_kwargs(as_method)`
+    Replace methods in `cls._methods` with those from `kwargs`
+
+- `def splice_sig(wrapper, fn, *skips)`
+    Replace `*args`/`**kwargs` in wrapper's sig with fn's params (minus skips)
+
+## fastcore.net
+
+> Network, HTTP, and URL functions
+
+- `def urlquote(url)`
+    Update url's path with `urllib.parse.quote`
+
+- `def urlwrap(url, data, headers)`
+    Wrap `url` in a urllib `Request` with `urlquote`
+
+- `class HTTP4xxClientError`
+    Base class for client exceptions (code 4xx) from `url*` functions
+
+
+- `class HTTP5xxServerError`
+    Base class for server exceptions (code 5xx) from `url*` functions
+
+
+- `def urlopen(url, data, headers, timeout, **kwargs)`
+    Like `urllib.request.urlopen`, but first `urlwrap` the `url`, and encode `data`
+
+- `def urlread(url, data, headers, decode, return_json, return_headers, timeout, **kwargs)`
+    Retrieve `url`, using `data` dict or `kwargs` to `POST` if present
+
+- `def urljson(url, data, headers, timeout)`
+    Retrieve `url` and decode json
+
+- `def urlclean(url)`
+    Remove fragment, params, and querystring from `url` if present
+
+- `def urlsave(url, dest, reporthook, headers, timeout)`
+    Retrieve `url` and save based on its name
+
+- `def urlvalid(x)`
+    Test if `x` is a valid URL
+
+- `def urlrequest(url, verb, headers, route, query, data, json_data)`
+    `Request` for `url` with optional route params replaced by `route`, plus `query` string, and post `data`
+
+- `@patch def summary(self, skip)`
+    Summary containing full_url, headers, method, and data, removing `skip` from headers
+
+- `def urlsend(url, verb, headers, decode, route, query, data, json_data, return_json, return_headers, debug, timeout)`
+    Send request with `urlrequest`, converting result to json if `return_json`
+
+- `def do_request(url, post, headers, **data)`
+    Call GET or json-encoded POST on `url`, depending on `post`
+
+- `def start_server(port, host, dgram, reuse_addr, n_queue)`
+    Create a `socket` server on `port`, with optional `host`, of type `dgram`
+
+- `def start_client(port, host, dgram)`
+    Create a `socket` client on `port`, with optional `host`, of type `dgram`
+
+- `def tobytes(s)`
+    Convert `s` into HTTP-ready bytes format
+
+- `def http_response(body, status, hdrs, **kwargs)`
+    Create an HTTP-ready response, adding `kwargs` to `hdrs`
+
+- `@threaded def recv_once(host, port)`
+    Spawn a thread to receive a single HTTP request and store in `d['r']`
+
+## fastcore.parallel
+
+> Threading and multiprocessing functions
+
+- `def threaded(process)`
+    Run `f` in a `Thread` (or `Process` if `process=True`), and returns it
+
+- `def startthread(f)`
+    Like `threaded`, but start thread immediately
+
+- `def startproc(f)`
+    Like `threaded(True)`, but start Process immediately
+
+- `class ThreadPoolExecutor`
+    Same as Python's ThreadPoolExecutor, except can pass `max_workers==0` for serial execution
+
+    - `def __init__(self, max_workers, on_exc, pause, **kwargs)`
+    - `def map(self, f, items, *args, **kwargs)`
+
+- `@delegates() class ProcessPoolExecutor`
+    Same as Python's ProcessPoolExecutor, except can pass `max_workers==0` for serial execution
+
+    - `def __init__(self, max_workers, on_exc, pause, **kwargs)`
+    - `def map(self, f, items, *args, **kwargs)`
+
+- `def parallel(f, items, *args, **kwargs)`
+    Applies `func` in parallel to `items`, using `n_workers`
+
+- `def parallel_async(f, items, *args, **kwargs)`
+    Applies `f` to `items` in parallel using asyncio and a semaphore to limit concurrency.
+
+- `def bg_task(coro)`
+    Like `asyncio.create_task` but logs exceptions for fire-and-forget tasks
+
+- `def run_procs(f, f_done, args)`
+    Call `f` for each item in `args` in parallel, yielding `f_done`
+
+- `def parallel_gen(cls, items, n_workers, progress, **kwargs)`
+    Instantiate `cls` in `n_workers` procs & call each on a subset of `items` in parallel.
+
+## fastcore.py2pyi
+
+- `def imp_mod(module_path, package)`
+    Import dynamically the module referenced in `fn`
+
+- `def has_deco(node, name)`
+    Check if a function node `node` has a decorator named `name`
+
+- `def create_pyi(fn, package)`
+    Convert `fname.py` to `fname.pyi` by removing function bodies and expanding `delegates` kwargs
+
+- `@call_parse def py2pyi(fname, package)`
+    Convert `fname.py` to `fname.pyi` by removing function bodies and expanding `delegates` kwargs
+
+- `@call_parse def replace_wildcards(path)`
+    Expand wildcard imports in the specified Python file.
+
+## fastcore.script
+
+> A fast way to turn your python function into a script.
+
+- `def store_true()`
+    Placeholder to pass to `Param` for `store_true` action
+
+- `def store_false()`
+    Placeholder to pass to `Param` for `store_false` action
+
+- `def bool_arg(v)`
+    Use as `type` for `Param` to get `bool` behavior
+
+- `class Param`
+    A parameter in a function used in `anno_parser` or `call_parse`
+
+    - `def __init__(self, help, type, opt, action, nargs, const, choices, required, default, version)`
+    - `def set_default(self, d)`
+    - `@property def pre(self)`
+    - `@property def kwargs(self)`
+    - `def __repr__(self)`
+
+- `def anno_parser(func, prog)`
+    Look at params (annotated with `Param`) in func and return an `ArgumentParser`
+
+- `def args_from_prog(func, prog)`
+    Extract args from `prog`
+
+- `def call_parse(func, nested)`
+    Decorator to create a simple CLI from `func` using `anno_parser`
+
+## fastcore.style
+
+> Fast styling for friendly CLIs.
+
+- `class StyleCode`
+    An escape sequence for styling terminal text.
+
+    - `def __init__(self, name, code, typ)`
+    - `def __str__(self)`
+
+- `class Style`
+    A minimal terminal text styler.
+
+    - `def __init__(self, codes)`
+    - `def __dir__(self)`
+    - `def __getattr__(self, k)`
+    - `def __call__(self, obj)`
+    - `def __repr__(self)`
+
+- `def demo()`
+    Demonstrate all available styles and their codes.
+
+## fastcore.test
+
+> Helper functions to quickly write tests in notebooks
+
+- `def test_fail(f, msg, contains, exc, args, kwargs)`
+    Fails with `msg` unless `f()` raises an exception of type `exc` and (optionally) has `contains` in `e.args`
+
+- `def test(a, b, cmp, cname)`
+    `assert` that `cmp(a,b)`; display inputs and `cname or cmp.__name__` if it fails
+
+- `def nequals(a, b)`
+    Compares `a` and `b` for `not equals`
+
+- `def test_eq(a, b)`
+    `test` that `a==b`
+
+- `def test_eq_type(a, b)`
+    `test` that `a==b` and are same type
+
+- `def test_ne(a, b)`
+    `test` that `a!=b`
+
+- `def is_close(a, b, eps)`
+    Is `a` within `eps` of `b`
+
+- `def test_close(a, b, eps)`
+    `test` that `a` is within `eps` of `b`
+
+- `def test_is(a, b)`
+    `test` that `a is b`
+
+- `def test_shuffled(a, b)`
+    `test` that `a` and `b` are shuffled versions of the same sequence of items
+
+- `def test_stdout(f, exp, regex)`
+    Test that `f` prints `exp` to stdout, optionally checking as `regex`
+
+- `def test_fig_exists(ax)`
+    Test there is a figure displayed in `ax`
+
+- `class ExceptionExpected`
+    Context manager that tests if an exception is raised
+
+    - `def __init__(self, ex, regex)`
+    - `def __enter__(self)`
+    - `def __exit__(self, type, value, traceback)`
+
+## fastcore.tools
+
+> Helpful tools for running cli commands and reading, modifying, and creating files in python. This is used primarily for AI's in tool loops for automating tasks involving the filesystem.
+
+- `def explain_exc(task)`
+    Convert an current exception to  an LLM friendly error message.
+
+- `def ensure(b, msg)`
+    Works like assert b, msg but raise ValueError and is not disabled when run with python -O
+
+- `def valid_path(path, must_exist, chk_perms)`
+    Return expanded/resolved Path, raising FileNotFoundError if must_exist and missing
+
+- `def run_cmd(cmd, argstr, disallow_re, allow_re)`
+    Run `cmd` passing split `argstr`, optionally checking for allowed argstr
+
+- `@llmtool def rg(argstr, disallow_re, allow_re)`
+    Run the `rg` command with the args in `argstr`
+
+- `@llmtool def sed(argstr, disallow_re, allow_re)`
+    Run the `sed` command with the args in `argstr` (e.g for reading a section of a file)
+
+- `@llmtool def view(path, view_range, nums, skip_folders)`
+    View directory or file contents with optional line range and numbers
+
+- `@llmtool def create(path, file_text, overwrite)`
+    Creates a new file with the given content at the specified path
+
+- `@llmtool def insert(path, insert_line, new_str)`
+    Insert new_str at specified line number
+
+- `@llmtool def str_replace(path, old_str, new_str)`
+    Replace first occurrence of old_str with new_str in file
+
+- `@llmtool def strs_replace(path, old_strs, new_strs)`
+    Replace for each str pair in old_strs,new_strs
+
+- `@llmtool def replace_lines(path, start_line, end_line, new_content)`
+    Replace lines in file using start and end line-numbers (index starting at 1)
+
+- `@llmtool def move_lines(path, start_line, end_line, dest_line)`
+    Move lines from start_line:end_line to before dest_line
+
+- `def get_callable()`
+    Return callable objects defined in caller's module
+
+## fastcore.xdg
+
+> XDG Base Directory Specification helpers.
+
+- `def xdg_cache_home()`
+    Path corresponding to `XDG_CACHE_HOME`
+
+- `def xdg_config_dirs()`
+    Paths corresponding to `XDG_CONFIG_DIRS`
+
+- `def xdg_config_home()`
+    Path corresponding to `XDG_CONFIG_HOME`
+
+- `def xdg_data_dirs()`
+    Paths corresponding to XDG_DATA_DIRS`
+
+- `def xdg_data_home()`
+    Path corresponding to `XDG_DATA_HOME`
+
+- `def xdg_runtime_dir()`
+    Path corresponding to `XDG_RUNTIME_DIR`
+
+- `def xdg_state_home()`
+    Path corresponding to `XDG_STATE_HOME`
+
+## fastcore.xml
+
+> Concise generation of XML.
+
+- `class FT`
+    A 'Fast Tag' structure, containing `tag`,`children`,and `attrs`
+
+    - `def __init__(self, tag, cs, attrs, void_, **kwargs)`
+    - `def on(self, f)`
+    - `def changed(self)`
+    - `def __setattr__(self, k, v)`
+    - `def __getattr__(self, k)`
+    - `@property def list(self)`
+    - `def get(self, k, default)`
+    - `def __repr__(self)`
+    - `def __iter__(self)`
+    - `def __getitem__(self, idx)`
+    - `def __setitem__(self, i, o)`
+    - `def __call__(self, *c, **kw)`
+    - `def set(self, *c, **kw)`
+        Set children and/or attributes (chainable)
+
+
+- `def ft(tag, *c, **kw)`
+    Create an `FT` structure for `to_xml()`
+
+- `def Html(*c, **kwargs)`
+    An HTML tag, optionally preceeded by `!DOCTYPE HTML`
+
+- `class Safe`
+    - `def __html__(self)`
+
+- `def to_xml(*elms)`
+    Convert `ft` element tree into an XML string
+
+- `def dict2xml(d, do_escape, unwrap)`
+    Convert `d` to XML tags, one per key/value pair, unwrapping if only single key in `unwrap` exists
+
+- `def highlight(s, lang)`
+    Markdown to syntax-highlight `s` in language `lang`
+
+## fastcore.xtras
+
+> Utility functions used in the fastai library
+
+- `def walk(path, symlinks, keep_file, keep_folder, skip_folder, func, ret_folders, sort)`
+    Generator version of `os.walk`, using functions to filter files and folders
+
+- `def exttypes(types)`
+    Get exts for comma-separated or list `typ`; if not found in list, return list with just `types`.
+    Supported: py, js, java, c, cpp, rb, r, ex, sh, web, doc, cfg
+
+- `def globtastic(path, recursive, symlinks, file_glob, file_re, folder_re, skip_file_glob, skip_file_re, skip_folder_re, func, ret_folders, sort, types, exts)`
+    A more powerful `glob`, including regex matches, symlink handling, and skip parameters
+
+- `@fdelegates(globtastic) def pglob(path, func, **kwargs)`
+    Shortcut for `globtastic(..., call=Path)`
+
+- `@contextmanager def maybe_open(f, mode, **kwargs)`
+    Context manager: open `f` if it is a path (and close on exit)
+
+- `def mkdir(path, exist_ok, parents, overwrite, **kwargs)`
+    Creates and returns a directory defined by `path`, optionally removing previous existing directory if `overwrite` is `True`
+
+- `def image_size(fn)`
+    Tuple of (w,h) for png, gif, or jpg; `None` otherwise
+
+- `def detect_mime(data)`
+    Get the MIME type for bytes `data`, covering common PDF, audio, video, and image types
+
+- `def bunzip(fn)`
+    bunzip `fn`, raising exception if output already exists
+
+- `def loads(s, **kw)`
+    Same as `json.loads`, but handles `None`
+
+- `def loads_multi(s)`
+    Generator of >=0 decoded json dicts, possibly with non-json ignored text at start and end
+
+- `def dumps(obj, **kw)`
+    Same as `json.dumps`, but uses `ujson` if available
+
+- `def untar_dir(fname, dest, rename, overwrite)`
+    untar `file` into `dest`, creating a directory if the root contains more than one item
+
+- `def repo_details(url)`
+    Tuple of `owner,name` from ssh or https git repo `url`
+
+- `def shell(*args, **kwargs)`
+    Shortcut for `subprocess.run(shell=True)`
+
+- `def ssh(host, args, user, sock)`
+    Run SSH command with given arguments
+
+- `def rsync_multi(ip, files, user, persist)`
+    Transfer multiple files with rename using persistent SSH connection
+
+- `def run(cmd, *rest)`
+    Pass `cmd` (splitting with `shlex` if string) to `subprocess.run`; return `stdout`; raise `IOError` if fails
+
+- `def open_file(fn, mode, **kwargs)`
+    Open a file, with optional compression if gz or bz2 suffix
+
+- `def save_pickle(fn, o)`
+    Save a pickle file, to a file name or opened file
+
+- `def load_pickle(fn)`
+    Load a pickle file from a file name or opened file
+
+- `def parse_env(s, fn)`
+    Parse a shell-style environment string or file
+
+- `def expand_wildcards(code)`
+    Expand all wildcard imports in the given code string.
+
+- `def dict2obj(d, list_func, dict_func, **kwargs)`
+    Convert (possibly nested) dicts (or lists of dicts) to `AttrDict`
+
+- `def obj2dict(d)`
+    Convert (possibly nested) AttrDicts (or lists of AttrDicts) to `dict`
+
+- `def repr_dict(d)`
+    Print nested dicts and lists, such as returned by `dict2obj`
+
+- `def is_listy(x)`
+    `isinstance(x, (tuple,list,L,slice,Generator))`
+
+- `def mapped(f, it)`
+    map `f` over `it`, unless it's not listy, in which case return `f(it)`
+
+- `@patch def readlines(self, hint, encoding)`
+    Read the content of `self`
+
+- `@patch def read_json(self, encoding, errors)`
+    Same as `read_text` followed by `loads`
+
+- `@patch def mk_write(self, data, encoding, errors, mode, uid, gid)`
+    Make all parent dirs of `self`, and write `data`
+
+- `@patch def write_json(self, data, encoding, errors, mode, uid, gid, **kw)`
+    Same as `dumps`followed by `mk_write`
+
+- `@patch def relpath(self, start)`
+    Same as `os.path.relpath`, but returns a `Path`, and resolves symlinks
+
+- `@patch def ls(self, n_max, file_type, file_exts)`
+    Contents of path as a list
+
+- `@patch def normpath(self)`
+    Normalize path, eliminating double slashes, etc.
+
+- `@patch def delete(self)`
+    Delete a file, symlink, or directory tree
+
+- `class IterLen`
+    Base class to add iteration to anything supporting `__len__` and `__getitem__`
+
+    - `def __iter__(self)`
+
+- `@docs class ReindexCollection`
+    Reindexes collection `coll` with indices `idxs` and optional LRU cache of size `cache`
+
+    - `def __init__(self, coll, idxs, cache, tfm)`
+    - `def __getitem__(self, i)`
+    - `def __len__(self)`
+    - `def reindex(self, idxs)`
+    - `def shuffle(self)`
+    - `def cache_clear(self)`
+    - `def __getstate__(self)`
+    - `def __setstate__(self, s)`
+
+- `class SaveReturn`
+    Wrap an iterator such that the generator function's return value is stored in `.value`
+
+    - `def __init__(self, its)`
+    - `def __iter__(self)`
+
+- `def trim_wraps(f, n)`
+    Like wraps, but removes the first n parameters from the signature
+
+- `def save_iter(g)`
+    Decorator that allows a generator function to store values in the returned iterator object
+
+- `def asave_iter(g)`
+    Like `save_iter`, but for async iterators
+
+- `def unqid(seeded)`
+    Generate a unique id suitable for use as a Python identifier
+
+- `def rtoken_hex(nbytes)`
+    Generate a random hex string using Python's random module.
+
+- `def friendly_name(levels, suffix)`
+    Generate a random human-readable name with customizable word levels and suffix length
+
+- `def n_friendly_names(levels, suffix)`
+    Number of possible combos for `friendly_names
+
+- `def exec_eval(code, g, l)`
+    Evaluate `code` in `g` (defaults to `globals()`) and `l` (defaults to `locals()`)
+
+- `def get_source_link(func)`
+    Return link to `func` in source code
+
+- `def sparkline(data, mn, mx, empty_zero)`
+    Sparkline for `data`, with `None`s (and zero, if `empty_zero`) shown as empty column
+
+- `def modify_exception(e, msg, replace)`
+    Modifies `e` with a custom message attached
+
+- `def round_multiple(x, mult, round_down)`
+    Round `x` to nearest multiple of `mult`
+
+- `def set_num_threads(nt)`
+    Get numpy (and others) to use `nt` threads
+
+- `def join_path_file(file, path, ext)`
+    Return `path/file` if file is a string or a `Path`, file otherwise
+
+- `def autostart(g)`
+    Decorator that automatically starts a generator
+
+- `class EventTimer`
+    An event timer with history of `store` items of time `span`
+
+    - `def __init__(self, store, span)`
+    - `def add(self, n)`
+        Record `n` events
+
+    - `@property def duration(self)`
+    - `@property def freq(self)`
+
+- `def stringfmt_names(s)`
+    Unique brace-delimited names in `s`
+
+- `class PartialFormatter`
+    A `string.Formatter` that doesn't error on missing fields, and tracks missing fields and unused args
+
+    - `def __init__(self)`
+    - `def get_field(self, nm, args, kwargs)`
+    - `def check_unused_args(self, used, args, kwargs)`
+
+- `def partial_format(s, **kwargs)`
+    string format `s`, ignoring missing field errors, returning missing and extra fields
+
+- `def truncstr(s, maxlen, suf, space, sizevar)`
+    Truncate `s` to length `maxlen`, adding suffix `suf` if truncated
+
+- `def utc2local(dt)`
+    Convert `dt` from UTC to local time
+
+- `def local2utc(dt)`
+    Convert `dt` from local to UTC time
+
+- `def trace(f)`
+    Add `set_trace` to an existing function `f`
+
+- `@contextmanager def modified_env(*delete, **replace)`
+    Context manager temporarily modifying `os.environ` by deleting `delete` and replacing `replace`
+
+- `class ContextManagers`
+    Wrapper for `contextlib.ExitStack` which enters a collection of context managers
+
+    - `def __init__(self, mgrs)`
+    - `def __enter__(self)`
+    - `def __exit__(self, *args, **kwargs)`
+
+- `def shufflish(x, pct)`
+    Randomly relocate items of `x` up to `pct` of `len(x)` from their starting location
+
+- `def console_help(libname)`
+    Show help for all console scripts from `libname`
+
+- `def hl_md(s, lang, show)`
+    Syntax highlight `s` using `lang`.
+
+- `def type2str(typ)`
+    Stringify `typ`
+
+- `class Unset`
+    - `def __repr__(self)`
+    - `def __str__(self)`
+    - `def __bool__(self)`
+    - `@property def name(self)`
+        The name of the Enum member.
+
+    This is a reconstruction by astroid: enums are too dynamic to understand, but we at least
+    know 'name' should be a string, so this is astroid's best guess.
+
+
+- `def nullable_dc(cls)`
+    Like `dataclass`, but default of `UNSET` added to fields without defaults
+
+- `def flexiclass(cls)`
+    Convert `cls` into a `dataclass` like `make_nullable`. Converts in place and also returns the result.
+
+- `def asdict(o)`
+    Convert `o` to a `dict`, supporting dataclasses, namedtuples, iterables, and `__dict__` attrs.
+
+- `def vars_pub(x)`
+    Get public non-skipped vars
+
+- `def is_typeddict(cls)`
+    Check if `cls` is a `TypedDict`
+
+- `def is_namedtuple(cls)`
+    `True` if `cls` is a namedtuple type
+
+- `class CachedIter`
+    Cache the result returned by an iterator
+
+    - `def __init__(self, o)`
+    - `def __iter__(self)`
+
+- `class CachedAwaitable`
+    Cache the result from an awaitable
+
+    - `def __init__(self, o)`
+    - `def __await__(self)`
+
+- `def reawaitable(func)`
+    Wraps the result of an asynchronous function into an object which can be awaited more than once
+
+- `def is_async_callable(obj)`
+    Check if `obj` is an async callable, handling `partial` wrappers and callable instances
+
+- `def maybe_await(o)`
+    Await `o` if needed, and return it
+
+- `def noopa(x, *args, **kwargs)`
+    Do nothing (async)
+
+- `def flexicache(*funcs)`
+    Like `lru_cache`, but customisable with policy `funcs`
+
+- `def time_policy(seconds)`
+    A `flexicache` policy that expires cached items after `seconds` have passed
+
+- `def mtime_policy(filepath)`
+    A `flexicache` policy that expires cached items after `filepath` modified-time changes
+
+- `def timed_cache(seconds, maxsize)`
+    Like `lru_cache`, but also with time-based eviction
+</doc></api></project>

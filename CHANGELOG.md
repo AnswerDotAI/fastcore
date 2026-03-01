@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.22
+
+### New Features
+
+- Add dict2xml helper and support multiple elements in `to_xml` ([#781](https://github.com/AnswerDotAI/fastcore/issues/781))
+
+
 ## 1.12.21
 
 ### New Features

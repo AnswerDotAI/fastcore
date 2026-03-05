@@ -14,7 +14,7 @@ from .meta import *
 from .xtras import *
 from functools import wraps
 
-import concurrent.futures,time
+import concurrent.futures,time,asyncio
 from multiprocessing import Process,Queue,Manager,set_start_method,get_all_start_methods,get_context
 from threading import Thread
 try:
@@ -141,20 +141,19 @@ def _add_one(x, a=1):
     time.sleep(random.random()/80)
     return x+a
 
-# %% ../nbs/03a_parallel.ipynb #dfd51f31
+# %% ../nbs/03a_parallel.ipynb #9fcc38fd
 async def parallel_async(f, items, *args, n_workers=16,
-                         timeout=None, chunksize=1, on_exc=print, **kwargs):
+                         timeout=None, chunksize=1, on_exc=print, cancel_on_error=False, **kwargs):
     "Applies `f` to `items` in parallel using asyncio and a semaphore to limit concurrency."
-    import asyncio
     semaphore = asyncio.Semaphore(n_workers)
-
     async def limited_task(item):
         coro = f(item, *args, **kwargs) if asyncio.iscoroutinefunction(f) else asyncio.to_thread(f, item, *args, **kwargs)
         async with semaphore:
             return await asyncio.wait_for(coro, timeout) if timeout else await coro
-
-    tasks = [limited_task(item) for item in items]
-    return await asyncio.gather(*tasks)
+    if cancel_on_error:
+        async with asyncio.TaskGroup() as tg: tasks = [tg.create_task(limited_task(item)) for item in items]
+        return [t.result() for t in tasks]
+    return await asyncio.gather(*[limited_task(item) for item in items], return_exceptions=True)
 
 # %% ../nbs/03a_parallel.ipynb #6748aa27
 def bg_task(coro):

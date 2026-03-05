@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.23
+
+### New Features
+
+- `parallel_async`: add `cancel_on_error` via TaskGroup, use `return_exceptions` in gather ([#783](https://github.com/AnswerDotAI/fastcore/issues/783))
+
+
 ## 1.12.22
 
 ### New Features

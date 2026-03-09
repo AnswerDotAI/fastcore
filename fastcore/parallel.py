@@ -147,8 +147,8 @@ async def parallel_async(f, items, *args, n_workers=16, pause=0,
     "Applies `f` to `items` in parallel using asyncio and a semaphore to limit concurrency."
     semaphore = asyncio.Semaphore(n_workers)
     async def limited_task(i, item):
-        if pause: await asyncio.sleep(i * pause)
         coro = f(item, *args, **kwargs) if asyncio.iscoroutinefunction(f) else asyncio.to_thread(f, item, *args, **kwargs)
+        if pause: await asyncio.sleep(i * pause)
         async with semaphore:
             return await asyncio.wait_for(coro, timeout) if timeout else await coro
     if cancel_on_error:

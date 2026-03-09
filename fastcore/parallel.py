@@ -141,19 +141,20 @@ def _add_one(x, a=1):
     time.sleep(random.random()/80)
     return x+a
 
-# %% ../nbs/03a_parallel.ipynb #9fcc38fd
-async def parallel_async(f, items, *args, n_workers=16,
+# %% ../nbs/03a_parallel.ipynb #87a80e04
+async def parallel_async(f, items, *args, n_workers=16, pause=0,
                          timeout=None, chunksize=1, on_exc=print, cancel_on_error=False, **kwargs):
     "Applies `f` to `items` in parallel using asyncio and a semaphore to limit concurrency."
     semaphore = asyncio.Semaphore(n_workers)
-    async def limited_task(item):
+    async def limited_task(i, item):
+        if pause: await asyncio.sleep(i * pause)
         coro = f(item, *args, **kwargs) if asyncio.iscoroutinefunction(f) else asyncio.to_thread(f, item, *args, **kwargs)
         async with semaphore:
             return await asyncio.wait_for(coro, timeout) if timeout else await coro
     if cancel_on_error:
-        async with asyncio.TaskGroup() as tg: tasks = [tg.create_task(limited_task(item)) for item in items]
+        async with asyncio.TaskGroup() as tg: tasks = [tg.create_task(limited_task(i, item)) for i,item in enumerate(items)]
         return [t.result() for t in tasks]
-    return await asyncio.gather(*[limited_task(item) for item in items], return_exceptions=True)
+    return await asyncio.gather(*[limited_task(i, item) for i,item in enumerate(items)], return_exceptions=True)
 
 # %% ../nbs/03a_parallel.ipynb #6748aa27
 def bg_task(coro):

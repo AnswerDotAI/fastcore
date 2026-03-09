@@ -433,6 +433,14 @@ def read_json(self:Path, encoding=None, errors=None):
     "Same as `read_text` followed by `loads`"
     return loads(self.read_text(encoding=encoding, errors=errors))
 
+# %% ../nbs/03_xtras.ipynb #6c5f7de3
+@patch
+def read_yml(self:Path, encoding=None, errors=None):
+    "Same as `read_text` followed by `yaml.safe_load`"
+    try: import yaml
+    except ImportError: raise ImportError("pip install pyyaml")
+    return yaml.safe_load(self.read_text(encoding=encoding, errors=errors))
+
 # %% ../nbs/03_xtras.ipynb #d6d8d893
 @patch
 def mk_write(self:Path, data, encoding=None, errors=None, mode=511, uid=-1, gid=-1):
@@ -446,6 +454,14 @@ def mk_write(self:Path, data, encoding=None, errors=None, mode=511, uid=-1, gid=
 def write_json(self:Path, data, encoding=None, errors=None, mode=511, uid=-1, gid=-1, **kw):
     "Same as `dumps`followed by `mk_write`"
     self.mk_write(dumps(data,**kw),encoding,errors,mode,uid,gid)
+
+# %% ../nbs/03_xtras.ipynb #0290ae06
+@patch
+def write_yml(self:Path, data, encoding=None, errors=None, mode=511, uid=-1, gid=-1, **kw):
+    "Same as `yaml.dump` followed by `mk_write`"
+    try: import yaml
+    except ImportError: raise ImportError("pip install pyyaml")
+    self.mk_write(yaml.dump(data, **kw), encoding, errors, mode, uid, gid)
 
 # %% ../nbs/03_xtras.ipynb #9fc9965f
 @patch

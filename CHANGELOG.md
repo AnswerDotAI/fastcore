@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.24
+
+### New Features
+
+- Add pause parameter to `parallel_async` for staggered task starts ([#784](https://github.com/AnswerDotAI/fastcore/issues/784))
+
+
 ## 1.12.23
 
 ### New Features

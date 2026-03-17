@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.26
+
+### New Features
+
+- Add Path.`mkdir_perms` for dir creation with uid/gid support; use in `atomic_save` ([#786](https://github.com/AnswerDotAI/fastcore/issues/786))
+
+
 ## 1.12.25
 
 ### New Features

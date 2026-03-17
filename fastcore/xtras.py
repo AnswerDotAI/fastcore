@@ -384,12 +384,31 @@ def expand_wildcards(code):
             code = _replace_node(code, node, new_import)
     return code
 
+# %% ../nbs/03_xtras.ipynb #15c2b62c
+@patch
+def mkdir_perms(self:Path, mode=0o777, parents=False, exist_ok=False, uid=-1, gid=-1):
+    "Create directory like Path.mkdir but optionally set uid/gid on newly created dirs"
+    if self.exists() and not exist_ok: raise FileExistsError(self)
+    to_create = []
+    p = self
+    while not p.exists():
+        to_create.append(p)
+        if parents: p = p.parent
+        else: break
+    for d in reversed(to_create):
+        try: d.mkdir(mode=mode)
+        except FileExistsError:
+            if d==self and not exist_ok: raise
+            continue
+        if uid>-1 or gid>-1: os.chown(d, uid, gid)
+
 # %% ../nbs/03_xtras.ipynb #832397a3
 @contextmanager
 def atomic_save(fn, mode='wb', uid=-1, gid=-1, **kwargs):
     "Context manager for writing a file atomically via a temp file that is renamed on close"
     from tempfile import NamedTemporaryFile as ntf
     fn = Path(fn)
+    fn.parent.mkdir_perms(parents=True, exist_ok=True, uid=uid, gid=gid)
     with ntf(mode=mode, dir=fn.parent, delete=False, suffix=fn.suffix, **kwargs) as f:
         try: yield f
         except:

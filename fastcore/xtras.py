@@ -8,15 +8,16 @@ from __future__ import annotations
 # %% auto #0
 __all__ = ['spark_chars', 'UNSET', 'walk', 'exttypes', 'globtastic', 'pglob', 'maybe_open', 'mkdir', 'image_size', 'img_bytes',
            'detect_mime', 'bunzip', 'loads', 'loads_multi', 'dumps', 'untar_dir', 'repo_details', 'shell', 'ssh',
-           'rsync_multi', 'run', 'open_file', 'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards', 'dict2obj',
-           'obj2dict', 'repr_dict', 'is_listy', 'mapped', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps',
-           'save_iter', 'asave_iter', 'unqid', 'rtoken_hex', 'friendly_name', 'n_friendly_names', 'exec_eval',
-           'get_source_link', 'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file',
-           'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local',
-           'local2utc', 'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str',
-           'dataclass_src', 'Unset', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict',
-           'is_namedtuple', 'CachedIter', 'CachedAwaitable', 'reawaitable', 'is_async_callable', 'maybe_await', 'noopa',
-           'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
+           'rsync_multi', 'run', 'open_file', 'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards',
+           'atomic_save', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy', 'mapped', 'IterLen', 'ReindexCollection',
+           'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'unqid', 'rtoken_hex', 'friendly_name',
+           'n_friendly_names', 'exec_eval', 'get_source_link', 'sparkline', 'modify_exception', 'round_multiple',
+           'set_num_threads', 'join_path_file', 'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter',
+           'partial_format', 'truncstr', 'utc2local', 'local2utc', 'trace', 'modified_env', 'ContextManagers',
+           'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src', 'Unset', 'nullable_dc', 'make_nullable',
+           'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple', 'CachedIter', 'CachedAwaitable',
+           'reawaitable', 'is_async_callable', 'maybe_await', 'noopa', 'flexicache', 'time_policy', 'mtime_policy',
+           'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb #3401d507
 from .imports import *
@@ -382,6 +383,21 @@ def expand_wildcards(code):
             new_import = _expand_import(node, importlib.import_module(node.module), existing)
             code = _replace_node(code, node, new_import)
     return code
+
+# %% ../nbs/03_xtras.ipynb #832397a3
+@contextmanager
+def atomic_save(fn, mode='wb', uid=-1, gid=-1, **kwargs):
+    "Context manager for writing a file atomically via a temp file that is renamed on close"
+    from tempfile import NamedTemporaryFile as ntf
+    fn = Path(fn)
+    with ntf(mode=mode, dir=fn.parent, delete=False, suffix=fn.suffix, **kwargs) as f:
+        try: yield f
+        except:
+            Path(f.name).unlink(missing_ok=True)
+            raise
+    if uid>-1 or gid>-1: os.chown(f.name, uid, gid)
+    Path(f.name).rename(fn)
+
 
 # %% ../nbs/03_xtras.ipynb #9579358d
 def dict2obj(d=None, list_func=L, dict_func=AttrDict, **kwargs):

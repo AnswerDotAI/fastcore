@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.25
+
+### New Features
+
+- Add `atomic_save` context manager for safe atomic file writes ([#785](https://github.com/AnswerDotAI/fastcore/issues/785))
+
+
 ## 1.12.24
 
 ### New Features

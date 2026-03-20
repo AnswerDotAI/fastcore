@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.27
+
+### New Features
+
+- Add `expect_fail` context manager, `clean_cli_output()`, and `patch`/`patch_to` `once` param ([#787](https://github.com/AnswerDotAI/fastcore/issues/787))
+
+
 ## 1.12.26
 
 ### New Features

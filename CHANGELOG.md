@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.28
+
+### New Features
+
+- Add `frontmatter` function to parse YAML front matter from strings ([#788](https://github.com/AnswerDotAI/fastcore/issues/788))
+
+
 ## 1.12.27
 
 ### New Features

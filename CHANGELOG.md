@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.29
+
+### Bugs Squashed
+
+- remove `once` patch param ([#789](https://github.com/AnswerDotAI/fastcore/issues/789))
+
+
 ## 1.12.28
 
 ### New Features

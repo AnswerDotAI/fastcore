@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.30
+
+### New Features
+
+- frontmatter: return (dict, body) tuple instead of dict only ([#790](https://github.com/AnswerDotAI/fastcore/issues/790))
+
+
 ## 1.12.29
 
 ### Bugs Squashed

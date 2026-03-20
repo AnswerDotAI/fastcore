@@ -1098,11 +1098,12 @@ class _clsmethod:
     def __get__(self, _, f_cls): return MethodType(self.f, f_cls)
 
 # %% ../nbs/01_basics.ipynb #3f2733ef
-def patch_to(cls, as_prop=False, cls_method=False, set_prop=False, nm=None, glb=None):
+def patch_to(cls, as_prop=False, cls_method=False, set_prop=False, nm=None, glb=None, once:bool=False):
     "Decorator: add `f` to `cls`"
     if glb is None: glb = sys._getframe(1).f_globals
     def _inner(f):
         _nm = nm or f.__name__
+        onm = '_orig_'+_nm
         for c_ in tuplify(cls):
             nf = copy_func(f)
             for o in functools.WRAPPER_ASSIGNMENTS: setattr(nf, o, getattr(f,o))
@@ -1112,17 +1113,17 @@ def patch_to(cls, as_prop=False, cls_method=False, set_prop=False, nm=None, glb=
             elif set_prop:    attr = getattr(c_, _nm).setter(nf)
             elif as_prop:     attr = property(nf)
             else:
-                onm = '_orig_'+_nm
-                if hasattr(c_, _nm) and not hasattr(c_, onm): setattr(c_, onm, getattr(c_, _nm))
+                if hasattr(c_, onm) and once: break
+                if hasattr(c_, _nm): setattr(c_, onm, getattr(c_, _nm))
                 attr = nf
             setattr(c_, _nm, attr)
         return glb.get(_nm, builtins.__dict__.get(_nm, None))
     return _inner
 
 # %% ../nbs/01_basics.ipynb #8faf7b86
-def patch(f=None, *, as_prop=False, cls_method=False, set_prop=False, nm=None):
+def patch(f=None, *, as_prop=False, cls_method=False, set_prop=False, nm=None, once:bool=False):
     "Decorator: add `f` to the first parameter's class (based on f's type annotations)"
-    if f is None: return partial(patch, as_prop=as_prop, cls_method=cls_method, set_prop=set_prop, nm=nm)
+    if f is None: return partial(patch, as_prop=as_prop, cls_method=cls_method, set_prop=set_prop, nm=nm, once=once)
     ann,glb,loc = get_annotations_ex(f)
     if cls_method:
         if 'cls' not in ann: raise TypeError(f"@patch with cls_method=True requires 'cls' to have a type annotation")
@@ -1131,7 +1132,7 @@ def patch(f=None, *, as_prop=False, cls_method=False, set_prop=False, nm=None):
         if not ann: raise TypeError(f"@patch requires the first parameter of `{f.__name__}` to have a type annotation")
         cls = next(iter(ann.values()))
     cls = union2tuple(eval_type(cls, glb, loc))
-    return patch_to(cls, as_prop=as_prop, cls_method=cls_method, set_prop=set_prop, nm=nm, glb=sys._getframe(1).f_globals)(f)
+    return patch_to(cls, as_prop=as_prop, cls_method=cls_method, set_prop=set_prop, nm=nm, once=once, glb=sys._getframe(1).f_globals)(f)
 
 # %% ../nbs/01_basics.ipynb #d1732261
 def compile_re(pat):

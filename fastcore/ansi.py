@@ -14,13 +14,14 @@ _ANSI_COLORS = ( "ansi-black", "ansi-red", "ansi-green", "ansi-yellow", "ansi-bl
 
 def strip_terminal_queries(text):
     # Remove OSC sequences (like background color queries)
-    text = re.sub(r'\x1b\][^\\x07]*\x07', '', text)
+    text = re.sub('\x1b\\][^\x07]*\x07', '', text)
     # Remove DSR sequences (device status reports)
     return re.sub(r'\x1b\[[0-9]*n', '', text)
 
 
-def strip_ansi(source):
+def strip_ansi(source, term_queries:bool=False):
     "Remove ANSI escape codes from text."
+    if term_queries: source = strip_terminal_queries(source)
     return _ANSI_RE.sub("", source)
 
 

@@ -596,16 +596,16 @@ def asave_iter(g):
     def _(*args, **kwargs): return _save_iter(g, *args, **kwargs)
     return _
 
-# %% ../nbs/03_xtras.ipynb #20e906c7
-def frontmatter(txt:str)->dict:
-    "Dict contained in frontmatter in `txt`, if present"
+# %% ../nbs/03_xtras.ipynb #d2757e2a
+def frontmatter(txt:str)->tuple:
+    "Tuple of (dict, body) from frontmatter in `txt`; invalid/missing frontmatter returns ({}, txt)"
     import yaml
-    if not txt.startswith('---\n'): return {}
-    fm,part,_ = txt[4:].partition('\n---\n')
-    if not part: return {}
+    if not txt.startswith('---\n'): return {},txt
+    fm,part,body = txt[4:].partition('\n---\n')
+    if not part: return {},txt
     try: res = yaml.safe_load(fm)
-    except yaml.parser.ParserError: return {}
-    return res if isinstance(res,dict) else {}
+    except yaml.parser.ParserError: return {},txt
+    return (res,body) if isinstance(res,dict) else ({},txt)
 
 # %% ../nbs/03_xtras.ipynb #45eb5141
 def clean_cli_output(txt:str, strip:bool=True):

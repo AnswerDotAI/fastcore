@@ -10,14 +10,14 @@ __all__ = ['spark_chars', 'UNSET', 'walk', 'exttypes', 'globtastic', 'pglob', 'm
            'detect_mime', 'bunzip', 'loads', 'loads_multi', 'dumps', 'untar_dir', 'repo_details', 'shell', 'ssh',
            'rsync_multi', 'run', 'open_file', 'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards',
            'atomic_save', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy', 'mapped', 'IterLen', 'ReindexCollection',
-           'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'clean_cli_output', 'unqid', 'rtoken_hex',
-           'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link', 'sparkline', 'modify_exception',
-           'round_multiple', 'set_num_threads', 'join_path_file', 'autostart', 'EventTimer', 'stringfmt_names',
-           'PartialFormatter', 'partial_format', 'truncstr', 'utc2local', 'local2utc', 'trace', 'modified_env',
-           'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src', 'Unset', 'nullable_dc',
-           'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple', 'CachedIter',
-           'CachedAwaitable', 'reawaitable', 'is_async_callable', 'maybe_await', 'noopa', 'flexicache', 'time_policy',
-           'mtime_policy', 'timed_cache']
+           'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'frontmatter', 'clean_cli_output', 'unqid',
+           'rtoken_hex', 'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link', 'sparkline',
+           'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file', 'autostart', 'EventTimer',
+           'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local', 'local2utc', 'trace',
+           'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src',
+           'Unset', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple',
+           'CachedIter', 'CachedAwaitable', 'reawaitable', 'is_async_callable', 'maybe_await', 'noopa', 'flexicache',
+           'time_policy', 'mtime_policy', 'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb #3401d507
 from .imports import *
@@ -595,6 +595,17 @@ def asave_iter(g):
     @trim_wraps(g)
     def _(*args, **kwargs): return _save_iter(g, *args, **kwargs)
     return _
+
+# %% ../nbs/03_xtras.ipynb #20e906c7
+def frontmatter(txt:str)->dict:
+    "Dict contained in frontmatter in `txt`, if present"
+    import yaml
+    if not txt.startswith('---\n'): return {}
+    fm,part,_ = txt[4:].partition('\n---\n')
+    if not part: return {}
+    try: res = yaml.safe_load(fm)
+    except yaml.parser.ParserError: return {}
+    return res if isinstance(res,dict) else {}
 
 # %% ../nbs/03_xtras.ipynb #45eb5141
 def clean_cli_output(txt:str, strip:bool=True):

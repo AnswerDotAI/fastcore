@@ -28,6 +28,7 @@ def docstring(sym):
     if isinstance(sym, str): return sym
     res = getdoc(sym)
     if not res and isclass(sym): res = getdoc(sym.__init__)
+    if not res and callable(sym) and not isclass(sym): res = getdoc(sym.__call__)
     return res or ""
 
 # %% ../nbs/04_docments.ipynb #1e0cf854
@@ -140,7 +141,9 @@ def get_name(obj):
     elif getattr(obj, '_name', False): return obj._name
     elif hasattr(obj,'__origin__'):    return str(obj.__origin__).split('.')[-1]
     elif type(obj)==property:          return _get_property_name(obj)
+    elif callable(obj):                return type(obj).__name__
     else:                              return str(obj).split('.')[-1]
+
 
 # %% ../nbs/04_docments.ipynb #5e273f22
 def qual_name(obj):
@@ -364,10 +367,14 @@ class DocmentText(_DocmentBase):
     def params(self): return [(self._fmt_param(k,v), v.get('docment','')) for k,v in self.dm.items() if k != 'return']
 
     def __str__(self):
-        prefix = 'async def' if inspect.iscoroutinefunction(self.obj) else 'def'
-        if (sig := _clean_text_sig(self.obj)) and not self.params: sig_str = f"{prefix} {sig}"
-        else: sig_str = _fmt_sig(get_name(self.obj), self.params, self._ret_str, self.maxline, prefix=prefix)
-        docstr = f'    "{self.obj.__doc__}"' if self.docstring and self.obj.__doc__ else ''
+        o = self.obj
+        is_inst = callable(o) and not (isfunction(o) or isclass(o) or inspect.isbuiltin(o) or ismethod(o))
+        prefix = 'async def' if inspect.iscoroutinefunction(o) else 'def'
+        nm = f'{type(o).__name__}.__call__' if is_inst else get_name(o)
+        if (sig := _clean_text_sig(o)) and not self.params: sig_str = f"{prefix} {sig}"
+        else: sig_str = _fmt_sig(nm, self.params, self._ret_str, self.maxline, prefix=prefix)
+        doc = getattr(o.__call__, '__doc__', None) if is_inst else o.__doc__
+        docstr = f'    "{doc}"' if self.docstring and doc else ''
         return f"{sig_str}\n{docstr}"
     
     __repr__ = __str__

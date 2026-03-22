@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.31
+
+### New Features
+
+- Support callable instances in docstring/`get_name`/DocmentText for proper schema and doc display ([#791](https://github.com/AnswerDotAI/fastcore/issues/791))
+
+
 ## 1.12.30
 
 ### New Features

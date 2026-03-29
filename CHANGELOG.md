@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.32
+
+### New Features
+
+- Improve `isinstance_str` to accept multiple type names, fix MarkdownRenderer doc formatting, and warn on shell-escaped args in `run_cmd`/rg/sed ([#795](https://github.com/AnswerDotAI/fastcore/issues/795))
+
+
 ## 1.12.31
 
 ### New Features

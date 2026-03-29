@@ -439,6 +439,6 @@ class MarkdownRenderer(ShowDocRenderer):
 
     def __repr__(self):
         doc = str(self.dm)
-        if self.docs: doc += f'"""\n{self.docs}\n"""'
+        if self.docs: doc += f'"""{self.docs}"""'
         return doc
     __str__=__repr__

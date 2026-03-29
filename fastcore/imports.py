@@ -44,7 +44,9 @@ def any_is_instance(t, *args): return any(isinstance(a,t) for a in args)
 
 def isinstance_str(x, cls_name):
     "Like `isinstance`, except takes a type name instead of a type"
-    return cls_name in [t.__name__ for t in type(x).__mro__]
+    if isinstance(cls_name, str): cls_name = (cls_name,)
+    names = [t.__name__ for t in type(x).__mro__]
+    return any(c in names for c in cls_name)
 
 def array_equal(a,b):
     if hasattr(a, '__array__'): a = a.__array__()

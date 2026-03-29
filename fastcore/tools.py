@@ -63,12 +63,16 @@ def run_cmd(
     except: return explain_exc(f'running cmd')
     res = outp.stdout
     if res and outp.stderr: res += '\n'
-    return res + outp.stderr
+    res += outp.stderr
+    if not res.strip() and re.search(r'\\[|*?]', argstr):
+        return r'Warning: no output and argstr contains \-escaped chars. Shell escaping is not needed: try without \-escaping.'
+    return res
+
 
 # %% ../nbs/12_tools.ipynb #eb253a39
 @llmtool
 def rg(
-    argstr:str, # All args to the command, will be split with shlex
+    argstr:str, # All args to the command, will be split with shlex. No shell escaping needed for regex chars like `|`
     disallow_re:str=None, # optional regex which, if matched on argstr, will disallow the command
     allow_re:str=None # optional regex which, if not matched on argstr, will disallow the command
 ):
@@ -78,7 +82,7 @@ def rg(
 # %% ../nbs/12_tools.ipynb #09de7b32
 @llmtool
 def sed(
-    argstr:str, # All args to the command, will be split with shlex
+    argstr:str, # All args to the command, will be split with shlex. No shell escaping needed for regex chars like `|`
     disallow_re:str=None, # optional regex which, if matched on argstr, will disallow the command
     allow_re:str=None # optional regex which, if not matched on argstr, will disallow the command
 ):

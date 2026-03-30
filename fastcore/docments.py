@@ -14,7 +14,7 @@ from ast import parse,FunctionDef,AsyncFunctionDef,AnnAssign
 from io import BytesIO
 from textwrap import dedent
 from types import SimpleNamespace
-from inspect import getsource,isfunction,ismethod,isclass,signature,Parameter
+from inspect import getsource,isfunction,ismethod,isclass,signature,Parameter,Signature
 from dataclasses import dataclass, is_dataclass
 from .utils import *
 from .meta import delegates
@@ -157,7 +157,7 @@ def docments(s, full=False, eval_str=False, returns=True, args_kwargs=False):
     "Get docments for `s`"
     if isclass(s) and not is_dataclass(s): s = s.__init__
     try: sig = signature_ex(s, eval_str=eval_str)
-    except ValueError: return AttrDict()
+    except (ValueError, TypeError): return AttrDict()
     nps = parse_docstring(s)
     docs = {}
     while s:
@@ -347,6 +347,7 @@ def _fmt_default(o):
     if o is empty: return ''
     return o.__name__ if hasattr(o, '__name__') else repr(o)
 
+# %% ../nbs/04_docments.ipynb #7f5e5282
 class DocmentText(_DocmentBase):
     def __init__(self, obj, maxline=110, docstring=True):
         super().__init__(obj)
@@ -370,7 +371,7 @@ class DocmentText(_DocmentBase):
         o = self.obj
         is_inst = callable(o) and not (isfunction(o) or isclass(o) or inspect.isbuiltin(o) or ismethod(o))
         prefix = 'async def' if inspect.iscoroutinefunction(o) else 'def'
-        nm = f'{type(o).__name__}.__call__' if is_inst else get_name(o)
+        nm = get_name(o) if hasattr(o, '__name__') else f'{type(o).__name__}.__call__' if is_inst else get_name(o)
         if (sig := _clean_text_sig(o)) and not self.params: sig_str = f"{prefix} {sig}"
         else: sig_str = _fmt_sig(nm, self.params, self._ret_str, self.maxline, prefix=prefix)
         doc = getattr(o.__call__, '__doc__', None) if is_inst else o.__doc__

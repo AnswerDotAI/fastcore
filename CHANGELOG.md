@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.33
+
+### Bugs Squashed
+
+- Handle TypeError in docments, and fix callable name resolution ([#796](https://github.com/AnswerDotAI/fastcore/issues/796))
+
+
 ## 1.12.32
 
 ### New Features

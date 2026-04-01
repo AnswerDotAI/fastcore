@@ -5,7 +5,7 @@
 # %% auto #0
 __all__ = ['empty', 'docstring', 'parse_docstring', 'isdataclass', 'get_dataclass_source', 'get_source', 'get_name', 'qual_name',
            'docments', 'sig_source', 'extract_docstrings', 'DocmentTbl', 'DocmentList', 'DocmentText', 'sig2str',
-           'ShowDocRenderer', 'MarkdownRenderer']
+           'can_render', 'ShowDocRenderer', 'MarkdownRenderer']
 
 # %% ../nbs/04_docments.ipynb #4c662acc
 import re,ast,inspect
@@ -391,6 +391,16 @@ def _docstring(sym):
     npdoc = parse_docstring(sym)
     return '\n\n'.join([npdoc['Summary'], npdoc['Extended']]).strip()
 
+def _unwrap_sym(sym):
+    if not hasattr(sym, '__signature__'): sym = getattr(sym, '__wrapped__', sym)
+    return getattr(sym, 'fget', None) or getattr(sym, 'fset', None) or sym
+
+def can_render(sym):
+    "Check if `sym` has a renderable signature"
+    sym = _unwrap_sym(sym)
+    try: signature(sym, eval_str=True); return True
+    except (ValueError, TypeError): return False
+
 # %% ../nbs/04_docments.ipynb #9de89cb6
 def _fullname(o):
     module,name = getattr(o, "__module__", None),qual_name(o)
@@ -399,8 +409,7 @@ def _fullname(o):
 class ShowDocRenderer:
     def __init__(self, sym, name:str|None=None, title_level:int=3, maxline:int=110):
         "Show documentation for `sym`"
-        if not hasattr(sym, '__signature__'): sym = getattr(sym, '__wrapped__', sym)
-        sym = getattr(sym, 'fget', None) or getattr(sym, 'fset', None) or sym
+        sym = _unwrap_sym(sym)
         store_attr()
         self.nm = name or qual_name(sym)
         self.isfunc = inspect.isfunction(sym)

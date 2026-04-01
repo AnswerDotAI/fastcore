@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.34
+
+### New Features
+
+- Add `can_render` helper ([#797](https://github.com/AnswerDotAI/fastcore/issues/797))
+
+
 ## 1.12.33
 
 ### Bugs Squashed

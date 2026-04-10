@@ -343,6 +343,20 @@ def rstarargwhere(self:L, f, negate=False):
     if negate: _f = not_(_f)
     return self._new(i for i,o in enumerate(self) if _f(o))
 
+# %% ../nbs/02_foundation.ipynb #541e7eab-3267-4156-8574-5cff8eb1a4e1
+@patch
+@curryable
+def first(self:L, f, negate=False):
+    "Return first matching item"
+    return first(self, f, negate)
+
+# %% ../nbs/02_foundation.ipynb #6fde986b-8d9b-469a-af0e-ebba11917375
+@patch
+@curryable
+def last(self:L, f, negate=False):
+    "Return last matching item"
+    return last(self, f, negate)
+
 # %% ../nbs/02_foundation.ipynb #3e7fa556
 @patch
 @curryable

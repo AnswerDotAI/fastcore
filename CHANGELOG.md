@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.36
+
+### New Features
+
+- Add `Notebook` API ([#801](https://github.com/AnswerDotAI/fastcore/issues/801))
+
+
 ## 1.12.35
 
 ### New Features

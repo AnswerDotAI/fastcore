@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.12.37
+
+### New Features
+
+- Add `to_aiter` as public async generator and simplify `maybe_aiter` to use it ([#803](https://github.com/AnswerDotAI/fastcore/issues/803))
+- Add async mapping utilities: `mapa` and `maybe_aiter` ([#802](https://github.com/AnswerDotAI/fastcore/pull/802)), thanks to [@ncoop57](https://github.com/ncoop57)
+
+
 ## 1.12.36
 
 ### New Features

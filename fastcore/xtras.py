@@ -16,10 +16,6 @@ __all__ = ['spark_chars', 'UNSET', 'walk', 'exttypes', 'globtastic', 'pglob', 'm
            'CachedIter', 'CachedAwaitable', 'reawaitable', 'is_async_callable', 'maybe_await', 'maybe_aiter', 'mapa',
            'noopa', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
 
-# %% ../nbs/03_xtras.ipynb #ecd054a6
-#| export
-
-
 # %% ../nbs/03_xtras.ipynb #3401d507
 from .imports import *
 from .foundation import *
@@ -1045,7 +1041,8 @@ def maybe_aiter(items):
 
 # %% ../nbs/03_xtras.ipynb #371d5196
 async def mapa(f, items):
-    return await asyncio.gather(*[maybe_await(f(o)) async for o in maybe_aiter(items)])
+    from asyncio import gather
+    return await gather(*[maybe_await(f(o)) async for o in maybe_aiter(items)])
 
 # %% ../nbs/03_xtras.ipynb #02f9f070
 async def noopa(x=None, *args, **kwargs):

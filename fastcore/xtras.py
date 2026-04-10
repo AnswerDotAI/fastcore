@@ -1035,12 +1035,14 @@ def maybe_aiter(items):
     if hasattr(items, '__aiter__'): return items
     else:
         async def f(items):
-            for item in items: yield item
+            for item in items:
+                await asyncio.sleep(0)
+                yield item
         return f(items)
-
 
 # %% ../nbs/03_xtras.ipynb #371d5196
 async def mapa(f, items):
+    "Async `map`; apply `f` (sync or async) to `items` (sync or async iter) concurrently via `gather`"
     from asyncio import gather
     return await gather(*[maybe_await(f(o)) async for o in maybe_aiter(items)])
 

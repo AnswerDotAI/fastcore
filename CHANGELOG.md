@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.35
+
+### New Features
+
+- Add fastcore.nbio ([#800](https://github.com/AnswerDotAI/fastcore/issues/800))
+
+
 ## 1.12.34
 
 ### New Features

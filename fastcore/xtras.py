@@ -1032,6 +1032,7 @@ async def maybe_await(o):
 # %% ../nbs/03_xtras.ipynb #fc70459b
 async def to_aiter(items):
     "Async yield each item in `items` with `asyncio.sleep(0)` between"
+    import asyncio
     for item in items:
         await asyncio.sleep(0)
         yield item

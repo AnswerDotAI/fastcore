@@ -13,8 +13,8 @@ __all__ = ['spark_chars', 'UNSET', 'walk', 'exttypes', 'globtastic', 'pglob', 'm
            'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local', 'local2utc', 'trace',
            'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src',
            'Unset', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple',
-           'CachedIter', 'CachedAwaitable', 'reawaitable', 'is_async_callable', 'maybe_await', 'maybe_aiter', 'mapa',
-           'noopa', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
+           'CachedIter', 'CachedAwaitable', 'reawaitable', 'is_async_callable', 'maybe_await', 'to_aiter',
+           'maybe_aiter', 'mapa', 'noopa', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb #3401d507
 from .imports import *
@@ -1029,16 +1029,17 @@ async def maybe_await(o):
     from inspect import isawaitable
     return await o if isawaitable(o) else o
 
-# %% ../nbs/03_xtras.ipynb #985e3551
+# %% ../nbs/03_xtras.ipynb #fc70459b
+async def to_aiter(items):
+    "Async yield each item in `items` with `asyncio.sleep(0)` between"
+    for item in items:
+        await asyncio.sleep(0)
+        yield item
+
+# %% ../nbs/03_xtras.ipynb #5337427e
 def maybe_aiter(items):
-    "Convert `items` to async generator if needed, and return it"
-    if hasattr(items, '__aiter__'): return items
-    else:
-        async def f(items):
-            for item in items:
-                await asyncio.sleep(0)
-                yield item
-        return f(items)
+    "If `items` already async, return it; otherwise to_aiter"
+    return items if hasattr(items, '__aiter__') else to_aiter(items)
 
 # %% ../nbs/03_xtras.ipynb #371d5196
 async def mapa(f, items):

@@ -15,7 +15,7 @@ __all__ = ['voids', 'attrmap', 'valmap', 'FT', 'ft', 'Html', 'Safe', 'to_xml', '
 # %% ../nbs/09_xml.ipynb #f6c9a7f5
 from .utils import *
 
-import types,json
+import types,json,re
 
 from dataclasses import dataclass, asdict
 from typing import Mapping
@@ -146,7 +146,7 @@ def _to_attr(k,v):
     if isinstance(v,bool):
         if v==True : return str(k)
         if v==False: return ''
-    if isinstance(v,str): v = escape(v, quote=False)
+    if isinstance(v,str) and ('&' in v or '<' in v or '>' in v): v = escape(v, quote=False)
     elif isinstance(v, Mapping): v = json.dumps(v)
     elif hasattr(v, '__html__'): v = v.__html__()
     else: v = str(v)
@@ -164,25 +164,22 @@ _block_tags = {'div', 'p', 'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tfoot',
 _inline_tags = {'a', 'span', 'b', 'i', 'u', 'em', 'strong', 'img', 'br', 'small',
                 'big', 'sub', 'sup', 'label', 'input', 'select', 'option'}
 
-def _is_whitespace_significant(elm):
-    return elm.tag in {'pre', 'code', 'textarea', 'script'} or elm.get('contenteditable') == 'true'
+_ws_significant = {'pre', 'code', 'textarea', 'script'}
 
-# %% ../nbs/09_xml.ipynb #a1ed9c01
+# %% ../nbs/09_xml.ipynb #db55801a
 def _to_xml(elm, lvl=0, indent=True, do_escape=True):
     "Convert `FT` element tree into an XML string"
     esc_fn = _escape if do_escape else _noescape
     if elm is None: return ''
     if hasattr(elm, '__ft__'): elm = elm.__ft__()
-    if isinstance(elm, tuple):
-        return ''.join(_to_xml(o, lvl=lvl, indent=indent, do_escape=do_escape) for o in elm)
+    if isinstance(elm, tuple): return ''.join(_to_xml(o, lvl=lvl, indent=indent, do_escape=do_escape) for o in elm)
     if isinstance(elm, bytes): return elm.decode('utf-8')
     if not isinstance(elm, FT): return f'{esc_fn(elm)}'
 
-    tag, cs, attrs = elm.list
-    is_void = getattr(elm, 'void_', False)
+    tag,cs,attrs = elm.tag,elm.children,elm.attrs
+    is_void = elm.void_
     is_block = tag in _block_tags
-    if _is_whitespace_significant(elm): indent = False
-
+    if indent and (tag in _ws_significant or attrs.get('contenteditable') == 'true'): indent = False
     sp,nl = (' ' * lvl,'\n') if indent and is_block else ('','')
     nl_end = nl
 
@@ -202,12 +199,11 @@ def _to_xml(elm, lvl=0, indent=True, do_escape=True):
         return f'{sp}{stag_}{content}{cltag}{nl_end}'
 
     res = f'{sp}{stag_}{nl}'
-    for c in cs:
-        res += _to_xml(c, lvl=lvl+2 if indent else 0, indent=indent, do_escape=do_escape)
+    for c in cs: res += _to_xml(c, lvl=lvl+2 if indent else 0, indent=indent, do_escape=do_escape)
     if not is_void: res += f'{sp}{cltag}{nl_end}'
     return Safe(res)
 
-# %% ../nbs/09_xml.ipynb #7a3655e9
+# %% ../nbs/09_xml.ipynb #e24ad4e0
 def to_xml(*elms, lvl=0, indent=True, do_escape=True):
     "Convert `ft` element tree into an XML string"
     def _f(elm):
@@ -216,6 +212,7 @@ def to_xml(*elms, lvl=0, indent=True, do_escape=True):
         if isinstance(elm, bytes): return elm.decode('utf-8')
         return elm or ''
     return Safe('\n'.join(map(_f, elms)))
+
 
 # %% ../nbs/09_xml.ipynb #dd054392
 @patch

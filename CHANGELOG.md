@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.39
+
+### New Features
+
+- Minor perf improvements for `to_xml` ([#804](https://github.com/AnswerDotAI/fastcore/issues/804))
+
+
 ## 1.12.38
 
 ### New Features

@@ -4,12 +4,14 @@
 
 # %% auto #0
 __all__ = ['NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb', 'nb2dict', 'nb2str', 'write_nb', 'cell2xml', 'cells2xml',
-           'Notebook']
+           'Notebook', 'preferred_out', 'apply_controls', 'mk_stream', 'concat_streams', 'render_output',
+           'render_outputs']
 
-# %% ../nbs/13_nbio.ipynb #5faca748
+# %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
 from .xtras import rtoken_hex
 from .imports import *
+from .ansi import ansi2html
 
 import ast,functools
 from pprint import pformat,pprint
@@ -200,3 +202,78 @@ def view(self:Notebook, id, nums=True):
     lines = self[id].source.splitlines()
     if nums: lines = [f'{i+1:6d} │ {l}' for i,l in enumerate(lines)]
     return '\n'.join(lines)
+
+# %% ../nbs/13_nbio.ipynb #e9e2dd49
+def preferred_out(data, html1st=True, include_imgs=False):
+    preftyps = ('application/javascript', 'text/latex')
+    preftyps = (('text/html', 'text/markdown') if html1st else ('text/markdown', 'text/html')) + preftyps
+    if include_imgs: preftyps += 'image/jpeg','image/png','image/svg+xml'
+    preftyps += ('text/plain',)
+    for mt in preftyps:
+        if (text := data.get(mt)): return mt,text
+    return 'text/plain',''
+
+# %% ../nbs/13_nbio.ipynb #7ca5835e
+def apply_controls(text):
+    r"Apply \r and \b to text, returning processed result"
+    lines = text.split('\n')
+    for i, line in enumerate(lines):
+        if 0<(rpos := line.rfind('\r'))<len(line)-1: lines[i] = line[rpos+1:]
+    text = '\n'.join(lines)
+    while (pos := text.find('\b')) >= 0: text = text[:max(0, pos-1)] + text[pos+1:]
+    return text
+
+# %% ../nbs/13_nbio.ipynb #b2078b30
+def _join(d): return ''.join(d) if isinstance(d, list) else d
+
+# %% ../nbs/13_nbio.ipynb #19700480
+def mk_stream(name, text):
+    "Helper to create an output stream dict"
+    return {'output_type': 'stream', 'name': name, 'text': text}
+
+# %% ../nbs/13_nbio.ipynb #4af14ed7
+def concat_streams(outputs):
+    "Concatenate stream outputs by name (stdout/stderr), preserving execute_result at end"
+    streams, res, execute_results = {}, [], []
+    for out in outputs:
+        if out['output_type'] == 'stream':
+            name, text = out['name'], _join(out['text'])
+            streams[name] = apply_controls(streams.get(name, '') + text)
+        elif out['output_type'] in ('error','execute_result'): execute_results.append(out)
+        else: res.append(out)
+    if 'stdout' in streams: res.append(mk_stream('stdout', streams['stdout']))
+    if 'stderr' in streams: res.append(mk_stream('stderr', streams['stderr']))
+    res.extend(execute_results)
+    return res
+
+# %% ../nbs/13_nbio.ipynb #12560bc9
+def _preferred_msg_out(out, **kwargs):
+    typ = out['output_type']
+    if typ == 'stream': return 'text/plain', _join(out.get('text', ""))
+    elif typ == 'error': return 'text/plain', '\n'.join(out.get('traceback', []))
+    elif typ in ('execute_result', 'display_data'): return preferred_out(out.get('data', {}), **kwargs)
+    return 'text/plain',f'Error: Failed to parse unknown output - {out}'
+
+# %% ../nbs/13_nbio.ipynb #7d321a24
+def render_output(out):
+    "Convert a single output dict to an HTML string"
+    def _fmt(text):
+        res = ansi2html(str(text))
+        return f'<pre class="!border-0 !rounded-none !my-0 !p-0"><code class="nohighlight">{res}</code></pre>'
+    ptyp,d = _preferred_msg_out(out, html1st=True, include_imgs=True)
+    d = _join(d)
+    if   ptyp=='text/plain': return _fmt(d)
+    elif ptyp=='text/html': return d
+    elif ptyp=='application/javascript': return f'<script>{d}</script>'
+    elif ptyp=='text/markdown': return d
+    elif ptyp=='text/latex': return f'<div>{d}</div>'
+    elif ptyp=='image/jpeg': return f'<img src="data:image/jpeg;base64,{d}"/>'
+    elif ptyp=='image/png':  return f'<img src="data:image/png;base64,{d}"/>'
+    elif ptyp=='image/svg+xml': return d
+    return ''
+
+# %% ../nbs/13_nbio.ipynb #5ff35ad7
+def render_outputs(outputs):
+    "Render a full list of outputs, concatenating streams first."
+    if (not isinstance(outputs, (list,tuple))) or (outputs and not isinstance(outputs[0],dict)): return ''
+    return '\n'.join(render_output(o) for o in concat_streams(outputs))

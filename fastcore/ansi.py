@@ -25,17 +25,6 @@ def strip_ansi(source, term_queries:bool=False):
     return _ANSI_RE.sub("", source)
 
 
-def ansi2html(text):
-    "Convert ANSI colors to HTML colors."
-    text = escape(strip_terminal_queries(text))
-    return _ansi2anything(text, _htmlconverter)
-
-
-def ansi2latex(text):
-    "Convert ANSI colors to LaTeX colors."
-    return _ansi2anything(text, _latexconverter)
-
-
 def _htmlconverter(fg, bg, bold, underline, inverse):
     "Return start and end tags for given foreground/background/bold/underline."
     if (fg, bg, bold, underline, inverse) == (None, None, False, False, False): return "", ""
@@ -103,6 +92,35 @@ def _latexconverter(fg, bg, bold, underline, inverse):
     return starttag, endtag
 
 
+def _get_extended_color(numbers):
+    n = numbers.pop(0)
+    if n == 2 and len(numbers) >= 3:
+        # 24-bit RGB
+        r = numbers.pop(0)
+        g = numbers.pop(0)
+        b = numbers.pop(0)
+        if not all(0 <= c <= 255 for c in (r, g, b)): raise ValueError()
+    elif n == 5 and len(numbers) >= 1:
+        # 256 colors
+        idx = numbers.pop(0)
+        if idx < 0: raise ValueError()
+        # 16 default terminal colors
+        if idx < 16: return idx
+        if idx < 232:
+            # 6x6x6 color cube, see http://stackoverflow.com/a/27165165/500098
+            r = (idx - 16) // 36
+            r = 55 + r * 40 if r > 0 else 0
+            g = ((idx - 16) % 36) // 6
+            g = 55 + g * 40 if g > 0 else 0
+            b = (idx - 16) % 6
+            b = 55 + b * 40 if b > 0 else 0
+        # grayscale, see http://stackoverflow.com/a/27165165/500098
+        elif idx < 256: r = g = b = (idx - 232) * 10 + 8
+        else: raise ValueError()
+    else: raise ValueError()
+    return r, g, b
+
+
 def _ansi2anything(text, converter):
     "Convert ANSI colors to HTML or LaTeX."
     fg, bg = None, None
@@ -158,31 +176,13 @@ def _ansi2anything(text, converter):
     return "".join(out)
 
 
-def _get_extended_color(numbers):
-    n = numbers.pop(0)
-    if n == 2 and len(numbers) >= 3:
-        # 24-bit RGB
-        r = numbers.pop(0)
-        g = numbers.pop(0)
-        b = numbers.pop(0)
-        if not all(0 <= c <= 255 for c in (r, g, b)): raise ValueError()
-    elif n == 5 and len(numbers) >= 1:
-        # 256 colors
-        idx = numbers.pop(0)
-        if idx < 0: raise ValueError()
-        # 16 default terminal colors
-        if idx < 16: return idx
-        if idx < 232:
-            # 6x6x6 color cube, see http://stackoverflow.com/a/27165165/500098
-            r = (idx - 16) // 36
-            r = 55 + r * 40 if r > 0 else 0
-            g = ((idx - 16) % 36) // 6
-            g = 55 + g * 40 if g > 0 else 0
-            b = (idx - 16) % 6
-            b = 55 + b * 40 if b > 0 else 0
-        # grayscale, see http://stackoverflow.com/a/27165165/500098
-        elif idx < 256: r = g = b = (idx - 232) * 10 + 8
-        else: raise ValueError()
-    else: raise ValueError()
-    return r, g, b
+def ansi2html(text):
+    "Convert ANSI colors to HTML colors."
+    text = escape(strip_terminal_queries(text))
+    return _ansi2anything(text, _htmlconverter)
+
+
+def ansi2latex(text):
+    "Convert ANSI colors to LaTeX colors."
+    return _ansi2anything(text, _latexconverter)
 

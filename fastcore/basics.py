@@ -1109,12 +1109,11 @@ def patch_to(cls, as_prop=False, cls_method=False, set_prop=False, nm=None, glb=
             for o in functools.WRAPPER_ASSIGNMENTS: setattr(nf, o, getattr(f,o))
             nf.__name__ = _nm
             nf.__qualname__ = f"{c_.__name__}.{_nm}"
+            if hasattr(c_, _nm) and not hasattr(c_, onm): setattr(c_, onm, getattr(c_, _nm))
             if cls_method:    attr = _clsmethod(nf)
             elif set_prop:    attr = getattr(c_, _nm).setter(nf)
             elif as_prop:     attr = property(nf)
-            else:
-                if hasattr(c_, _nm) and not hasattr(c_, onm): setattr(c_, onm, getattr(c_, _nm))
-                attr = nf
+            else:             attr = nf
             setattr(c_, _nm, attr)
         return glb.get(_nm, builtins.__dict__.get(_nm, None))
     return _inner

@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.12.40
+
+### New Features
+
+- Save original method in `patch_to` for all attr types, not just plain methods ([#806](https://github.com/AnswerDotAI/fastcore/issues/806))
+- Add output rendering functions (`preferred_out`, `apply_controls`, `render_output`/s, `concat_streams`) to nbio ([#805](https://github.com/AnswerDotAI/fastcore/issues/805))
+
+
 ## 1.12.39
 
 ### New Features

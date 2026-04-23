@@ -7,7 +7,7 @@ __all__ = ['SCRIPT_INFO', 'store_true', 'store_false', 'bool_arg', 'clean_type_s
            'set_ctx', 'call_parse']
 
 # %% ../nbs/06_script.ipynb #8a36db98
-import inspect,argparse,shutil,types
+import inspect,argparse,shutil,types,asyncio
 
 from functools import wraps,partial
 from .imports import *
@@ -167,7 +167,8 @@ def call_parse(func=None, nested=False):
             args = args.__dict__
             xtra = otherwise(args.pop('xtra', ''), eq(1), p.prog)
             tfunc = trace(func) if args.pop('pdb', False) else func
-            return tfunc(**merge(args, args_from_prog(func, xtra)))
+            res = tfunc(**merge(args, args_from_prog(func, xtra)))
+            return asyncio.run(res) if inspect.isawaitable(res) else res
 
     mod = inspect.getmodule(inspect.currentframe().f_back)
     if getattr(mod, '__name__', '') =="__main__":

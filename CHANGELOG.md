@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.42
+
+### New Features
+
+- Support async functions in `call_parse` ([#808](https://github.com/AnswerDotAI/fastcore/issues/808))
+
+
 ## 1.12.41
 
 ### New Features

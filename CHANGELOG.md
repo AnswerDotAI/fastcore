@@ -4,7 +4,9 @@
 
 ## 1.12.41
 
+### New Features
 
+- Add maxdepth to walk/globtastic, `walk_join` helper, set support in `is_listy` ([#807](https://github.com/AnswerDotAI/fastcore/issues/807))
 
 
 ## 1.12.40

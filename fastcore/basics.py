@@ -17,11 +17,11 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'last', 'only', 'nested_attr', 'nested_setdefault', 'nested_callable', 'nested_idx', 'set_nested_idx',
            'val2idx', 'uniqueify', 'loop_first_last', 'loop_first', 'loop_last', 'first_match', 'last_match', 'joins',
            'fastuple', 'bind', 'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'negate',
-           'spread', 'dspread', 'copy_func', 'patch_to', 'patch', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum',
-           'ValEnum', 'Stateful', 'NotStr', 'PrettyString', 'even_mults', 'num_cpus', 'add_props', 'str2bool',
-           'str2int', 'str2float', 'str2list', 'str2date', 'to_bool', 'to_int', 'to_float', 'to_list', 'to_date',
-           'typed', 'exec_new', 'exec_import', 'sig_with_params', 'fdelegates', 'lt', 'gt', 'le', 'ge', 'eq', 'ne',
-           'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
+           'spread', 'dspread', 'copy_func', 'patch_to', 'patch', 'extend_enum', 'compile_re', 'ImportEnum', 'StrEnum',
+           'str_enum', 'ValEnum', 'Stateful', 'NotStr', 'PrettyString', 'even_mults', 'num_cpus', 'add_props',
+           'str2bool', 'str2int', 'str2float', 'str2list', 'str2date', 'to_bool', 'to_int', 'to_float', 'to_list',
+           'to_date', 'typed', 'exec_new', 'exec_import', 'sig_with_params', 'fdelegates', 'lt', 'gt', 'le', 'ge', 'eq',
+           'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
 
 # %% ../nbs/01_basics.ipynb #0e91ed82
 from .imports import *
@@ -1098,7 +1098,7 @@ class _clsmethod:
     def __get__(self, _, f_cls): return MethodType(self.f, f_cls)
 
 # %% ../nbs/01_basics.ipynb #3f2733ef
-def patch_to(cls, as_prop=False, cls_method=False, set_prop=False, nm=None, glb=None):
+def patch_to(cls, as_prop=False, cls_method=False, set_prop=False, static_method=False, nm=None, glb=None):
     "Decorator: add `f` to `cls`"
     if glb is None: glb = sys._getframe(1).f_globals
     def _inner(f):
@@ -1111,6 +1111,7 @@ def patch_to(cls, as_prop=False, cls_method=False, set_prop=False, nm=None, glb=
             nf.__qualname__ = f"{c_.__name__}.{_nm}"
             if hasattr(c_, _nm) and not hasattr(c_, onm): setattr(c_, onm, getattr(c_, _nm))
             if cls_method:    attr = _clsmethod(nf)
+            elif static_method:  attr = staticmethod(nf)
             elif set_prop:    attr = getattr(c_, _nm).setter(nf)
             elif as_prop:     attr = property(nf)
             else:             attr = nf
@@ -1119,9 +1120,9 @@ def patch_to(cls, as_prop=False, cls_method=False, set_prop=False, nm=None, glb=
     return _inner
 
 # %% ../nbs/01_basics.ipynb #8faf7b86
-def patch(f=None, *, as_prop=False, cls_method=False, set_prop=False, nm=None):
+def patch(f=None, *, as_prop=False, cls_method=False, static_method=False, set_prop=False, nm=None):
     "Decorator: add `f` to the first parameter's class (based on f's type annotations)"
-    if f is None: return partial(patch, as_prop=as_prop, cls_method=cls_method, set_prop=set_prop, nm=nm)
+    if f is None: return partial(patch, as_prop=as_prop, cls_method=cls_method, static_method=static_method, set_prop=set_prop, nm=nm)
     ann,glb,loc = get_annotations_ex(f)
     if cls_method:
         if 'cls' not in ann: raise TypeError(f"@patch with cls_method=True requires 'cls' to have a type annotation")
@@ -1130,7 +1131,25 @@ def patch(f=None, *, as_prop=False, cls_method=False, set_prop=False, nm=None):
         if not ann: raise TypeError(f"@patch requires the first parameter of `{f.__name__}` to have a type annotation")
         cls = next(iter(ann.values()))
     cls = union2tuple(eval_type(cls, glb, loc))
-    return patch_to(cls, as_prop=as_prop, cls_method=cls_method, set_prop=set_prop, nm=nm, glb=sys._getframe(1).f_globals)(f)
+    glbs = sys._getframe(1).f_globals
+    return patch_to(cls, as_prop=as_prop, cls_method=cls_method, static_method=static_method, set_prop=set_prop, nm=nm, glb=glbs)(f)
+
+# %% ../nbs/01_basics.ipynb #c8805a92
+def extend_enum(
+    cls, # Enum class to modify
+    n,   # Name of the new enum member
+    v    # Value of the new enum member
+):
+    "Add new member `n` with value `v` to enum class `cls` at runtime"
+    if n in cls._member_map_: return cls[n]
+    typ = cls._member_type_
+    res = object.__new__(cls) if typ is object else typ.__new__(cls, v)
+    res._name_,res._value_ = n,v
+    cls._member_names_.append(n)
+    cls._member_map_[n] = res
+    cls._value2member_map_[v] = res
+    type.__setattr__(cls, n, res)
+    return res
 
 # %% ../nbs/01_basics.ipynb #d1732261
 def compile_re(pat):

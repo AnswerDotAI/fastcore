@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.12.43
+
+### New Features
+
+- Add `render_text` and `mk_result`/`mk_display`/`mk_error` helpers; use `render_text` in cell2xml ([#810](https://github.com/AnswerDotAI/fastcore/issues/810))
+- Add `extend_enum` and `static_method` support to patch/`patch_to` ([#809](https://github.com/AnswerDotAI/fastcore/issues/809))
+
+
 ## 1.12.42
 
 ### New Features

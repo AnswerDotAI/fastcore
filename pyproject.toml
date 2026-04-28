@@ -36,7 +36,7 @@ version = {attr = "fastcore.__version__"}
 include = ["fastcore"]
 
 [tool.nbdev]
-allowed_metadata_keys = ['solveit_dialog_mode', 'solveit_ver']
+allowed_metadata_keys = ['solveit']
 tst_flags = ''
 custom_sidebar = false
 allowed_cell_metadata_keys = ['solveit_ai']

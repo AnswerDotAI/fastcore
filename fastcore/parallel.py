@@ -22,7 +22,10 @@ try:
 except: pass
 
 # %% ../nbs/03a_parallel.ipynb #21e71104
-def threaded(process=False):
+def threaded(
+    process=False, # Create a Process instead of a Thread?
+    daemon=False   # Use daemon mode?
+): # The Process or Thread created, which will have `result` attr injected in once complete
     "Run `f` in a `Thread` (or `Process` if `process=True`), and returns it"
     def _r(f):
         def g(_obj_td, *args, **kwargs):
@@ -33,6 +36,7 @@ def threaded(process=False):
             Proc = get_context('fork').Process if sys.platform == 'darwin' else Process
             res = (Thread,Proc)[process](target=g, args=args, kwargs=kwargs)
             res._args = (res,)+res._args
+            if daemon: res.daemon = True
             res.start()
             return res
         return _f

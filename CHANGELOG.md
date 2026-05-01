@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.44
+
+### New Features
+
+- Add daemon option to @threaded decorator ([#811](https://github.com/AnswerDotAI/fastcore/issues/811))
+
+
 ## 1.12.43
 
 ### New Features

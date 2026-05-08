@@ -47,14 +47,18 @@ def threaded(
     return _r
 
 # %% ../nbs/03a_parallel.ipynb #dbccb558
-def startthread(f):
+def startthread(f=None, daemon=False):
     "Like `threaded`, but start thread immediately"
-    return threaded(f)()
+    def _f(f): return threaded(daemon=daemon)(f)()
+    return _f(f) if f else _f
+
 
 # %% ../nbs/03a_parallel.ipynb #a32d66c4
-def startproc(f):
+def startproc(f=None, daemon=False):
     "Like `threaded(True)`, but start Process immediately"
-    return threaded(True)(f)()
+    def _f(f): return threaded(True, daemon=daemon)(f)()
+    return _f(f) if f else _f
+
 
 # %% ../nbs/03a_parallel.ipynb #44d4651b
 def _call(lock, pause, n, g, item):

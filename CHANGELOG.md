@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.45
+
+### New Features
+
+- Add daemon parameter to startthread and startproc ([#813](https://github.com/AnswerDotAI/fastcore/issues/813))
+
+
 ## 1.12.44
 
 ### New Features

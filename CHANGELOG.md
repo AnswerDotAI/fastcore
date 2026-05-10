@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.12.46
+
+### New Features
+
+- Lazy import `progress_bar` ([#812](https://github.com/AnswerDotAI/fastcore/pull/812)), thanks to [@KeremTurgutlu](https://github.com/KeremTurgutlu)
+
+
 ## 1.12.45
 
 ### New Features

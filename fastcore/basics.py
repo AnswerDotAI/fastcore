@@ -25,7 +25,7 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
 
 # %% ../nbs/01_basics.ipynb #0e91ed82
 from .imports import *
-import ast,builtins,pprint,types,typing
+import builtins,types,typing
 from functools import cmp_to_key,wraps
 from copy import copy
 from datetime import date
@@ -279,7 +279,10 @@ class adict(dict):
 # %% ../nbs/01_basics.ipynb #28bf9743
 class AttrDict(adict):
     "`dict` subclass that also provides access to keys as attrs, and has a pretty markdown repr"
-    def _repr_markdown_(self): return f'```python\n{pprint.pformat(self, indent=2)}\n```'
+    def _repr_markdown_(self):
+        import pprint
+        return f'```python\n{pprint.pformat(self, indent=2)}\n```'
+
     def copy(self): return AttrDict(**self)
 
 # %% ../nbs/01_basics.ipynb #cb8a0ff4
@@ -1276,6 +1279,7 @@ def str2float(s:str):
 # %% ../nbs/01_basics.ipynb #5d49a6d4
 def str2list(s:str):
     "Convert `s` to a list"
+    import ast
     s = s.strip()
     if not s: return []
     if s[0] != '[': s = '['+s + ']'

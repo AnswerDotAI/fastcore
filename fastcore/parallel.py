@@ -14,7 +14,7 @@ from .meta import *
 from .xtras import *
 from functools import wraps
 
-import concurrent.futures,time,asyncio
+import concurrent.futures,time
 from multiprocessing import Process,Queue,Manager,set_start_method,get_all_start_methods,get_context
 from threading import Thread
 try:
@@ -156,6 +156,7 @@ def _add_one(x, a=1):
 async def parallel_async(f, items, *args, n_workers=16, pause=0,
                          timeout=None, chunksize=1, on_exc=print, cancel_on_error=False, **kwargs):
     "Applies `f` to `items` in parallel using asyncio and a semaphore to limit concurrency."
+    import asyncio
     semaphore = asyncio.Semaphore(n_workers)
     async def limited_task(i, item):
         coro = f(item, *args, **kwargs) if asyncio.iscoroutinefunction(f) else asyncio.to_thread(f, item, *args, **kwargs)

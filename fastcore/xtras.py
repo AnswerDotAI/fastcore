@@ -435,7 +435,7 @@ def import_no_init(name):
     from importlib.machinery import PathFinder
     import importlib.util as iu
     parts = name.split('.')
-    spec = PathFinder.find_spec(parts[0])
+    spec = PathFinder.find_spec(parts[0]) or iu.find_spec(parts[0])
     path = Path(spec.origin)
     if len(parts)>1: path = path.parent.joinpath(*parts[1:]).with_suffix('.py')
     spec = iu.spec_from_file_location(name, path)

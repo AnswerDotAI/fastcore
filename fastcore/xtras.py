@@ -6,8 +6,8 @@
 __all__ = ['spark_chars', 'UNSET', 'walk_join', 'walk', 'exttypes', 'globtastic', 'pglob', 'maybe_open', 'mkdir', 'image_size',
            'img_bytes', 'detect_mime', 'bunzip', 'loads', 'loads_multi', 'dumps', 'untar_dir', 'repo_details', 'shell',
            'ssh', 'rsync_multi', 'run', 'open_file', 'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards',
-           'atomic_save', 'import_no_init', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy', 'mapped', 'IterLen',
-           'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'frontmatter',
+           'atomic_save', 'load_mod', 'import_no_init', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy', 'mapped',
+           'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'frontmatter',
            'clean_cli_output', 'unqid', 'rtoken_hex', 'friendly_name', 'n_friendly_names', 'exec_eval',
            'get_source_link', 'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file',
            'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local',
@@ -429,19 +429,23 @@ def atomic_save(fn, mode='wb', uid=-1, gid=-1, **kwargs):
     Path(f.name).rename(fn)
 
 
-# %% ../nbs/03_xtras.ipynb #68d60335
-def import_no_init(name):
-    "Import dotted `name` without running any `__init__.py`"
-    from importlib.machinery import PathFinder
+# %% ../nbs/03_xtras.ipynb #52746e0e
+def load_mod(name, path):
+    "Load module `name` from file `path`"
     import importlib.util as iu
-    parts = name.split('.')
-    spec = PathFinder.find_spec(parts[0]) or iu.find_spec(parts[0])
-    path = Path(spec.origin)
-    if len(parts)>1: path = path.parent.joinpath(*parts[1:]).with_suffix('.py')
-    spec = iu.spec_from_file_location(name, path)
+    spec = iu.spec_from_file_location(name, Path(path))
     mod = iu.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
+
+# %% ../nbs/03_xtras.ipynb #68d60335
+def import_no_init(name):
+    "Import dotted `name` without running any `__init__.py`"
+    import importlib.util as iu
+    parts = name.split('.')
+    path = Path(iu.find_spec(parts[0]).origin)
+    if len(parts)>1: path = path.parent.joinpath(*parts[1:]).with_suffix('.py')
+    return load_mod(name, path)
 
 # %% ../nbs/03_xtras.ipynb #9579358d
 def dict2obj(d=None, list_func=L, dict_func=AttrDict, **kwargs):

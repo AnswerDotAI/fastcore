@@ -2,6 +2,23 @@
 
 <!-- do not remove -->
 
+## 1.13.0
+
+### Breaking Changes
+
+- Change `parallel_async` default return exceptions
+
+### New Features
+
+- Add `return_exceptions` parameter to parallel et al ([#819](https://github.com/AnswerDotAI/fastcore/issues/819))
+- Add `load_mod` ([#818](https://github.com/AnswerDotAI/fastcore/issues/818))
+- Add `import_no_init` ([#814](https://github.com/AnswerDotAI/fastcore/issues/814))
+
+### Bugs Squashed
+
+- fix import-no-init ([#816](https://github.com/AnswerDotAI/fastcore/pull/816)), thanks to [@comhar](https://github.com/comhar)
+
+
 ## 1.12.46
 
 ### New Features

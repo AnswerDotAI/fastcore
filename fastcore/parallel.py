@@ -191,10 +191,8 @@ def _f_pg(obj, queue, batch, start_idx):
 def _done_pg(queue, items): return (queue.get() for _ in items)
 
 # %% ../nbs/03a_parallel.ipynb #1122caee
-def parallel_gen(cls, items, n_workers=defaults.cpus, progress=True, **kwargs):
+def parallel_gen(cls, items, n_workers=defaults.cpus, progress=False, **kwargs):
     "Instantiate `cls` in `n_workers` procs & call each on a subset of `items` in parallel."
-    try: from fastprogress import progress_bar
-    except ImportError: return None
     if not parallelable('n_workers', n_workers): n_workers = 0
     if n_workers==0:
         yield from enumerate(list(cls(**kwargs)(items)))
@@ -202,7 +200,9 @@ def parallel_gen(cls, items, n_workers=defaults.cpus, progress=True, **kwargs):
     batches = L(chunked(items, n_chunks=n_workers))
     idx = L(itertools.accumulate(0 + batches.map(len)))
     queue = Queue()
-    if progress_bar and progress: items = progress_bar(items, leave=False)
+    if progress:
+        from fastprogress import progress_bar
+        items = progress_bar(items, leave=False)
     f=partial(_f_pg, cls(**kwargs), queue)
     done=partial(_done_pg, queue, items)
     yield from run_procs(f, done, L(batches,idx).zip())

@@ -61,7 +61,7 @@ def startproc(f=None, daemon=False):
 
 
 # %% ../nbs/03a_parallel.ipynb #44d4651b
-def _call(lock, pause, n, g, item):
+def _call(lock, pause, n, g, item, return_exceptions=False):
     l = False
     if pause:
         try:
@@ -69,7 +69,10 @@ def _call(lock, pause, n, g, item):
             time.sleep(pause)
         finally:
             if l: lock.release()
-    return g(item)
+    try: return g(item)
+    except Exception as e:
+        if return_exceptions: return e
+        raise
 
 # %% ../nbs/03a_parallel.ipynb #63a3920f
 def parallelable(param_name, num_workers, f=None):
@@ -90,11 +93,11 @@ class ThreadPoolExecutor(concurrent.futures.ThreadPoolExecutor):
         if self.not_parallel: max_workers=1
         super().__init__(max_workers, **kwargs)
 
-    def map(self, f, items, *args, timeout=None, chunksize=1, **kwargs):
+    def map(self, f, items, *args, timeout=None, chunksize=1, return_exceptions=False, **kwargs):
         if self.not_parallel == False: self.lock = Manager().Lock()
         g = partial(f, *args, **kwargs)
         if self.not_parallel: return map(g, items)
-        _g = partial(_call, self.lock, self.pause, self.max_workers, g)
+        _g = partial(_call, self.lock, self.pause, self.max_workers, g, return_exceptions=return_exceptions)
         try: return super().map(_g, items, timeout=timeout, chunksize=chunksize)
         except Exception as e: self.on_exc(e)
 
@@ -109,7 +112,7 @@ class ProcessPoolExecutor(concurrent.futures.ProcessPoolExecutor):
         if self.not_parallel: max_workers=1
         super().__init__(max_workers, **kwargs)
 
-    def map(self, f, items, *args, timeout=None, chunksize=1, **kwargs):
+    def map(self, f, items, *args, timeout=None, chunksize=1, return_exceptions=False, **kwargs):
         if not parallelable('max_workers', self.max_workers, f): self.max_workers = 0
         self.not_parallel = self.max_workers==0
         if self.not_parallel: self.max_workers=1
@@ -117,16 +120,14 @@ class ProcessPoolExecutor(concurrent.futures.ProcessPoolExecutor):
         if self.not_parallel == False: self.lock = Manager().Lock()
         g = partial(f, *args, **kwargs)
         if self.not_parallel: return map(g, items)
-        _g = partial(_call, self.lock, self.pause, self.max_workers, g)
+        _g = partial(_call, self.lock, self.pause, self.max_workers, g, return_exceptions=return_exceptions)
         try: return super().map(_g, items, timeout=timeout, chunksize=chunksize)
         except Exception as e: self.on_exc(e)
 
 # %% ../nbs/03a_parallel.ipynb #529e1bb1
 def parallel(f, items, *args, n_workers=defaults.cpus, total=None, progress=None, pause=0,
-             method=None, threadpool=False, timeout=None, chunksize=1, **kwargs):
+             method=None, threadpool=False, timeout=None, chunksize=1, return_exceptions=False, **kwargs):
     "Applies `func` in parallel to `items`, using `n_workers`"
-    try: from fastprogress import progress_bar
-    except ImportError: return None
     kwpool = {}
     if threadpool: pool = ThreadPoolExecutor
     else:
@@ -134,8 +135,9 @@ def parallel(f, items, *args, n_workers=defaults.cpus, total=None, progress=None
         if method: kwpool['mp_context'] = get_context(method)
         pool = ProcessPoolExecutor
     with pool(n_workers, pause=pause, **kwpool) as ex:
-        r = ex.map(f,items, *args, timeout=timeout, chunksize=chunksize, **kwargs)
-        if progress and progress_bar:
+        r = ex.map(f,items, *args, timeout=timeout, chunksize=chunksize, return_exceptions=return_exceptions, **kwargs)
+        if progress:
+            from fastprogress import progress_bar
             if total is None: total = len(items)
             r = progress_bar(r, total=total, leave=False)
         return L(r)
@@ -149,7 +151,7 @@ def _add_one(x, a=1):
 
 # %% ../nbs/03a_parallel.ipynb #87a80e04
 async def parallel_async(f, items, *args, n_workers=16, pause=0,
-                         timeout=None, chunksize=1, on_exc=print, cancel_on_error=False, **kwargs):
+        timeout=None, chunksize=1, on_exc=print, cancel_on_error=False, return_exceptions=False, **kwargs):
     "Applies `f` to `items` in parallel using asyncio and a semaphore to limit concurrency."
     import asyncio
     semaphore = asyncio.Semaphore(n_workers)
@@ -161,7 +163,7 @@ async def parallel_async(f, items, *args, n_workers=16, pause=0,
     if cancel_on_error:
         async with asyncio.TaskGroup() as tg: tasks = [tg.create_task(limited_task(i, item)) for i,item in enumerate(items)]
         return [t.result() for t in tasks]
-    return await asyncio.gather(*[limited_task(i, item) for i,item in enumerate(items)], return_exceptions=True)
+    return await asyncio.gather(*[limited_task(i, item) for i,item in enumerate(items)], return_exceptions=return_exceptions)
 
 # %% ../nbs/03a_parallel.ipynb #6748aa27
 def bg_task(coro):

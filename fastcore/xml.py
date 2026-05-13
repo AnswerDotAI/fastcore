@@ -252,9 +252,9 @@ def showtags(s):
 
 FT._repr_markdown_ = highlight
 
-# %% ../nbs/09_xml.ipynb #1d8a28b1
+# %% ../nbs/09_xml.ipynb #b1a1fbd4
 def __getattr__(tag):
     if tag.startswith('_') or tag[0].islower(): raise AttributeError
-    tag = _fix_k(tag)
+    tag = re.sub(r'(?<=[a-z0-9])(?=[A-Z])', '-', _fix_k(tag)).lower()
     def _f(*c, target_id=None, **kwargs): return ft(tag, *c, target_id=target_id, **kwargs)
     return _f

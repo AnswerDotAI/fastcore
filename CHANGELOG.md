@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.13.2
+
+### New Features
+
+- Set `co_qualname` in `patch` ([#821](https://github.com/AnswerDotAI/fastcore/issues/821))
+- Convert camelCase tag names to kebab-case in `xml.__getattr__` ([#820](https://github.com/AnswerDotAI/fastcore/issues/820))
+
+
 ## 1.13.0
 
 ### Breaking Changes

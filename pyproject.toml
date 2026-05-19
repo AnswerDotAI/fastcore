@@ -29,6 +29,9 @@ dev = ['numpy', 'nbdev>=0.2.39', 'matplotlib', 'pillow', 'torch', 'pandas', 'nbc
 py2pyi = "fastcore.py2pyi:py2pyi"
 replace_wildcards = "fastcore.py2pyi:replace_wildcards"
 
+[project.entry-points.pyskills]
+"fastcore.tools" = "fastcore.tools"
+
 [tool.setuptools.dynamic]
 version = {attr = "fastcore.__version__"}
 

@@ -75,8 +75,8 @@ def run_cmd(
 @llmtool
 def rg(
     argstr:str, # All args to the command, will be split with shlex. No shell escaping needed for regex chars like `|`
-    disallow_re:str=None, # optional regex which, if matched on argstr, will disallow the command
-    allow_re:str=None # optional regex which, if not matched on argstr, will disallow the command
+    disallow_re:str=None, # optional regex which, if matched on argstr, will disallow the command. Use for LLM tool calling restrictions, not passed to rg; leave blank if unsure.
+    allow_re:str=None # optional regex which, if not matched on argstr, will disallow the command. Use for LLM tool calling restrictions, not passed to rg; leave blank if unsure.
 ):
     "Run the `rg` command with the args in `argstr`"
     return run_cmd('rg', '-n '+argstr, disallow_re=disallow_re, allow_re=allow_re)
@@ -85,8 +85,8 @@ def rg(
 @llmtool
 def sed(
     argstr:str, # All args to the command, will be split with shlex. No shell escaping needed for regex chars like `|`
-    disallow_re:str=None, # optional regex which, if matched on argstr, will disallow the command
-    allow_re:str=None # optional regex which, if not matched on argstr, will disallow the command
+    disallow_re:str=None, # optional regex which, if matched on argstr, will disallow the command. Use for LLM tool calling restrictions, not passed to rg; leave blank if unsure.
+    allow_re:str=None # optional regex which, if not matched on argstr, will disallow the command. Use for LLM tool calling restrictions, not passed to rg; leave blank if unsure.
 ):
     "Run the `sed` command with the args in `argstr` (e.g for reading a section of a file)"
     return run_cmd('sed', argstr, allow_re=allow_re, disallow_re=disallow_re)

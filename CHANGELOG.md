@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.13.3
+
+### Bugs Squashed
+
+- `dict2obj` converts None values to `{}` ([#824](https://github.com/AnswerDotAI/fastcore/pull/824)), thanks to [@KeremTurgutlu](https://github.com/KeremTurgutlu)
+
+
 ## 1.13.2
 
 ### New Features

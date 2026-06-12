@@ -1109,7 +1109,8 @@ def patch_to(cls, as_prop=False, cls_method=False, set_prop=False, static_method
     def _inner(f):
         _nm = nm or f.__name__
         onm = '_orig_'+_nm
-        for c_ in tuplify(cls):
+        classes = (cls,) if isinstance(cls, type) else tuplify(cls)
+        for c_ in classes:
             nf = copy_func(f)
             for o in functools.WRAPPER_ASSIGNMENTS: setattr(nf, o, getattr(f,o))
             nf.__name__ = _nm

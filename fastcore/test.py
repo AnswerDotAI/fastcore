@@ -113,8 +113,12 @@ TEST_IMAGE_BW = 'images/mnist3.png'
 # %% ../nbs/00_test.ipynb #0de4e727
 def test_fig_exists(ax):
     "Test there is a figure displayed in `ax`"
-    if not hasattr(ax.figure.canvas, 'renderer'): ax.figure.canvas.draw()
-    assert ax and len(ax.figure.canvas.tostring_argb())
+    fig = ax.figure
+    if not hasattr(fig.canvas, 'tostring_argb'):  # mpl>=3.11 detaches the canvas when a figure is closed
+        from matplotlib.backends.backend_agg import FigureCanvasAgg
+        FigureCanvasAgg(fig)
+    if not hasattr(fig.canvas, 'renderer'): fig.canvas.draw()
+    assert ax and len(fig.canvas.tostring_argb())
 
 # %% ../nbs/00_test.ipynb #e390be8a
 class ExceptionExpected:

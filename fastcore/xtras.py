@@ -9,7 +9,7 @@ __all__ = ['UNSET', 'spark_chars', 'walk_join', 'walk', 'exttypes', 'globtastic'
            'img_bytes', 'detect_mime', 'bunzip', 'loads', 'loads_multi', 'dumps', 'untar_dir', 'repo_details', 'shell',
            'ssh', 'rsync_multi', 'run', 'open_file', 'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards',
            'atomic_save', 'load_mod', 'import_no_init', 'Unset', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy',
-           'mapped', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter',
+           'mapped', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'acache',
            'frontmatter', 'clean_cli_output', 'unqid', 'rtoken_hex', 'friendly_name', 'n_friendly_names', 'exec_eval',
            'get_source_link', 'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file',
            'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local',
@@ -633,6 +633,18 @@ def asave_iter(g):
     @trim_wraps(g)
     def _(*args, **kwargs): return _save_iter(g, *args, **kwargs)
     return _
+
+# %% ../nbs/03_xtras.ipynb #84ffe400
+def acache(f):
+    "Cache results of async function `f`"
+    cache = {}
+    @wraps(f)
+    async def _inner(*args, **kwargs):
+        key = (args, tuple(sorted(kwargs.items())))
+        if key not in cache: cache[key] = await f(*args, **kwargs)
+        return cache[key]
+    _inner.cache_clear = cache.clear
+    return _inner
 
 # %% ../nbs/03_xtras.ipynb #d2757e2a
 def frontmatter(txt:str)->tuple:

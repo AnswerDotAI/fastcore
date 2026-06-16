@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.13.5
+
+### New Features
+
+- Use `tmp` for `atomic_save` temp file suffix ([#828](https://github.com/AnswerDotAI/fastcore/pull/828)), thanks to [@curtis-allan](https://github.com/curtis-allan)
+
+
 ## 1.13.4
 
 ### New Features

@@ -422,7 +422,7 @@ def atomic_save(fn, mode='wb', uid=-1, gid=-1, **kwargs):
     from tempfile import NamedTemporaryFile as ntf
     fn = Path(fn)
     fn.parent.mkdir_perms(parents=True, exist_ok=True, uid=uid, gid=gid)
-    with ntf(mode=mode, dir=fn.parent, delete=False, suffix=fn.suffix, **kwargs) as f:
+    with ntf(mode=mode, dir=fn.parent, delete=False, suffix='tmp', **kwargs) as f:
         try: yield f
         except:
             Path(f.name).unlink(missing_ok=True)

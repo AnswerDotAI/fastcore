@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 1.13.4
+
+### New Features
+
+- Add `acache` ([#827](https://github.com/AnswerDotAI/fastcore/issues/827))
+
+### Bugs Squashed
+
+- Fix `patch_to` to handle Enum and non-type iterables correctly ([#826](https://github.com/AnswerDotAI/fastcore/pull/826)), thanks to [@ncoop57](https://github.com/ncoop57)
+
+
 ## 1.13.3
 
 ### Bugs Squashed

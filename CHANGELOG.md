@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.13.6
+
+### Bugs Squashed
+
+- Fix `_get_extended_color` to raise ValueError on empty input ([#830](https://github.com/AnswerDotAI/fastcore/issues/830))
+
+
 ## 1.13.5
 
 ### New Features

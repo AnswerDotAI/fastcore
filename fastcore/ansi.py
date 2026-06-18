@@ -93,6 +93,7 @@ def _latexconverter(fg, bg, bold, underline, inverse):
 
 
 def _get_extended_color(numbers):
+    if not numbers: raise ValueError()
     n = numbers.pop(0)
     if n == 2 and len(numbers) >= 3:
         # 24-bit RGB

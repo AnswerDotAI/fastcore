@@ -261,8 +261,8 @@ def _unpack(fname, out):
     return ls[0] if len(ls) == 1 else out
 
 # %% ../nbs/03_xtras.ipynb #6f1e90e9
-def untar_dir(fname, dest, rename=False, overwrite=False):
-    "untar `file` into `dest`, creating a directory if the root contains more than one item"
+def untar_dir(fname, dest, rename=False, overwrite=False, uid=-1, gid=-1):
+    "untar `file` into `dest`, creating a directory if the root contains more than one item; recursively chown if `uid`/`gid` set"
     import tempfile,shutil
     dest = Path(dest)
     with tempfile.TemporaryDirectory() as d:
@@ -277,6 +277,10 @@ def untar_dir(fname, dest, rename=False, overwrite=False):
             else: return dest
         if rename: src = _unpack(fname, out)
         shutil.move(str(src), dest)
+        if uid>-1 or gid>-1:
+            os.chown(dest, uid, gid)
+            if dest.is_dir():
+                for p in dest.rglob('*'): os.chown(p, uid, gid)
         return dest
 
 # %% ../nbs/03_xtras.ipynb #ab91ee87

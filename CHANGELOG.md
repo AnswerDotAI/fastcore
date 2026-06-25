@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.13.7
+
+### New Features
+
+- uid and gid in `untar_dir` params ([#832](https://github.com/AnswerDotAI/fastcore/pull/832)), thanks to [@curtis-allan](https://github.com/curtis-allan)
+
+
 ## 1.13.6
 
 ### Bugs Squashed

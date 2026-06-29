@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.13.8
+
+### New Features
+
+- Add docstring inheritance to `delegates` when decorated function lacks its own ([#833](https://github.com/AnswerDotAI/fastcore/issues/833))
+
+
 ## 1.13.7
 
 ### New Features

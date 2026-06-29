@@ -154,6 +154,7 @@ def delegates(
         from_f.__signature__ = sig_with_params(sig, remove=None if keep else 'kwargs', keep='kwargs' if keep else None, **s2)
         if not keep: from_f.__delwrap__ = to_f
         if hasattr(from_f, '__annotations__'): from_f.__annotations__.update(anno)
+        if not from_f.__doc__ and to_f.__doc__: from_f.__doc__ = to_f.__doc__
         return f
     return _f
 

@@ -68,9 +68,11 @@ def is_close(a,b,eps=1e-5):
     "Is `a` within `eps` of `b`"
     if hasattr(a, '__array__') or hasattr(b,'__array__'):
         return (abs(a-b)<eps).all()
+    if isinstance(a,str) or isinstance(b,str): return a==b
     if isinstance(a, (Iterable,Generator)) or isinstance(b, (Iterable,Generator)):
-        return all(abs(a_-b_)<eps for a_,b_ in zip(a,b))
-    return abs(a-b)<eps
+        return all(is_close(a_,b_,eps) for a_,b_ in zip(a,b))
+    try: return abs(a-b)<eps
+    except TypeError: return a==b
 
 # %% ../nbs/00_test.ipynb #e3662776
 def test_close(a,b,eps=1e-5):

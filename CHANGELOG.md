@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.13.9
+
+### New Features
+
+- Improve `is_close` to handle strings and non-numeric types gracefully ([#834](https://github.com/AnswerDotAI/fastcore/issues/834))
+
+
 ## 1.13.8
 
 ### New Features

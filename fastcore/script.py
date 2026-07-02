@@ -151,6 +151,12 @@ def set_ctx(cv, val=True):
 # %% ../nbs/06_script.ipynb #fc816498
 _in_call_parse = ContextVar('_in_call_parse', default=False)
 
+def _is_script_run(frame):
+    "True if `frame` is the body of a file being run directly (`python foo.py`, `python -m foo`, or `%run foo.py`)"
+    g = frame.f_globals if frame else {}
+    if g.get('__name__')!='__main__' or not g.get('__file__'): return False
+    return Path(g['__file__']).resolve()==Path(frame.f_code.co_filename).resolve()
+
 def call_parse(func=None, nested=False):
     "Decorator to create a simple CLI from `func` using `anno_parser`"
     if func is None: return partial(call_parse, nested=nested)
@@ -172,9 +178,9 @@ def call_parse(func=None, nested=False):
             res = tfunc(**merge(args, args_from_prog(func, xtra)))
             return asyncio.run(res) if inspect.isawaitable(res) else res
 
-    mod = inspect.getmodule(inspect.currentframe().f_back)
-    if getattr(mod, '__name__', '') =="__main__":
-        setattr(mod, func.__name__, _f)
+    frame = inspect.currentframe().f_back
+    if _is_script_run(frame) and not _in_call_parse.get():
+        frame.f_globals[func.__name__] = _f
         SCRIPT_INFO.func = func.__name__
         return _f()
     else: return _f

@@ -18,7 +18,7 @@ from functools import wraps
 
 import concurrent.futures,time
 from multiprocessing import Process,Queue,Manager,set_start_method,get_all_start_methods,get_context
-from threading import Thread
+from threading import Thread,Lock
 try:
     if sys.platform == 'darwin' and IN_NOTEBOOK: set_start_method("fork")
 except: pass
@@ -96,7 +96,7 @@ class ThreadPoolExecutor(concurrent.futures.ThreadPoolExecutor):
         super().__init__(max_workers, **kwargs)
 
     def map(self, f, items, *args, timeout=None, chunksize=1, return_exceptions=False, **kwargs):
-        if self.not_parallel == False: self.lock = Manager().Lock()
+        self.lock = Lock() if self.not_parallel==False and self.pause else None
         g = partial(f, *args, **kwargs)
         if self.not_parallel: return map(g, items)
         _g = partial(_call, self.lock, self.pause, self.max_workers, g, return_exceptions=return_exceptions)
@@ -119,7 +119,7 @@ class ProcessPoolExecutor(concurrent.futures.ProcessPoolExecutor):
         self.not_parallel = self.max_workers==0
         if self.not_parallel: self.max_workers=1
 
-        if self.not_parallel == False: self.lock = Manager().Lock()
+        self.lock = Manager().Lock() if self.not_parallel==False and self.pause else None
         g = partial(f, *args, **kwargs)
         if self.not_parallel: return map(g, items)
         _g = partial(_call, self.lock, self.pause, self.max_workers, g, return_exceptions=return_exceptions)

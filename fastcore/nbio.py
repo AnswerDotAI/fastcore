@@ -44,8 +44,8 @@ class NbCell(AttrDict):
             except SyntaxError: return
         return self._parsed_
 
-    def __hash__(self): return hash(self.source) + hash(self.cell_type)
-    def __eq__(self,o): return self.source==o.source and self.cell_type==o.cell_type
+    def __hash__(self): return hash(self.id) if 'id' in self else hash(self.source) + hash(self.cell_type)
+    def __eq__(self,o): return self.id==o.id if 'id' in self and 'id' in o else self.source==o.source and self.cell_type==o.cell_type
 
 # %% ../nbs/13_nbio.ipynb #6c742618
 def _dict2obj(d, list_func=list, dict_func=AttrDict):

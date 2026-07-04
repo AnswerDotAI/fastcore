@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.14.1
+
+### Breaking Changes
+
+- nbio notebook line splitting/rejoining for outputs and attachments now matches nbformat ([#837](https://github.com/AnswerDotAI/fastcore/issues/837))
+
+
 ## 1.13.10
 
 ### New Features

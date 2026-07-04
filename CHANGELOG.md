@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.13.10
+
+### New Features
+
+- Use cell id for NbCell equality; only create locks in parallel executors when pause is set ([#836](https://github.com/AnswerDotAI/fastcore/issues/836))
+
+
 ## 1.13.9
 
 ### New Features

@@ -23,6 +23,24 @@ from json import loads,dumps
 def _read_json(self, encoding=None, errors=None):
     return loads(Path(self).read_text(encoding=encoding, errors=errors))
 
+# %% ../nbs/13_nbio.ipynb #f1abbd30
+_non_text_split_mimes = {'application/javascript', 'image/svg+xml'}
+
+def _is_json_mime(mime): return mime=='application/json' or (mime.startswith('application/') and mime.endswith('+json'))
+
+def _rejoin_mime(data):
+    "Join list-of-lines values in mimebundle `data` in place, like nbformat's `rejoin_lines`"
+    for k,v in data.items():
+        if not _is_json_mime(k) and isinstance(v,list) and all(isinstance(o,str) for o in v): data[k] = ''.join(v)
+
+def _rejoin_cell(c):
+    "Join list-of-lines text in `c`'s attachments and outputs in place (`source` is handled by `set_source`)"
+    for att in c.get('attachments', {}).values(): _rejoin_mime(att)
+    if c.get('cell_type')=='code':
+        for o in c.get('outputs', []):
+            if o.get('output_type') in ('execute_result','display_data'): _rejoin_mime(o.get('data', {}))
+            elif o.get('output_type')=='stream' and isinstance(o.get('text'), list): o['text'] = ''.join(o['text'])
+
 # %% ../nbs/13_nbio.ipynb #49d7bf89
 class NbCell(AttrDict):
     def __init__(self, idx, cell):
@@ -30,6 +48,7 @@ class NbCell(AttrDict):
         self.idx_ = idx
         if 'id' not in self: self.id = rtoken_hex(4)
         if 'source' in self: self.set_source(self.source)
+        _rejoin_cell(self)
 
     def set_source(self, source):
         self.source = ''.join(source)
@@ -86,12 +105,29 @@ def new_nb(cells=None, meta=None, nbformat=4, nbformat_minor=5):
     return dict2nb(cells=cells or [],metadata=meta or {},nbformat=nbformat,nbformat_minor=nbformat_minor)
 
 # %% ../nbs/13_nbio.ipynb #7c7bab22
+def _split_mime(data):
+    "Copy of mimebundle `data` with multiline text split to lists of lines, like nbformat's `split_lines`"
+    return {k: v.splitlines(True) if isinstance(v,str) and (k.startswith('text/') or k in _non_text_split_mimes) else v
+            for k,v in data.items()}
+
+def _split_cell(c):
+    "Copy of cell `c` with source, attachment, and output text split to lists of lines"
+    c = dict(c)
+    if isinstance(c.get('source'), str): c['source'] = c['source'].splitlines(True)
+    if c.get('attachments'): c['attachments'] = {k:_split_mime(v) for k,v in c['attachments'].items()}
+    if c.get('cell_type')=='code' and c.get('outputs'):
+        c['outputs'] = [dict(o, data=_split_mime(o['data'])) if o.get('output_type') in ('execute_result','display_data') and 'data' in o
+                        else dict(o, text=o['text'].splitlines(True)) if o.get('output_type')=='stream' and isinstance(o.get('text'),str)
+                        else o for o in c['outputs']]
+    return c
+
 def nb2dict(d, k=None):
     "Convert parsed notebook to `dict`"
-    if k=='source': return d.splitlines(keepends=True)
+    if k=='cells' and isinstance(d, list): d = list(map(_split_cell, d))
     if isinstance(d, list): return list(map(nb2dict,d))
     if not isinstance(d, dict): return d
     return dict(**{k:nb2dict(v,k) for k,v in d.items() if k[-1] != '_'})
+
 
 # %% ../nbs/13_nbio.ipynb #21ffe533
 def nb2str(nb):

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.14.2
+
+### New Features
+
+- extract tag conversion logic to unify `__getattr__` with fasthtml ([#838](https://github.com/AnswerDotAI/fastcore/pull/838)), thanks to [@jackhogan](https://github.com/jackhogan)
+
+
 ## 1.14.1
 
 ### Breaking Changes

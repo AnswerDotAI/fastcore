@@ -149,12 +149,30 @@ def set_ctx(cv, val=True):
     finally: cv.reset(token)
 
 # %% ../nbs/06_script.ipynb #fc816498
+def _is_script_run(frame):
+    "True if `frame` is the body of a file being run directly (`python foo.py`, `python -m foo`, or `%run foo.py`)"
+    g = frame.f_globals if frame else {}
+    if g.get('__name__')!='__main__' or not g.get('__file__'): return False
+    return Path(g['__file__']).resolve()==Path(frame.f_code.co_filename).resolve()
+
+# %% ../nbs/06_script.ipynb #dee5e259
 _in_call_parse = ContextVar('_in_call_parse', default=False)
+
+def _run_cli(func, nested):
+    "Parse `sys.argv` with `anno_parser` and call `func` with the result"
+    if len(sys.argv)>1 and sys.argv[1]=='': sys.argv.pop(1)
+    p = anno_parser(func)
+    if nested: args, sys.argv[1:] = p.parse_known_args()
+    else: args = p.parse_args()
+    args = args.__dict__
+    xtra = otherwise(args.pop('xtra', ''), eq(1), p.prog)
+    tfunc = trace(func) if args.pop('pdb', False) else func
+    res = tfunc(**merge(args, args_from_prog(func, xtra)))
+    return asyncio.run(res) if inspect.isawaitable(res) else res
 
 def call_parse(func=None, nested=False):
     "Decorator to create a simple CLI from `func` using `anno_parser`"
     if func is None: return partial(call_parse, nested=nested)
-
     @wraps(func)
     def _f(*args, **kwargs):
         if args or kwargs or _in_call_parse.get(): return func(*args, **kwargs)
@@ -162,19 +180,11 @@ def call_parse(func=None, nested=False):
             mod = inspect.getmodule(inspect.currentframe().f_back)
             if not mod: return func(*args, **kwargs)
             if not SCRIPT_INFO.func and mod.__name__=="__main__": SCRIPT_INFO.func = func.__name__
-            if len(sys.argv)>1 and sys.argv[1]=='': sys.argv.pop(1)
-            p = anno_parser(func)
-            if nested: args, sys.argv[1:] = p.parse_known_args()
-            else: args = p.parse_args()
-            args = args.__dict__
-            xtra = otherwise(args.pop('xtra', ''), eq(1), p.prog)
-            tfunc = trace(func) if args.pop('pdb', False) else func
-            res = tfunc(**merge(args, args_from_prog(func, xtra)))
-            return asyncio.run(res) if inspect.isawaitable(res) else res
+            return _run_cli(func, nested)
 
-    mod = inspect.getmodule(inspect.currentframe().f_back)
-    if getattr(mod, '__name__', '') =="__main__":
-        setattr(mod, func.__name__, _f)
+    frame = inspect.currentframe().f_back
+    if _is_script_run(frame):
+        frame.f_globals[func.__name__] = _f
         SCRIPT_INFO.func = func.__name__
-        return _f()
+        with set_ctx(_in_call_parse): return _run_cli(func, nested)
     else: return _f

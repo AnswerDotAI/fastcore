@@ -371,6 +371,10 @@ class DocmentText(_DocmentBase):
 
     def __str__(self):
         o = self.obj
+        if not callable(o):
+            doc = docstring(o)
+            docstr = f'\n    "{doc}"' if self.docstring and doc else ''
+            return f"{type(o).__name__} instance: {truncstr(repr(o), 80)}{docstr}"
         is_inst = callable(o) and not (isfunction(o) or isclass(o) or inspect.isbuiltin(o) or ismethod(o))
         prefix = 'async def' if inspect.iscoroutinefunction(o) else 'def'
         nm = get_name(o) if hasattr(o, '__name__') else f'{type(o).__name__}.__call__' if is_inst else get_name(o)

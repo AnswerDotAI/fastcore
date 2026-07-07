@@ -127,12 +127,12 @@ def _del_funcs(
 def _del_params(
     to_f,            # Delegatee function
     sig,             # Signature of decorated function
-    but:list=None,   # Params to exclude
+    but:list=(),      # Params to exclude
     sort_args=False  # Sort params alphabetically?
 ):
     "Get keyword-only params from `to_f` not already in `sig`, excluding `but`"
     s2 = {k:v.replace(kind=Parameter.KEYWORD_ONLY) for k,v in inspect.signature(to_f).parameters.items()
-          if v.default != Parameter.empty and k not in sig.parameters and k not in listify(but)}
+          if v.default != Parameter.empty and k not in sig.parameters and k not in but}
     if sort_args: s2 = dict(sorted(s2.items()))
     return s2
 
@@ -140,17 +140,18 @@ def _del_params(
 def delegates(
     to:FunctionType=None, # Delegatee
     keep=False, # Keep `kwargs` in decorated function?
-    but:list=None, # Exclude these parameters from signature
+    but:list=None, # Exclude these parameters from signature (list, or comma-separated str)
     sort_args=False # Sort arguments alphabetically, doesn't work with call_parse
 ):
     "Decorator: replace `**kwargs` in signature with params from `to`"
+    if isinstance(but,str) or but is None: but = re.split(', *', but or '')
     def _f(f):
         to_f,from_f = _del_funcs(to, f)
         if hasattr(from_f,'__delwrap__'): return f
         sig = inspect.signature(from_f)
         s2 = _del_params(to_f, sig, but, sort_args)
         anno = {k:v for k,v in getattr(to_f, "__annotations__", {}).items()
-            if k not in sig.parameters and k not in listify(but)}
+            if k not in sig.parameters and k not in but}
         from_f.__signature__ = sig_with_params(sig, remove=None if keep else 'kwargs', keep='kwargs' if keep else None, **s2)
         if not keep: from_f.__delwrap__ = to_f
         if hasattr(from_f, '__annotations__'): from_f.__annotations__.update(anno)
@@ -168,10 +169,11 @@ def method(f):
 def delegated(
     to:FunctionType=None, # Delegatee
     keep=False, # Keep `kwargs` in decorated function?
-    but:list=None, # Exclude these parameters from signature
+    but:list=None, # Exclude these parameters from signature (list, or comma-separated str)
     sort_args=False # Sort arguments alphabetically, doesn't work with call_parse
 ):
     "Like `delegates` but also populates delegated default kwargs at call time"
+    if isinstance(but,str) or but is None: but = re.split(', *', but or '')
     def _f(f):
         to_f,from_f = _del_funcs(to, f)
         dp = _del_params(to_f, inspect.signature(from_f), but, sort_args)

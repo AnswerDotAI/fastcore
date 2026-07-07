@@ -23,11 +23,10 @@ __all__ = ['url_default_headers', 'ExceptionsHTTP', 'urlquote', 'urlwrap', 'HTTP
 from .utils import *
 from .parallel import *
 
-from functools import wraps
 import json,urllib,contextlib,tempfile
-import socket,urllib.request,http,urllib,asyncio,threading
-from contextlib import contextmanager,ExitStack
-from urllib.request import Request,urlretrieve,install_opener,HTTPErrorProcessor,HTTPRedirectHandler
+import socket,urllib.request,urllib,asyncio,threading
+from contextlib import contextmanager
+from urllib.request import Request,urlretrieve
 from urllib.error import HTTPError,URLError
 from urllib.parse import urlencode,urlparse,urlunparse
 from http.client import InvalidURL
@@ -43,8 +42,7 @@ url_default_headers = {
     "Sec-Fetch-Site": "none",
     "Sec-Fetch-User": "?1",
     "Upgrade-Insecure-Requests": "1",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
-}
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"}
 
 # %% ../nbs/03b_net.ipynb #be7f6070
 def urlquote(url):
@@ -93,15 +91,13 @@ def urlopener():
 # %% ../nbs/03b_net.ipynb #e0470139
 # install_opener(_opener)
 
-_httperrors = (
-    (400,'Bad Request'),(401,'Unauthorized'),(402,'Payment Required'),(403,'Forbidden'),(404,'Not Found'),
+_httperrors = ((400,'Bad Request'),(401,'Unauthorized'),(402,'Payment Required'),(403,'Forbidden'),(404,'Not Found'),
     (405,'Method Not Allowed'),(406,'Not Acceptable'),(407,'Proxy Auth Required'),(408,'Request Timeout'),
     (409,'Conflict'),(410,'Gone'),(411,'Length Required'),(412,'Precondition Failed'),(413,'Payload Too Large'),
     (414,'URI Too Long'),(415,'Unsupported Media Type'),(416,'Range Not Satisfiable'),(417,'Expectation Failed'),
     (418,'Am A teapot'),(421,'Misdirected Request'),(422,'Unprocessable Entity'),(423,'Locked'),(424,'Failed Dependency'),
     (425,'Too Early'),(426,'Upgrade Required'),(428,'Precondition Required'),(429,'Too Many Requests'),
-    (431,'Header Fields Too Large'),(451,'Legal Reasons')
-)
+    (431,'Header Fields Too Large'),(451,'Legal Reasons'))
 
 for code,msg in _httperrors:
     nm = f'HTTP{code}{msg.replace(" ","")}Error'
@@ -179,8 +175,7 @@ def urlretrieve(url, filename=None, reporthook=None, data=None, headers=None, ti
                 blocknum += 1
                 if reporthook: reporthook(blocknum, bs, size)
 
-    if size >= 0 and read < size:
-        raise ContentTooShortError(f"retrieval incomplete: got only {read} out of {size} bytes", headers)
+    if size >= 0 and read < size: raise ContentTooShortError(f"retrieval incomplete: got only {read} out of {size} bytes", headers)
     return filename,headers
 
 # %% ../nbs/03b_net.ipynb #78319769
@@ -221,7 +216,7 @@ def summary(self:Request, skip=None)->dict:
 
 # %% ../nbs/03b_net.ipynb #a0a7efa8
 def urlsend(url, verb, headers=None, decode=True, route=None, query=None, data=None, json_data=True,
-            return_json=True, return_headers=False, debug=None, timeout=None):
+    return_json=True, return_headers=False, debug=None, timeout=None):
     "Send request with `urlrequest`, converting result to json if `return_json`"
     req = urlrequest(url, verb, headers, route=route, query=query, data=data, json_data=json_data)
     if debug: debug(req)

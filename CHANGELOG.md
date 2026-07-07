@@ -2,6 +2,18 @@
 
 <!-- do not remove -->
 
+## 1.14.3
+
+### New Features
+
+- Fix `call_parse` to reliably detect direct script execution ([#835](https://github.com/AnswerDotAI/fastcore/pull/835)), thanks to [@ncoop57](https://github.com/ncoop57)
+- Refactor `call_parse` CLI detection, add `is_cli`, support comma-separated `but` in delegates, and fix DocmentText for non-callables ([#839](https://github.com/AnswerDotAI/fastcore/issues/839))
+
+### Bugs Squashed
+
+- Improve docment formatting: handle multiline comments, empty signatures, and trim blank lines in output ([#840](https://github.com/AnswerDotAI/fastcore/issues/840))
+
+
 ## 1.14.2
 
 ### New Features

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 1.14.4
+
+### New Features
+
+- Add `run_sync`, `iter_sync`, `ctx_sync` helpers to call async code from sync code ([#841](https://github.com/AnswerDotAI/fastcore/issues/841))
+
+
 ## 1.14.3
 
 ### New Features

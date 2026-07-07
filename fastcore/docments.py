@@ -334,14 +334,15 @@ def _fmt_sig(name, params, ret_str, maxline, prefix='def'):
     "Format function signature with params and docment comments"
     lines,curr = [],[]
     for fmt,doc in params:
-        comment = f' # {doc}' if doc else ''
-        if curr and len(', '.join(curr))+len(fmt)+len(comment)>maxline:
+        comment = ' # ' + '\n    # '.join(doc.splitlines()) if doc else ''
+        if curr and len(', '.join(curr))+len(fmt)+len(comment.split('\n',1)[0])>maxline:
             lines.append(', '.join(curr) + ',')
             curr = []
         curr.append(fmt)
         if doc: lines.append(', '.join(curr) + ',' + comment); curr = []
     if curr: lines.append(', '.join(curr))
     pstr = '\n    '.join(lines)
+    if not pstr: return f"{prefix} {name}({ret_str}"
     return f"{prefix} {name}(\n    {pstr}\n{ret_str}"
 
 # %% ../nbs/04_docments.ipynb #4550820f
@@ -382,7 +383,7 @@ class DocmentText(_DocmentBase):
         else: sig_str = _fmt_sig(nm, self.params, self._ret_str, self.maxline, prefix=prefix)
         doc = getattr(o.__call__, '__doc__', None) if is_inst else o.__doc__
         docstr = f'    "{doc}"' if self.docstring and doc else ''
-        return f"{sig_str}\n{docstr}"
+        return f"{sig_str}\n{docstr}" if docstr else sig_str
     
     __repr__ = __str__
     def _repr_markdown_(self): return f"```python\n{self}\n```"
@@ -449,7 +450,7 @@ def _ital_first(s:str):
 class MarkdownRenderer(ShowDocRenderer):
     "Markdown renderer for `show_doc`"
     def _repr_markdown_(self):
-        doc = f'```python\n\n{self.dm}\n\n```'
+        doc = f'```python\n{self.dm}\n```'
         if self.docs: doc += f"\n\n{_ital_first(self.docs)}"
         return doc
 

@@ -8,8 +8,8 @@ Docs: https://fastcore.fast.ai/net.html.md"""
 __all__ = ['url_default_headers', 'ExceptionsHTTP', 'urlquote', 'urlwrap', 'HTTP4xxClientError', 'HTTP5xxServerError',
            'urlopener', 'urlopen', 'urlread', 'urljson', 'urlcheck', 'urlclean', 'urlretrieve', 'urldest', 'urlsave',
            'urlvalid', 'urlrequest', 'urlsend', 'do_request', 'start_server', 'start_client', 'tobytes',
-           'http_response', 'recv_once', 'HTTP400BadRequestError', 'HTTP401UnauthorizedError',
-           'HTTP402PaymentRequiredError', 'HTTP403ForbiddenError', 'HTTP404NotFoundError',
+           'http_response', 'recv_once', 'run_sync', 'iter_sync', 'ctx_sync', 'HTTP400BadRequestError',
+           'HTTP401UnauthorizedError', 'HTTP402PaymentRequiredError', 'HTTP403ForbiddenError', 'HTTP404NotFoundError',
            'HTTP405MethodNotAllowedError', 'HTTP406NotAcceptableError', 'HTTP407ProxyAuthRequiredError',
            'HTTP408RequestTimeoutError', 'HTTP409ConflictError', 'HTTP410GoneError', 'HTTP411LengthRequiredError',
            'HTTP412PreconditionFailedError', 'HTTP413PayloadTooLargeError', 'HTTP414URITooLongError',
@@ -25,7 +25,7 @@ from .parallel import *
 
 from functools import wraps
 import json,urllib,contextlib,tempfile
-import socket,urllib.request,http,urllib
+import socket,urllib.request,http,urllib,asyncio,threading
 from contextlib import contextmanager,ExitStack
 from urllib.request import Request,urlretrieve,install_opener,HTTPErrorProcessor,HTTPRedirectHandler
 from urllib.error import HTTPError,URLError
@@ -293,3 +293,46 @@ def recv_once(host:str='localhost', port:int=8000):
     res = conn.recv(1024)
     conn.sendall(http_response(res))
     return res
+
+# %% ../nbs/03b_net.ipynb #d9c12c9e
+_loop,_loop_lock = None,threading.Lock()
+
+def _get_loop():
+    global _loop
+    with _loop_lock:
+        if _loop is None:
+            _loop = asyncio.new_event_loop()
+            threading.Thread(target=_loop.run_forever, daemon=True, name='run_sync').start()
+    return _loop
+
+def run_sync(coro):
+    "Run coroutine `coro` to completion from sync code and return its result"
+    loop = _get_loop()
+    try: reentrant = asyncio.get_running_loop() is loop
+    except RuntimeError: reentrant = False
+    if reentrant:
+        coro.close()
+        raise RuntimeError('run_sync called from its own event loop; use `await` instead')
+    fut = asyncio.run_coroutine_threadsafe(coro, loop)
+    try: return fut.result()
+    except KeyboardInterrupt:
+        fut.cancel()
+        raise
+
+# %% ../nbs/03b_net.ipynb #e1c1743e
+def iter_sync(agen):
+    "Iterate async generator `agen` from sync code"
+    try:
+        while True: yield run_sync(agen.__anext__())
+    except StopAsyncIteration: pass
+    finally: run_sync(agen.aclose())
+
+# %% ../nbs/03b_net.ipynb #507b84e7
+@contextmanager
+def ctx_sync(acm):
+    "Use async context manager `acm` in a plain `with` block"
+    res = run_sync(acm.__aenter__())
+    try: yield res
+    except BaseException as e:
+        if not run_sync(acm.__aexit__(type(e), e, e.__traceback__)): raise
+    else: run_sync(acm.__aexit__(None,None,None))

@@ -107,9 +107,8 @@ def _get_full(p, docs, eval_str=False):
     anno = p.annotation
     if anno==empty:
         if p.default!=empty: anno = type(p.default)
-        elif p.kind in (Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD): anno = p.kind
         elif eval_str: anno = None
-    return AttrDict(docment=docs.get(p.name), anno=anno, default=p.default)
+    return AttrDict(docment=docs.get(p.name), anno=anno, default=p.default, kind=p.kind)
 
 # %% ../nbs/04_docments.ipynb #1b4d817c
 def _merge_doc(dm, npdoc):
@@ -357,8 +356,9 @@ class DocmentText(_DocmentBase):
         self.maxline,self.docstring = maxline,docstring
 
     def _fmt_param(self, nm, p):
-        anno,default = p.get('anno',empty), p.get('default',empty)
-        return nm + (f':{_maybe_nm(anno)}' if anno != empty else '') + (f'={_fmt_default(default)}' if default != empty else '')
+        anno,default,kind = p.get('anno',empty), p.get('default',empty), p.get('kind')
+        pre = '*' if kind==Parameter.VAR_POSITIONAL else '**' if kind==Parameter.VAR_KEYWORD else ''
+        return pre + nm + (f':{_maybe_nm(anno)}' if anno != empty else '') + (f'={_fmt_default(default)}' if default != empty else '')
     
     @property
     def _ret_str(self):

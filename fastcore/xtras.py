@@ -707,10 +707,11 @@ def n_friendly_names(levels=3, suffix=4):
     return product(ns[:levels])*36**suffix
 
 # %% ../nbs/03_xtras.ipynb #b4d1831f
-def exec_eval(code,   # Code to exec/eval
-              g=None, # Globals namespace dict
-              l=None  # Locals namespace dict
-             ):
+def exec_eval(
+    code,   # Code to exec/eval
+    g=None, # Globals namespace dict
+    l=None  # Locals namespace dict
+):
     "Evaluate `code` in `g` (defaults to `globals()`) and `l` (defaults to `locals()`)"
     import ast, inspect
     frame = inspect.currentframe().f_back
@@ -1001,8 +1002,8 @@ def make_nullable(clas):
 
 # %% ../nbs/03_xtras.ipynb #9fa70a25
 def flexiclass(
-        cls # The class to convert
-    ) -> dataclass:
+    cls # The class to convert
+) -> dataclass:
     "Convert `cls` into a `dataclass` like `make_nullable`. Converts in place and also returns the result."
     if is_dataclass(cls): return make_nullable(cls)
     for k,v in get_annotations_ex(cls)[0].items():

@@ -16,7 +16,7 @@ from contextlib import redirect_stdout,contextmanager
 
 # %% ../nbs/00_test.ipynb #2927d8a7
 def test_fail(f, msg='', contains='', exc=Exception, args=None, kwargs=None):
-    "Fails with `msg` unless `f()` raises an exception of type `exc` and (optionally) has `contains` in `e.args`"
+    "Fails with `msg` unless `f()` raises an exception of type `exc` and (optionally) has `contains` in `e.args`; `expect_fail` is normally preferred"
     args, kwargs = args or [], kwargs or {}
     try: f(*args, **kwargs)
     except exc as e:
@@ -27,13 +27,13 @@ def test_fail(f, msg='', contains='', exc=Exception, args=None, kwargs=None):
 
 # %% ../nbs/00_test.ipynb #8197c1de
 @contextmanager
-def expect_fail(exc=Exception, contains=''):
-    "Context manager that fails unless body raises `exc` optionally containing `contains`"
+def expect_fail(exc=Exception, contains='', msg=''):
+    "Context manager that fails with `msg` unless body raises `exc` optionally containing `contains`"
     try: yield
     except exc as e:
-        assert not contains or contains in str(e)
+        assert not contains or contains in str(e), f"Expected '{contains}' in exception but got: {e}. {msg}"
         return
-    assert False, f"Expected {exc.__name__} but none raised"
+    assert False, f"Expected {exc.__name__} but none raised. {msg}"
 
 # %% ../nbs/00_test.ipynb #a61150ba
 def test(a, b, cmp, cname=None):

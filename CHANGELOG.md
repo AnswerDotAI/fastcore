@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 1.14.5
+
+### New Features
+
+- Redesign `Self` as immutable chain with `~` prefix, add `then` async pipe, fix `bind` kwargs placeholders ([#843](https://github.com/AnswerDotAI/fastcore/issues/843))
+- Handle `*args` and `**kwargs` correctly in docments ([#842](https://github.com/AnswerDotAI/fastcore/issues/842))
+
+
 ## 1.14.4
 
 ### New Features

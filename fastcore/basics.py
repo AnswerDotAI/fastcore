@@ -1074,7 +1074,7 @@ class _Self:
         def _f(x):
             for nm,a,k in steps:
                 x = getattr(x,nm)
-                if a is not None and callable(x): x = x(*a,**k)
+                if a is not None: x = x(*a,**k)
             return x
         return _f
 

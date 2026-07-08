@@ -184,7 +184,7 @@ def run_procs(f, f_done, args):
     processes = L(args).map(Proc, args=arg0, target=f)
     for o in processes: o.start()
     yield from f_done()
-    processes.map(Self.join())
+    processes.map(~Self.join())
 
 # %% ../nbs/03a_parallel.ipynb #98698c9d
 def _f_pg(obj, queue, batch, start_idx):

@@ -15,7 +15,7 @@ __all__ = ['UNSET', 'spark_chars', 'walk_join', 'walk', 'exttypes', 'globtastic'
            'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local',
            'local2utc', 'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str',
            'dataclass_src', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict',
-           'is_namedtuple', 'CachedIter', 'CachedAwaitable', 'reawaitable', 'is_async_callable', 'maybe_await',
+           'is_namedtuple', 'CachedIter', 'CachedAwaitable', 'reawaitable', 'is_async_callable', 'maybe_await', 'then',
            'to_aiter', 'maybe_aiter', 'mapa', 'noopa', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb #3401d507
@@ -85,7 +85,7 @@ _exttypes = dict(
 def exttypes(types):
     """Get exts for comma-separated or list `typ`; if not found in list, return list with just `types`.
     Supported: py, js, java, c, cpp, rb, r, ex, sh, web, doc, cfg"""
-    typs = L(types).flatmap(Self.split(','))
+    typs = L(types).flatmap(~Self.split(','))
     return typs.flatmap(lambda x: _exttypes.get(x, [x]))
 
 # %% ../nbs/03_xtras.ipynb #4fef7fef
@@ -111,7 +111,7 @@ def globtastic(
     path = Path(path)
     if path.is_file(): return L([path])
     if not recursive: skip_folder_re='.'
-    exts = L(exts).flatmap(Self.split(','))
+    exts = L(exts).flatmap(~Self.split(','))
     exts += exttypes(types)
     if exts:
         exts = [e if e.startswith('.') else f'.{e}' for e in listify(exts)]
@@ -1077,6 +1077,19 @@ async def maybe_await(o):
     "Await `o` if needed, and return it"
     from inspect import isawaitable
     return await o if isawaitable(o) else o
+
+# %% ../nbs/03_xtras.ipynb #5026c823
+def then(x, *fs):
+    "Pipe `x` through each of `fs`, awaiting values as needed; result is awaitable only if `x` or a step result is"
+    from inspect import isawaitable
+    async def _go(x, fs):
+        x = await x
+        for f in fs: x = await maybe_await(f(x))
+        return x
+    for i,f in enumerate(fs):
+        if isawaitable(x): return _go(x, fs[i:])
+        x = f(x)
+    return _go(x, ()) if isawaitable(x) else x
 
 # %% ../nbs/03_xtras.ipynb #fc70459b
 async def to_aiter(items):

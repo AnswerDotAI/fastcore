@@ -2,6 +2,23 @@
 
 <!-- do not remove -->
 
+## 2.0.0
+
+### Breaking Changes
+
+fastcore v2 removes or relocates a number of APIs that now have better alternatives. If you use `from fastcore.utils import *` (or `fastcore.all`), most of these changes won't affect you.
+
+The breaking changes: `Param` is gone from `fastcore.script`; use plain type annotations with docments, or `typing.Annotated[type, "help"]`, optionally with a `dict` of argparse arguments for advanced features. `L`'s `starmap`, `starfilter`, and the other `star*`/`rstar*` methods are replaced by the `star` and `rstar` function adapters, which compose with every `L` method (e.g. `t.map(star(f))`); relatedly, `spread` is replaced by `star`, and `dspread` is renamed to `dstar`. Async helpers now live in the new `fastcore.aio` module: `run_sync`, `iter_sync`, and `ctx_sync` moved there from `net`, and `maybe_await`, `then`, `mapa`, `acache`, `reawaitable`, `is_async_callable`, and the other async utilities moved there from `xtras`. `Config` and the config file functions moved from `foundation` to `xtras`. `fastcore.net` lost its request builders (`urlrequest`, `urlsend`, `do_request`, `urlcheck`) and `clean_type_str` is gone. `parallel_gen` moved to fastai. Python 3.11 or later is now required.
+
+If you need the old APIs, pin `fastcore<2`.
+
+### New Features
+
+- fastcore v2 ([#847](https://github.com/AnswerDotAI/fastcore/issues/847))
+- Replace `Param` class with `typing.Annotated` for CLI param annotations in fastcore.script ([#845](https://github.com/AnswerDotAI/fastcore/issues/845))
+- Add `msg` param to `expect_fail`, prefer it over `test_fail` in docs/tests ([#844](https://github.com/AnswerDotAI/fastcore/issues/844))
+
+
 ## 1.14.5
 
 ### New Features

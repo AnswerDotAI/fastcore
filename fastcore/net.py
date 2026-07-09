@@ -112,7 +112,7 @@ def urlopen(url, data=None, headers=None, timeout=None, **kwargs):
     "Like `urllib.request.urlopen`, but first `urlwrap` the `url`, and encode `data`"
     if kwargs and not data: data=kwargs
     if data is not None:
-        if not isinstance(data, (str,bytes)): data = urlencode(data)
+        if not isinstance(data, string_classes): data = urlencode(data)
         if not isinstance(data, bytes): data = data.encode('ascii')
     try: return urlopener().open(urlwrap(url, data=data, headers=headers), timeout=timeout)
     except HTTPError as e: 

@@ -199,9 +199,10 @@ from .script import call_parse
 
 # %% ../nbs/10_py2pyi.ipynb #a08be00d
 @call_parse
-def py2pyi(fname:str,  # The file name to convert
-           package:str=None  # The parent package
-          ):
+def py2pyi(
+    fname:str,  # The file name to convert
+    package:str=None  # The parent package
+):
     "Convert `fname.py` to `fname.pyi` by removing function bodies and expanding `delegates` kwargs"
     create_pyi(fname, package)
 

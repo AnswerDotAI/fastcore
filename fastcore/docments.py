@@ -6,8 +6,8 @@ Docs: https://fastcore.fast.ai/docments.html.md"""
 
 # %% auto #0
 __all__ = ['empty', 'docstring', 'parse_docstring', 'isdataclass', 'get_dataclass_source', 'get_source', 'get_name', 'qual_name',
-           'docments', 'sig_source', 'extract_docstrings', 'DocmentTbl', 'DocmentList', 'DocmentText', 'sig2str',
-           'can_render', 'ShowDocRenderer', 'MarkdownRenderer']
+           'ann_parts', 'docments', 'sig_source', 'extract_docstrings', 'DocmentTbl', 'DocmentList', 'DocmentText',
+           'sig2str', 'can_render', 'ShowDocRenderer', 'MarkdownRenderer']
 
 # %% ../nbs/04_docments.ipynb #4c662acc
 import re,ast,inspect
@@ -153,6 +153,14 @@ def qual_name(obj):
     if ismethod(obj):       return f"{get_name(obj.__self__)}.{get_name(fn)}"
     return get_name(obj)
 
+# %% ../nbs/04_docments.ipynb #2e865627
+def ann_parts(anno):
+    "The underlying type and metadata tuple of an `Annotated`, else `(anno, ())`"
+    if typing.get_origin(anno) is not typing.Annotated: return anno, ()
+    args = typing.get_args(anno)
+    t = None if args[0] is type(None) else args[0]
+    return t, args[1:]
+
 # %% ../nbs/04_docments.ipynb #9b62ab20
 def docments(s, full=False, eval_str=False, returns=True, args_kwargs=False):
     "Get docments for `s`"
@@ -172,6 +180,12 @@ def docments(s, full=False, eval_str=False, returns=True, args_kwargs=False):
     if returns:
         if full: res['return'] = AttrDict(docment=docs.get('return'), anno=sig.return_annotation, default=empty)
         else: res['return'] = docs.get('return')
+    for k,p in sig.parameters.items():
+        if (res[k].docment if full else res[k]) is None:
+            am = first(o for o in ann_parts(p.annotation)[1] if isinstance(o,str))
+            if am is None: continue
+            if full: res[k].docment = am
+            else: res[k] = am
     return AttrDict(_merge_docs(res, nps))
 
 # %% ../nbs/04_docments.ipynb #40cdbeb2

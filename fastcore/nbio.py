@@ -87,9 +87,11 @@ def read_nb(path):
     return res
 
 # %% ../nbs/13_nbio.ipynb #c86fe311
-def mk_cell(text,  # `source` attr in cell
-            cell_type='code',  # `cell_type` attr in cell
-            **kwargs):  # any other attrs to add to cell
+def mk_cell(
+    text,  # `source` attr in cell
+    cell_type='code',  # `cell_type` attr in cell
+    **kwargs # any other attrs to add to cell
+):
     "Create an `NbCell` containing `text`"
     assert cell_type in {'code', 'markdown', 'raw'}
     if 'metadata' not in kwargs: kwargs['metadata']={}

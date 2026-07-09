@@ -29,9 +29,9 @@ jobs:
             shell: "/bin/bash"
     runs-on: ${{ matrix.os }}-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.py }}
     - name: Install dependencies
@@ -47,15 +47,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v6
       with:
         python-version: '3.12'
     - name: clone this branch [fastcore]
-      uses: actions/checkout@v3
+      uses: actions/checkout@v7
       with:
         path: fastcore_lib
     - name: clone nbdev
-      uses: actions/checkout@v3
+      uses: actions/checkout@v7
       with:
         repository: 'fastai/nbdev'
         path: nbdev   

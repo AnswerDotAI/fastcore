@@ -623,7 +623,7 @@ def flatten(self:L):
     "Recursively flatten nested iterables (except strings)"
     def _flatten(o):
         for item in o:
-            if isinstance(item, (str,bytes)) or not hasattr(item,'__iter__'): yield item
+            if isinstance(item, string_classes) or not hasattr(item,'__iter__'): yield item
             else: yield from _flatten(item)
     return self._new(_flatten(self))
 

@@ -36,9 +36,11 @@ and the other async utilities moved there from `xtras`.
 [`Config`](https://fastcore.fast.ai/xtras.html#config) and the config
 file functions moved from `foundation` to `xtras`. `fastcore.net` lost
 its request builders (`urlrequest`, `urlsend`, `do_request`, `urlcheck`)
-and `clean_type_str` is gone. `parallel_gen` moved to fastai. Python
-3.11 or later is now required. If you need the old APIs, pin
-`fastcore<2`.
+and `clean_type_str` is gone. `parallel_gen` is removed; the stdlib
+[`ProcessPoolExecutor`](https://fastcore.fast.ai/parallel.html#processpoolexecutor)
+`initializer` pattern replaces it (fastai’s `parallel_tokenize` shows
+the recipe). Python 3.11 or later is now required. If you need the old
+APIs, pin `fastcore<2`.
 
 Python is a powerful, dynamic language. Rather than bake everything into
 the language, it lets the programmer customize it to make it work for

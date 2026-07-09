@@ -19,11 +19,11 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'last', 'only', 'nested_attr', 'nested_setdefault', 'nested_callable', 'nested_idx', 'set_nested_idx',
            'val2idx', 'uniqueify', 'loop_first_last', 'loop_first', 'loop_last', 'first_match', 'last_match', 'joins',
            'fastuple', 'bind', 'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'negate',
-           'spread', 'dspread', 'copy_func', 'patch_to', 'patch', 'extend_enum', 'compile_re', 'ImportEnum', 'StrEnum',
-           'str_enum', 'ValEnum', 'Stateful', 'NotStr', 'PrettyString', 'even_mults', 'num_cpus', 'add_props',
-           'str2bool', 'str2int', 'str2float', 'str2list', 'str2date', 'to_bool', 'to_int', 'to_float', 'to_list',
-           'to_date', 'typed', 'exec_new', 'exec_import', 'sig_with_params', 'fdelegates', 'lt', 'gt', 'le', 'ge', 'eq',
-           'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
+           'fail_clean', 'dstar', 'copy_func', 'patch_to', 'patch', 'extend_enum', 'compile_re', 'ImportEnum',
+           'StrEnum', 'str_enum', 'ValEnum', 'Stateful', 'NotStr', 'PrettyString', 'even_mults', 'num_cpus',
+           'add_props', 'str2bool', 'str2int', 'str2float', 'str2list', 'str2date', 'to_bool', 'to_int', 'to_float',
+           'to_list', 'to_date', 'typed', 'exec_new', 'exec_import', 'sig_with_params', 'fdelegates', 'lt', 'gt', 'le',
+           'ge', 'eq', 'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
 
 # %% ../nbs/01_basics.ipynb #0e91ed82
 from .imports import *
@@ -1028,16 +1028,23 @@ def negate(f):
     _neg.__doc__ = f'Returns `not {f.__name__}(...)`\n\nOriginal: {f.__doc__}'
     return _neg
 
-# %% ../nbs/01_basics.ipynb #348730f4
-def spread(f):
-    "Wrap `f` to accept a single iterable and spread it as positional args"
-    @wraps(f, assigned=('__module__', '__name__', '__qualname__', '__doc__'))
-    def _f(args, **kw): return f(*args, **kw)
-    return _f
+# %% ../nbs/01_basics.ipynb #24c5ee83
+def fail_clean(*excs):
+    "Re-raise `excs` (default: `Exception`) without internal traceback frames"
+    if excs and not (isinstance(excs[0],type) and issubclass(excs[0],BaseException)):
+        return fail_clean()(excs[0])
+    excs = excs or (Exception,)
+    def _deco(f):
+        @wraps(f)
+        def _f(*args, **kwargs):
+            try: return f(*args, **kwargs)
+            except excs as e: raise e.with_traceback(None) from None
+        return _f
+    return _deco
 
 # %% ../nbs/01_basics.ipynb #87a3ff7a
-def dspread(f):
-    "Wrap `f` to accept a single dict and spread it as keyword args"
+def dstar(f):
+    "Wrap `f` to accept a single dict, unpacking it as keyword args"
     @wraps(f, assigned=('__module__', '__name__', '__qualname__', '__doc__'))
     def _f(kwargs, **kw): return f(**(kwargs|kw))
     return _f

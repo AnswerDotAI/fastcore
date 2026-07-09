@@ -217,5 +217,7 @@ def splice_sig(wrapper, fn, *skips):
     split = next((i for i, p in enumerate(w_ps) if p.kind==Parameter.VAR_POSITIONAL), len(w_ps))
     pre = w_ps[:split]
     post = [p for p in w_ps[split+1:] if p.kind != Parameter.VAR_KEYWORD]
-    wrapper.__signature__ = signature(wrapper).replace(parameters=[*pre, *f_ps, *post])
-    return wraps(fn)(wrapper)
+    sig = signature(wrapper).replace(parameters=[*pre, *f_ps, *post])
+    wrapper = wraps(fn)(wrapper)
+    wrapper.__signature__ = sig  # after `wraps`, which would clobber it if `fn` has its own `__signature__`
+    return wrapper

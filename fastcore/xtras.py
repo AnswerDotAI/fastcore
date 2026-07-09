@@ -8,15 +8,15 @@ Docs: https://fastcore.fast.ai/xtras.html.md"""
 __all__ = ['UNSET', 'spark_chars', 'walk_join', 'walk', 'exttypes', 'globtastic', 'pglob', 'maybe_open', 'mkdir', 'image_size',
            'img_bytes', 'detect_mime', 'bunzip', 'loads', 'loads_multi', 'dumps', 'untar_dir', 'repo_details', 'shell',
            'ssh', 'rsync_multi', 'run', 'open_file', 'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards',
-           'atomic_save', 'load_mod', 'import_no_init', 'Unset', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy',
-           'mapped', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'acache',
-           'frontmatter', 'clean_cli_output', 'unqid', 'rtoken_hex', 'friendly_name', 'n_friendly_names', 'exec_eval',
-           'get_source_link', 'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file',
-           'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local',
-           'local2utc', 'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str',
-           'dataclass_src', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict',
-           'is_namedtuple', 'CachedIter', 'CachedAwaitable', 'reawaitable', 'is_async_callable', 'maybe_await', 'then',
-           'to_aiter', 'maybe_aiter', 'mapa', 'noopa', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
+           'atomic_save', 'load_mod', 'import_no_init', 'save_config_file', 'read_config_file', 'find_file_parents',
+           'Config', 'Unset', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy', 'mapped', 'IterLen', 'ReindexCollection',
+           'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'frontmatter', 'clean_cli_output', 'unqid',
+           'rtoken_hex', 'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link', 'sparkline',
+           'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file', 'autostart', 'EventTimer',
+           'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local', 'local2utc', 'trace',
+           'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src',
+           'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple',
+           'CachedIter', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb #3401d507
 from .imports import *
@@ -29,6 +29,7 @@ from functools import wraps
 import string,time,dataclasses
 from enum import Enum
 from contextlib import contextmanager,ExitStack
+from configparser import ConfigParser
 from datetime import datetime, timezone
 from time import sleep,time,perf_counter
 from os.path import getmtime
@@ -453,6 +454,67 @@ def import_no_init(name):
     if len(parts)>1: path = path.parent.joinpath(*parts[1:]).with_suffix('.py')
     return load_mod(name, path)
 
+# %% ../nbs/03_xtras.ipynb #427dbfbf
+def save_config_file(file, d, **kwargs):
+    "Write settings dict to a new config file, or overwrite the existing one."
+    config = ConfigParser(**kwargs)
+    config['DEFAULT'] = d
+    config.write(open(file, 'w'))
+
+# %% ../nbs/03_xtras.ipynb #c1e53363
+def read_config_file(file, **kwargs):
+    config = ConfigParser(**kwargs)
+    config.read(file, encoding='utf8')
+    return config['DEFAULT']
+
+# %% ../nbs/03_xtras.ipynb #3ab1e73c
+def find_file_parents(fname, frompath=None):
+    "Search `cfg_path` and its parents to find `cfg_name`"
+    p = Path(frompath or Path.cwd()).expanduser().absolute()
+    return first(o for o in [p, *p.parents] if (o/fname).exists())
+
+# %% ../nbs/03_xtras.ipynb #11212a22
+class Config:
+    "Reading and writing `ConfigParser` ini files"
+    def __init__(self, cfg_path, cfg_name, create=None, save=True, extra_files=None, types=None, **cfg_kwargs):
+        self.types = types or {}
+        cfg_path = Path(cfg_path).expanduser().absolute()
+        self.config_path,self.config_file = cfg_path,cfg_path/cfg_name
+        self._cfg = ConfigParser(**cfg_kwargs)
+        self.d = self._cfg['DEFAULT']
+        found = [Path(o) for o in self._cfg.read(L(extra_files)+[self.config_file], encoding='utf8')]
+        if self.config_file not in found and create is not None:
+            self._cfg.read_dict({'DEFAULT':create})
+            if save:
+                cfg_path.mkdir(exist_ok=True, parents=True)
+                save_config_file(self.config_file, create)
+
+    def __repr__(self): return repr(dict(self._cfg.items('DEFAULT', raw=True)))
+    def __setitem__(self,k,v): self.d[k] = str(v)
+    def __contains__(self,k):  return k in self.d
+    def save(self):            save_config_file(self.config_file,self.d)
+    def __getattr__(self,k):   return stop(AttributeError(k)) if k=='d' or k not in self.d else self.get(k)
+    def __getitem__(self,k):   return stop(IndexError(k)) if k not in self.d else self.get(k)
+
+    def get(self,k,default=None):
+        v = self.d.get(k, default)
+        if v is None: return None
+        typ = self.types.get(k, None)
+        if typ==bool: return str2bool(v)
+        if not typ: return str(v)
+        if typ==Path: return self.config_path/v
+        return typ(v)
+
+    def path(self,k,default=None):
+        v = self.get(k, default)
+        return v if v is None else self.config_path/v
+
+    @classmethod
+    def find(cls, cfg_name, cfg_path=None, **kwargs):
+        "Search `cfg_path` and its parents to find `cfg_name`"
+        p = find_file_parents(cfg_name, cfg_path)
+        return cls(p, cfg_name, **kwargs) if p else None
+
 # %% ../nbs/03_xtras.ipynb #6368c600
 class Unset(Enum):
     _Unset=''
@@ -637,18 +699,6 @@ def asave_iter(g):
     @trim_wraps(g)
     def _(*args, **kwargs): return _save_iter(g, *args, **kwargs)
     return _
-
-# %% ../nbs/03_xtras.ipynb #84ffe400
-def acache(f):
-    "Cache results of async function `f`"
-    cache = {}
-    @wraps(f)
-    async def _inner(*args, **kwargs):
-        key = (args, tuple(sorted(kwargs.items())))
-        if key not in cache: cache[key] = await f(*args, **kwargs)
-        return cache[key]
-    _inner.cache_clear = cache.clear
-    return _inner
 
 # %% ../nbs/03_xtras.ipynb #d2757e2a
 def frontmatter(txt:str)->tuple:
@@ -1049,72 +1099,6 @@ class CachedIter:
     def __iter__(self):
         if self.value is UNSET: self.value = yield from self.o
         return self.value
-
-# %% ../nbs/03_xtras.ipynb #64471925
-class CachedAwaitable:
-    "Cache the result from an awaitable"
-    def __init__(self, o): self.o,self.value = o,UNSET
-    def __await__(self):
-        if self.value is UNSET: self.value = yield from self.o.__await__()
-        return self.value
-
-# %% ../nbs/03_xtras.ipynb #86cb7a86
-def reawaitable(func:callable):
-    "Wraps the result of an asynchronous function into an object which can be awaited more than once"
-    @wraps(func)
-    def _f(*args, **kwargs): return CachedAwaitable(func(*args, **kwargs))
-    return _f
-
-# %% ../nbs/03_xtras.ipynb #1fc78492
-def is_async_callable(obj):
-    "Check if `obj` is an async callable, handling `partial` wrappers and callable instances"
-    # Implementation from Starlette; Copyright © 2018, Encode OSS Ltd.
-    from asyncio import iscoroutinefunction
-    while isinstance(obj, partial): obj = obj.func
-    return iscoroutinefunction(obj) or (callable(obj) and iscoroutinefunction(obj.__call__))
-
-# %% ../nbs/03_xtras.ipynb #f7a2e9ed
-async def maybe_await(o):
-    "Await `o` if needed, and return it"
-    from inspect import isawaitable
-    return await o if isawaitable(o) else o
-
-# %% ../nbs/03_xtras.ipynb #5026c823
-def then(x, *fs):
-    "Pipe `x` through each of `fs`, awaiting values as needed; result is awaitable only if `x` or a step result is"
-    from inspect import isawaitable
-    async def _go(x, fs):
-        x = await x
-        for f in fs: x = await maybe_await(f(x))
-        return x
-    for i,f in enumerate(fs):
-        if isawaitable(x): return _go(x, fs[i:])
-        x = f(x)
-    return _go(x, ()) if isawaitable(x) else x
-
-# %% ../nbs/03_xtras.ipynb #fc70459b
-async def to_aiter(items):
-    "Async yield each item in `items` with `asyncio.sleep(0)` between"
-    import asyncio
-    for item in items:
-        await asyncio.sleep(0)
-        yield item
-
-# %% ../nbs/03_xtras.ipynb #5337427e
-def maybe_aiter(items):
-    "If `items` already async, return it; otherwise to_aiter"
-    return items if hasattr(items, '__aiter__') else to_aiter(items)
-
-# %% ../nbs/03_xtras.ipynb #371d5196
-async def mapa(f, items):
-    "Async `map`; apply `f` (sync or async) to `items` (sync or async iter) concurrently via `gather`"
-    from asyncio import gather
-    return await gather(*[maybe_await(f(o)) async for o in maybe_aiter(items)])
-
-# %% ../nbs/03_xtras.ipynb #02f9f070
-async def noopa(x=None, *args, **kwargs):
-    "Do nothing (async)"
-    return x
 
 # %% ../nbs/03_xtras.ipynb #d2b4fe09
 def flexicache(*funcs, maxsize=128):

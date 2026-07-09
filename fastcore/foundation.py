@@ -6,8 +6,7 @@ Docs: https://fastcore.fast.ai/foundation.html.md"""
 
 # %% auto #0
 __all__ = ['working_directory', 'add_docs', 'docs', 'coll_repr', 'is_bool', 'mask2idxs', 'cycle', 'zip_cycle', 'is_indexer',
-           'product', 'flatmap', 'CollBase', 'L', 'curryable', 'splitter', 'linesplitter', 'save_config_file',
-           'read_config_file', 'find_file_parents', 'Config']
+           'product', 'flatmap', 'CollBase', 'L', 'curryable', 'star', 'rstar', 'splitter', 'linesplitter']
 
 # %% ../nbs/02_foundation.ipynb #0f974791
 from .imports import *
@@ -15,7 +14,6 @@ from .basics import *
 from functools import lru_cache,wraps
 from contextlib import contextmanager
 from copy import copy
-from configparser import ConfigParser
 import random,pickle,inspect
 
 # %% ../nbs/02_foundation.ipynb #f059df0f
@@ -234,6 +232,20 @@ def map(self:L, f, *args, **kwargs):
     "Create new `L` with `f` applied to all `items`, passing `args` and `kwargs` to `f`"
     return self._new(map_ex(self, f, *args, gen=False, **kwargs))
 
+# %% ../nbs/02_foundation.ipynb #2a70d47b
+def star(f):
+    "Adapt `f` to unpack its last argument, e.g. for use in `map`-style functions"
+    @wraps(f)
+    def _f(*args, **kwargs): return f(*args[:-1], *args[-1], **kwargs)
+    return _f
+
+# %% ../nbs/02_foundation.ipynb #140e2c1f
+def rstar(f):
+    "Like `star`, but unpack the last argument in reverse order"
+    @wraps(f)
+    def _f(*args, **kwargs): return f(*args[:-1], *reversed(args[-1]), **kwargs)
+    return _f
+
 # %% ../nbs/02_foundation.ipynb #9c5a4633
 def splitter(sep=None, maxsplit=-1):
     "Create a partial function that splits strings into `L`"
@@ -251,20 +263,6 @@ def groupby(self:L, key, val=noop):
     "Same as `fastcore.basics.groupby`"
     return groupby(self, key, val=val)
 
-# %% ../nbs/02_foundation.ipynb #37dc972a
-@patch
-@curryable
-def starmap(self:L, f, *args, **kwargs):
-    "Like `map`, but use `itertools.starmap`"
-    return self._new(itertools.starmap(partial(f,*args,**kwargs), self))
-
-# %% ../nbs/02_foundation.ipynb #cb2283b0
-@patch
-@curryable
-def rstarmap(self:L, f, *args, **kwargs):
-    "Like `starmap`, but reverse the order of args"
-    return self._new(itertools.starmap(lambda *x: f(*x[::-1], *args, **kwargs), self))
-
 # %% ../nbs/02_foundation.ipynb #c0846f2e
 @patch
 def map_dict(self:L, f=noop, *args, **kwargs):
@@ -280,8 +278,8 @@ def zip(self:L, cycled=False):
 # %% ../nbs/02_foundation.ipynb #6340b2b3
 @patch
 def map_zip(self:L, f, *args, cycled=False, **kwargs):
-    "Combine `zip` and `starmap`"
-    return self.zip(cycled=cycled).starmap(f, *args, **kwargs)
+    "Apply `f` to `zip` of items, unpacking each zipped tuple"
+    return self.zip(cycled=cycled).map(star(f), *args, **kwargs)
 
 # %% ../nbs/02_foundation.ipynb #bc012fad
 @patch
@@ -292,8 +290,8 @@ def zipwith(self:L, *rest, cycled=False):
 # %% ../nbs/02_foundation.ipynb #5a40226f
 @patch
 def map_zipwith(self:L, f, *rest, cycled=False, **kwargs):
-    "Combine `zipwith` and `starmap`"
-    return self.zipwith(*rest, cycled=cycled).starmap(f, **kwargs)
+    "Apply `f` to `zipwith` of items, unpacking each zipped tuple"
+    return self.zipwith(*rest, cycled=cycled).map(star(f), **kwargs)
 
 # %% ../nbs/02_foundation.ipynb #66e76d03
 @patch
@@ -302,48 +300,12 @@ def filter(self:L, f=noop, negate=False, **kwargs):
     "Create new `L` filtered by predicate `f`, passing `args` and `kwargs` to `f`"
     return self._new(filter_ex(self, f=f, negate=negate, gen=False, **kwargs))
 
-# %% ../nbs/02_foundation.ipynb #085b690b
-@patch
-@curryable
-def starfilter(self:L, f, negate=False, **kwargs):
-    "Like `filter`, but unpacks elements as args to `f`"
-    _f = lambda x: f(*x, **kwargs)
-    if negate: _f = not_(_f)
-    return self._new(filter(_f, self))
-
-# %% ../nbs/02_foundation.ipynb #e0fa80df
-@patch
-@curryable
-def rstarfilter(self:L, f, negate=False, **kwargs):
-    "Like `starfilter`, but reverse the order of args"
-    _f = lambda x: f(*x[::-1], **kwargs)
-    if negate: _f = not_(_f)
-    return self._new(filter(_f, self))
-
 # %% ../nbs/02_foundation.ipynb #a2515ab8
 @patch
 @curryable
 def argwhere(self:L, f, negate=False, **kwargs):
     "Like `filter`, but return indices for matching items"
     return self._new(argwhere(self, f, negate, **kwargs))
-
-# %% ../nbs/02_foundation.ipynb #cf22acd4
-@patch
-@curryable
-def starargwhere(self:L, f, negate=False):
-    "Like `argwhere`, but unpacks elements as args to `f`"
-    _f = lambda x: f(*x)
-    if negate: _f = not_(_f)
-    return self._new(i for i,o in enumerate(self) if _f(o))
-
-# %% ../nbs/02_foundation.ipynb #1f010f9c
-@patch
-@curryable
-def rstarargwhere(self:L, f, negate=False):
-    "Like `starargwhere`, but reverse the order of args"
-    _f = lambda x: f(*x[::-1])
-    if negate: _f = not_(_f)
-    return self._new(i for i,o in enumerate(self) if _f(o))
 
 # %% ../nbs/02_foundation.ipynb #541e7eab-3267-4156-8574-5cff8eb1a4e1
 @patch
@@ -367,24 +329,6 @@ def argfirst(self:L, f, negate=False):
     if negate: f = not_(f)
     return first(i for i,o in self.enumerate() if f(o))
 
-# %% ../nbs/02_foundation.ipynb #90509c05
-@patch
-@curryable
-def starargfirst(self:L, f, negate=False):
-    "Like `argfirst`, but unpacks elements as args to `f`"
-    _f = lambda x: f(*x)
-    if negate: _f = not_(_f)
-    return first(i for i,o in self.enumerate() if _f(o))
-
-# %% ../nbs/02_foundation.ipynb #dc43b9b9
-@patch
-@curryable
-def rstarargfirst(self:L, f, negate=False):
-    "Like `starargfirst`, but reverse the order of args"
-    _f = lambda x: f(*x[::-1])
-    if negate: _f = not_(_f)
-    return first(i for i,o in self.enumerate() if _f(o))
-
 # %% ../nbs/02_foundation.ipynb #44055cd0
 @patch
 def itemgot(self:L, *idxs):
@@ -405,20 +349,6 @@ def attrgot(self:L, k, default=None):
 def sorted(self:L, key=None, reverse=False, cmp=None, **kwargs):
     "New `L` sorted by `key`, using `sort_ex`. If key is str use `attrgetter`; if int use `itemgetter`"
     return self._new(sorted_ex(self, key=key, reverse=reverse, cmp=cmp, **kwargs))
-
-# %% ../nbs/02_foundation.ipynb #1c21919b
-@patch
-@curryable
-def starsorted(self:L, key, reverse=False):
-    "Like `sorted`, but unpacks elements as args to `key`"
-    return self._new(sorted(self, key=lambda x: key(*x), reverse=reverse))
-
-# %% ../nbs/02_foundation.ipynb #7549144e
-@patch
-@curryable
-def rstarsorted(self:L, key, reverse=False):
-    "Like `starsorted`, but reverse the order of args"
-    return self._new(sorted(self, key=lambda x: key(*x[::-1]), reverse=reverse))
 
 # %% ../nbs/02_foundation.ipynb #9d86b896
 @patch
@@ -446,22 +376,6 @@ def shuffle(self:L):
 def reduce(self:L, f, initial=None):
     "Wrapper for `functools.reduce`"
     return reduce(f, self) if initial is None else reduce(f, self, initial)
-
-# %% ../nbs/02_foundation.ipynb #3db27a6a
-@patch
-@curryable
-def starreduce(self:L, f, initial=None):
-    "Like `reduce`, but unpacks elements as args to `f`"
-    _f = lambda acc, x: f(acc, *x)
-    return reduce(_f, self) if initial is None else reduce(_f, self, initial)
-
-# %% ../nbs/02_foundation.ipynb #046f01fb
-@patch
-@curryable
-def rstarreduce(self:L, f, initial=None):
-    "Like `starreduce`, but reverse the order of unpacked args"
-    _f = lambda acc, x: f(acc, *x[::-1])
-    return reduce(_f, self) if initial is None else reduce(_f, self, initial)
 
 # %% ../nbs/02_foundation.ipynb #84b3413b
 @patch
@@ -512,34 +426,6 @@ def takewhile(self:L, f):
 def dropwhile(self:L, f):
     "Same as `itertools.dropwhile`"
     return self._new(itertools.dropwhile(f, self))
-
-# %% ../nbs/02_foundation.ipynb #45f04c5c
-@patch
-@curryable
-def startakewhile(self:L, f):
-    "Like `takewhile`, but unpacks elements as args to `f`"
-    return self._new(itertools.takewhile(lambda x: f(*x), self))
-
-# %% ../nbs/02_foundation.ipynb #f64504c1
-@patch
-@curryable
-def rstartakewhile(self:L, f):
-    "Like `startakewhile`, but reverse the order of args"
-    return self._new(itertools.takewhile(lambda x: f(*x[::-1]), self))
-
-# %% ../nbs/02_foundation.ipynb #6544466c
-@patch
-@curryable
-def stardropwhile(self:L, f):
-    "Like `dropwhile`, but unpacks elements as args to `f`"
-    return self._new(itertools.dropwhile(lambda x: f(*x), self))
-
-# %% ../nbs/02_foundation.ipynb #91f75f7d
-@patch
-@curryable
-def rstardropwhile(self:L, f):
-    "Like `stardropwhile`, but reverse the order of args"
-    return self._new(itertools.dropwhile(lambda x: f(*x[::-1]), self))
 
 # %% ../nbs/02_foundation.ipynb #53cf2acc
 @patch
@@ -599,24 +485,6 @@ def partition(self:L, f=noop, **kwargs):
     for o in self: (a if f(o, **kwargs) else b).append(o)
     return self._new(a),self._new(b)
 
-# %% ../nbs/02_foundation.ipynb #2dd5af2f
-@patch
-@curryable
-def starpartition(self:L, f, **kwargs):
-    "Like `partition`, but unpacks elements as args to `f`"
-    a,b = [],[]
-    for o in self: (a if f(*o, **kwargs) else b).append(o)
-    return self._new(a),self._new(b)
-
-# %% ../nbs/02_foundation.ipynb #63c70884
-@patch
-@curryable
-def rstarpartition(self:L, f, **kwargs):
-    "Like `starpartition`, but reverse the order of args"
-    a,b = [],[]
-    for o in self: (a if f(*o[::-1], **kwargs) else b).append(o)
-    return self._new(a),self._new(b)
-
 # %% ../nbs/02_foundation.ipynb #3c269425
 @patch
 def flatten(self:L):
@@ -626,64 +494,3 @@ def flatten(self:L):
             if isinstance(item, (str,bytes)) or not hasattr(item,'__iter__'): yield item
             else: yield from _flatten(item)
     return self._new(_flatten(self))
-
-# %% ../nbs/02_foundation.ipynb #8e2bafde
-def save_config_file(file, d, **kwargs):
-    "Write settings dict to a new config file, or overwrite the existing one."
-    config = ConfigParser(**kwargs)
-    config['DEFAULT'] = d
-    config.write(open(file, 'w'))
-
-# %% ../nbs/02_foundation.ipynb #08333fdc
-def read_config_file(file, **kwargs):
-    config = ConfigParser(**kwargs)
-    config.read(file, encoding='utf8')
-    return config['DEFAULT']
-
-# %% ../nbs/02_foundation.ipynb #95834369
-def find_file_parents(fname, frompath=None):
-    "Search `cfg_path` and its parents to find `cfg_name`"
-    p = Path(frompath or Path.cwd()).expanduser().absolute()
-    return first(o for o in [p, *p.parents] if (o/fname).exists())
-
-# %% ../nbs/02_foundation.ipynb #e06640e8
-class Config:
-    "Reading and writing `ConfigParser` ini files"
-    def __init__(self, cfg_path, cfg_name, create=None, save=True, extra_files=None, types=None, **cfg_kwargs):
-        self.types = types or {}
-        cfg_path = Path(cfg_path).expanduser().absolute()
-        self.config_path,self.config_file = cfg_path,cfg_path/cfg_name
-        self._cfg = ConfigParser(**cfg_kwargs)
-        self.d = self._cfg['DEFAULT']
-        found = [Path(o) for o in self._cfg.read(L(extra_files)+[self.config_file], encoding='utf8')]
-        if self.config_file not in found and create is not None:
-            self._cfg.read_dict({'DEFAULT':create})
-            if save:
-                cfg_path.mkdir(exist_ok=True, parents=True)
-                save_config_file(self.config_file, create)
-
-    def __repr__(self): return repr(dict(self._cfg.items('DEFAULT', raw=True)))
-    def __setitem__(self,k,v): self.d[k] = str(v)
-    def __contains__(self,k):  return k in self.d
-    def save(self):            save_config_file(self.config_file,self.d)
-    def __getattr__(self,k):   return stop(AttributeError(k)) if k=='d' or k not in self.d else self.get(k)
-    def __getitem__(self,k):   return stop(IndexError(k)) if k not in self.d else self.get(k)
-
-    def get(self,k,default=None):
-        v = self.d.get(k, default)
-        if v is None: return None
-        typ = self.types.get(k, None)
-        if typ==bool: return str2bool(v)
-        if not typ: return str(v)
-        if typ==Path: return self.config_path/v
-        return typ(v)
-
-    def path(self,k,default=None):
-        v = self.get(k, default)
-        return v if v is None else self.config_path/v
-
-    @classmethod
-    def find(cls, cfg_name, cfg_path=None, **kwargs):
-        "Search `cfg_path` and its parents to find `cfg_name`"
-        p = find_file_parents(cfg_name, cfg_path)
-        return cls(p, cfg_name, **kwargs) if p else None

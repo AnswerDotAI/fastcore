@@ -6,7 +6,7 @@ Docs: https://fastcore.fast.ai/parallel.html.md"""
 
 # %% auto #0
 __all__ = ['threaded', 'startthread', 'startproc', 'parallelable', 'ThreadPoolExecutor', 'ProcessPoolExecutor', 'parallel',
-           'parallel_async', 'bg_task', 'run_procs', 'parallel_gen']
+           'parallel_async', 'bg_task']
 
 # %% ../nbs/03a_parallel.ipynb #569d18c6
 from .imports import *
@@ -153,7 +153,7 @@ def _add_one(x, a=1):
 
 # %% ../nbs/03a_parallel.ipynb #87a80e04
 async def parallel_async(f, items, *args, n_workers=16, pause=0,
-        timeout=None, chunksize=1, on_exc=print, cancel_on_error=False, return_exceptions=False, **kwargs):
+        timeout=None, chunksize=1, cancel_on_error=False, return_exceptions=False, **kwargs):
     "Applies `f` to `items` in parallel using asyncio and a semaphore to limit concurrency."
     import asyncio
     semaphore = asyncio.Semaphore(n_workers)
@@ -176,35 +176,3 @@ def bg_task(coro):
     task = asyncio.create_task(coro)
     task.add_done_callback(_done)
     return task
-
-# %% ../nbs/03a_parallel.ipynb #da364301
-def run_procs(f, f_done, args):
-    "Call `f` for each item in `args` in parallel, yielding `f_done`"
-    Proc = get_context('fork').Process if sys.platform == 'darwin' else Process
-    processes = L(args).map(Proc, args=arg0, target=f)
-    for o in processes: o.start()
-    yield from f_done()
-    processes.map(~Self.join())
-
-# %% ../nbs/03a_parallel.ipynb #98698c9d
-def _f_pg(obj, queue, batch, start_idx):
-    for i,b in enumerate(obj(batch)): queue.put((start_idx+i,b))
-
-def _done_pg(queue, items): return (queue.get() for _ in items)
-
-# %% ../nbs/03a_parallel.ipynb #1122caee
-def parallel_gen(cls, items, n_workers=defaults.cpus, progress=False, **kwargs):
-    "Instantiate `cls` in `n_workers` procs & call each on a subset of `items` in parallel."
-    if not parallelable('n_workers', n_workers): n_workers = 0
-    if n_workers==0:
-        yield from enumerate(list(cls(**kwargs)(items)))
-        return
-    batches = L(chunked(items, n_chunks=n_workers))
-    idx = L(itertools.accumulate(0 + batches.map(len)))
-    queue = Queue()
-    if progress:
-        from fastprogress import progress_bar
-        items = progress_bar(items, leave=False)
-    f=partial(_f_pg, cls(**kwargs), queue)
-    done=partial(_done_pg, queue, items)
-    yield from run_procs(f, done, L(batches,idx).zip())

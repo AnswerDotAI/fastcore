@@ -56,7 +56,7 @@ def get_source(s):
 
 # %% ../nbs/04_docments.ipynb #91c0d15f
 def _parses(s):
-    "Parse Python code in string, function object or dataclass `s`"
+    "Parse source of function, method, or dataclass `s`"
     return parse(dedent(get_source(s) or ''))
 
 def _tokens(s):

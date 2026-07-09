@@ -6,9 +6,8 @@ Docs: https://fastcore.fast.ai/net.html.md"""
 
 # %% auto #0
 __all__ = ['url_default_headers', 'ExceptionsHTTP', 'urlquote', 'urlwrap', 'HTTP4xxClientError', 'HTTP5xxServerError',
-           'urlopener', 'urlopen', 'urlread', 'urljson', 'urlcheck', 'urlclean', 'urlretrieve', 'urldest', 'urlsave',
-           'urlvalid', 'urlrequest', 'urlsend', 'do_request', 'start_server', 'start_client', 'tobytes',
-           'http_response', 'recv_once', 'run_sync', 'iter_sync', 'ctx_sync', 'HTTP400BadRequestError',
+           'urlopener', 'urlopen', 'urlread', 'urljson', 'urlclean', 'urlretrieve', 'urldest', 'urlsave', 'urlvalid',
+           'start_server', 'start_client', 'tobytes', 'http_response', 'recv_once', 'HTTP400BadRequestError',
            'HTTP401UnauthorizedError', 'HTTP402PaymentRequiredError', 'HTTP403ForbiddenError', 'HTTP404NotFoundError',
            'HTTP405MethodNotAllowedError', 'HTTP406NotAcceptableError', 'HTTP407ProxyAuthRequiredError',
            'HTTP408RequestTimeoutError', 'HTTP409ConflictError', 'HTTP410GoneError', 'HTTP411LengthRequiredError',
@@ -139,15 +138,6 @@ def urljson(url, data=None, headers=None, timeout=None):
     res = urlread(url, data=data, headers=headers, timeout=timeout)
     return json.loads(res) if res else {}
 
-# %% ../nbs/03b_net.ipynb #cfe4aafd
-def urlcheck(url, headers=None, timeout=10):
-    if not url: return True
-    try:
-        with urlopen(url, headers=headers, timeout=timeout) as u: return u.status<400
-    except URLError: return False
-    except socket.timeout: return False
-    except InvalidURL: return False
-
 # %% ../nbs/03b_net.ipynb #3e3afd8c
 def urlclean(url):
     "Remove fragment, params, and querystring from `url` if present"
@@ -197,44 +187,6 @@ def urlsave(url, dest=None, reporthook=None, headers=None, timeout=None):
 def urlvalid(x):
     "Test if `x` is a valid URL"
     return all (getattrs(urlparse(str(x)), 'scheme', 'netloc'))
-
-# %% ../nbs/03b_net.ipynb #8ccda1cf
-def urlrequest(url, verb, headers=None, route=None, query=None, data=None, json_data=True):
-    "`Request` for `url` with optional route params replaced by `route`, plus `query` string, and post `data`"
-    if route: url = url.format(**route)
-    if query: url += '?' + urlencode(query)
-    if isinstance(data,dict): data = (json.dumps if json_data else urlencode)(data).encode('ascii')
-    return Request(url, headers=headers or {}, data=data or None, method=verb.upper())
-
-# %% ../nbs/03b_net.ipynb #3630a680
-@patch
-def summary(self:Request, skip=None)->dict:
-    "Summary containing full_url, headers, method, and data, removing `skip` from headers"
-    res = L('full_url','method','data').map_dict(partial(getattr,self))
-    res['headers'] = {k:v for k,v in self.headers.items() if k not in listify(skip)}
-    return res
-
-# %% ../nbs/03b_net.ipynb #a0a7efa8
-def urlsend(url, verb, headers=None, decode=True, route=None, query=None, data=None, json_data=True,
-    return_json=True, return_headers=False, debug=None, timeout=None):
-    "Send request with `urlrequest`, converting result to json if `return_json`"
-    req = urlrequest(url, verb, headers, route=route, query=query, data=data, json_data=json_data)
-    if debug: debug(req)
-
-    if route and route.get('archive_format', None):
-        return urlread(req, decode=False, return_json=False, return_headers=return_headers, timeout=timeout)
-
-    return urlread(req, decode=decode, return_json=return_json, return_headers=return_headers, timeout=timeout)
-
-# %% ../nbs/03b_net.ipynb #f35557ab
-def do_request(url, post=False, headers=None, **data):
-    "Call GET or json-encoded POST on `url`, depending on `post`"
-    if data:
-        if post: data = json.dumps(data).encode('ascii')
-        else:
-            url += "?" + urlencode(data)
-            data = None
-    return urljson(Request(url, headers=headers, data=data or None))
 
 # %% ../nbs/03b_net.ipynb #f5a6de68
 def _socket_det(port,host,dgram):
@@ -288,46 +240,3 @@ def recv_once(host:str='localhost', port:int=8000):
     res = conn.recv(1024)
     conn.sendall(http_response(res))
     return res
-
-# %% ../nbs/03b_net.ipynb #d9c12c9e
-_loop,_loop_lock = None,threading.Lock()
-
-def _get_loop():
-    global _loop
-    with _loop_lock:
-        if _loop is None:
-            _loop = asyncio.new_event_loop()
-            threading.Thread(target=_loop.run_forever, daemon=True, name='run_sync').start()
-    return _loop
-
-def run_sync(coro):
-    "Run coroutine `coro` to completion from sync code and return its result"
-    loop = _get_loop()
-    try: reentrant = asyncio.get_running_loop() is loop
-    except RuntimeError: reentrant = False
-    if reentrant:
-        coro.close()
-        raise RuntimeError('run_sync called from its own event loop; use `await` instead')
-    fut = asyncio.run_coroutine_threadsafe(coro, loop)
-    try: return fut.result()
-    except KeyboardInterrupt:
-        fut.cancel()
-        raise
-
-# %% ../nbs/03b_net.ipynb #e1c1743e
-def iter_sync(agen):
-    "Iterate async generator `agen` from sync code"
-    try:
-        while True: yield run_sync(agen.__anext__())
-    except StopAsyncIteration: pass
-    finally: run_sync(agen.aclose())
-
-# %% ../nbs/03b_net.ipynb #507b84e7
-@contextmanager
-def ctx_sync(acm):
-    "Use async context manager `acm` in a plain `with` block"
-    res = run_sync(acm.__aenter__())
-    try: yield res
-    except BaseException as e:
-        if not run_sync(acm.__aexit__(type(e), e, e.__traceback__)): raise
-    else: run_sync(acm.__aexit__(None,None,None))

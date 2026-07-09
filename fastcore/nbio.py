@@ -96,8 +96,8 @@ def mk_cell(
     assert cell_type in {'code', 'markdown', 'raw'}
     if 'metadata' not in kwargs: kwargs['metadata']={}
     if cell_type == 'code':
-        kwargs['outputs']=[]
-        kwargs['execution_count']=0
+        kwargs.setdefault('outputs', [])
+        kwargs.setdefault('execution_count', None)
     return NbCell(0, dict(cell_type=cell_type, source=text, directives_={}, **kwargs))
 
 # %% ../nbs/13_nbio.ipynb #e7af3290

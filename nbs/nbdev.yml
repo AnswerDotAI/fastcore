@@ -7,3 +7,8 @@ website:
   description: "Python supercharged for fastai development"
   repo-branch: main
   repo-url: "https://github.com/AnswerDotAI/fastcore"
+
+format-links:
+  - html
+  - format: commonmark
+    text: Markdown

@@ -1105,12 +1105,14 @@ def flexicache(*funcs, maxsize=128):
     "Like `lru_cache`, but customisable with policy `funcs`"
     import asyncio
     from collections import OrderedDict
+    wants = [getattr(f, 'needs_args', False) for f in funcs]
     def _f(func):
-        cache,states = OrderedDict(), [None]*len(funcs)
-        def _cache_logic(key, execute_func):
+        cache = OrderedDict()
+        def _cache_logic(key, execute_func, args, kwargs):
+            def _run(f, w, state): return f(state, args, kwargs) if w else f(state)
             if key in cache:
                 result,states = cache[key]
-                if not any(f(state) for f,state in zip(funcs, states)):
+                if not any(_run(f,w,state) for f,w,state in zip(funcs,wants,states)):
                     cache[key] = cache.pop(key)
                     return result
                 del cache[key]
@@ -1119,17 +1121,17 @@ def flexicache(*funcs, maxsize=128):
                 if key not in cache: raise
                 cache[key] = cache.pop(key)
                 return result
-            cache[key] = (newres, [f(None) for f in funcs])
+            cache[key] = (newres, [_run(f,w,None) for f,w in zip(funcs,wants)])
             if len(cache) > maxsize: cache.popitem(last=False)
             return newres
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            return _cache_logic(f"{args} // {kwargs}", lambda: func(*args, **kwargs))
+            return _cache_logic(f"{args} // {kwargs}", lambda: func(*args, **kwargs), args, kwargs)
 
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
-            return await _cache_logic(f"{args} // {kwargs}", lambda: asyncio.ensure_future(func(*args, **kwargs)))
+            return await _cache_logic(f"{args} // {kwargs}", lambda: asyncio.ensure_future(func(*args, **kwargs)), args, kwargs)
 
         return async_wrapper if asyncio.iscoroutinefunction(func) else wrapper
     return _f
@@ -1143,11 +1145,18 @@ def time_policy(seconds):
     return policy
 
 # %% ../nbs/03_xtras.ipynb #8387a8bf
-def mtime_policy(filepath):
-    "A `flexicache` policy that expires cached items after `filepath` modified-time changes"
-    def policy(mtime):
-        current_mtime = getmtime(filepath)
+def mtime_policy(
+    filepath=None, # File to watch, fixed at policy creation
+    arg=None, # Or: positional index or keyword name of a call argument naming the file to watch
+):
+    "A `flexicache` policy that expires cached items after the watched file's modified-time changes"
+    if (filepath is None)==(arg is None): raise TypeError('Pass exactly one of `filepath` or `arg`')
+    def _expired(mtime, fp):
+        current_mtime = getmtime(fp)
         return current_mtime if mtime is None or current_mtime>mtime else None
+    if arg is None: return lambda mtime: _expired(mtime, filepath)
+    def policy(mtime, args, kwargs): return _expired(mtime, kwargs[arg] if isinstance(arg,str) else args[arg])
+    policy.needs_args = True
     return policy
 
 # %% ../nbs/03_xtras.ipynb #1094d811

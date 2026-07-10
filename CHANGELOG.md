@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.0.2
+
+### New Features
+
+- Add `needs_args` support to flexicache policies; extend `mtime_policy` with `arg` param to watch call-argument files ([#849](https://github.com/AnswerDotAI/fastcore/issues/849))
+
+
 ## 2.0.1
 
 ### Breaking Changes

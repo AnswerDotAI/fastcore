@@ -22,7 +22,7 @@ Documentation = "https://fastcore.fast.ai/"
 fastcore = "fastcore._modidx:d"
 
 [project.optional-dependencies]
-dev = ['numpy', 'nbdev>=0.2.39', 'matplotlib', 'pillow', 'torch', 'pandas', 'nbclassic', 'pysymbol_llm', 'llms-txt', 'plum-dispatch', 'toolslm']
+dev = ['numpy', 'nbdev>=0.2.39', 'matplotlib', 'pillow', 'torch', 'pandas', 'nbclassic', 'pysymbol_llm>=0.0.6', 'llms-txt', 'plum-dispatch', 'toolslm']
 
 
 [project.scripts]

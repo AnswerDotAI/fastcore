@@ -15,7 +15,7 @@ except ImportError:
 from types import BuiltinFunctionType,BuiltinMethodType,MethodType,FunctionType,SimpleNamespace
 
 NoneType = type(None)
-string_classes = (str,bytes)
+strtyps = (str,bytes)
 
 def is_iter(o):
     "Test whether `o` can be used in a `for` loop"

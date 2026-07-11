@@ -1153,7 +1153,7 @@ def mtime_policy(
     if (filepath is None)==(arg is None): raise TypeError('Pass exactly one of `filepath` or `arg`')
     def _expired(mtime, fp):
         current_mtime = getmtime(fp)
-        return current_mtime if mtime is None or current_mtime>mtime else None
+        return current_mtime if mtime is None or current_mtime!=mtime else None
     if arg is None: return lambda mtime: _expired(mtime, filepath)
     def policy(mtime, args, kwargs): return _expired(mtime, kwargs[arg] if isinstance(arg,str) else args[arg])
     policy.needs_args = True

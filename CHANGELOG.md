@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.0.4
+
+### New Features
+
+- `mtime_policy` now invalidates on any mtime change ([#850](https://github.com/AnswerDotAI/fastcore/issues/850))
+
+
 ## 2.0.3
 
 - Fix dep

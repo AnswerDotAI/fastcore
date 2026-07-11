@@ -5,86 +5,29 @@
 
 ## fastcore v2
 
-In July 2026 we released fastcore v2, which removes or relocates a
-number of APIs that had accumulated better alternatives. If you use
-`from fastcore.utils import *` (or `fastcore.all`), most of these
-changes won’t affect you. The breaking changes: `Param` is gone from
-`fastcore.script`; use plain type annotations with docments, or
-`typing.Annotated[type, "help"]`, optionally with a `dict` of argparse
-arguments for advanced features.
-[`L`](https://fastcore.fast.ai/foundation.html#l)’s `starmap`,
-`starfilter`, and the other `star*`/`rstar*` methods are replaced by the
-[`star`](https://fastcore.fast.ai/foundation.html#star) and
-[`rstar`](https://fastcore.fast.ai/foundation.html#rstar) function
-adapters, which compose with every
-[`L`](https://fastcore.fast.ai/foundation.html#l) method
-(e.g. `t.map(star(f))`); relatedly, `spread` is replaced by
-[`star`](https://fastcore.fast.ai/foundation.html#star), and `dspread`
-is renamed to [`dstar`](https://fastcore.fast.ai/basics.html#dstar).
-Async helpers now live in the new `fastcore.aio` module:
-[`run_sync`](https://fastcore.fast.ai/aio.html#run_sync),
-[`iter_sync`](https://fastcore.fast.ai/aio.html#iter_sync), and
-[`ctx_sync`](https://fastcore.fast.ai/aio.html#ctx_sync) moved there
-from `net`, and
-[`maybe_await`](https://fastcore.fast.ai/aio.html#maybe_await),
-[`then`](https://fastcore.fast.ai/aio.html#then),
-[`mapa`](https://fastcore.fast.ai/aio.html#mapa),
-[`acache`](https://fastcore.fast.ai/aio.html#acache),
-[`reawaitable`](https://fastcore.fast.ai/aio.html#reawaitable),
-[`is_async_callable`](https://fastcore.fast.ai/aio.html#is_async_callable),
-and the other async utilities moved there from `xtras`.
-[`Config`](https://fastcore.fast.ai/xtras.html#config) and the config
-file functions moved from `foundation` to `xtras`. `fastcore.net` lost
-its request builders (`urlrequest`, `urlsend`, `do_request`, `urlcheck`)
-and `clean_type_str` is gone. `parallel_gen` is removed; the stdlib
-[`ProcessPoolExecutor`](https://fastcore.fast.ai/parallel.html#processpoolexecutor)
-`initializer` pattern replaces it (fastai’s `parallel_tokenize` shows
-the recipe). Python 3.11 or later is now required. If you need the old
-APIs, pin `fastcore<2`.
+In July 2026 we released fastcore v2, which removes or relocates a number of APIs that had accumulated better alternatives. If you use `from fastcore.utils import *` (or `fastcore.all`), most of these changes won’t affect you. The breaking changes: `Param` is gone from `fastcore.script`; use plain type annotations with docments, or `typing.Annotated[type, "help"]`, optionally with a `dict` of argparse arguments for advanced features. [`L`](https://fastcore.fast.ai/foundation.html#l)’s `starmap`, `starfilter`, and the other `star*`/`rstar*` methods are replaced by the [`star`](https://fastcore.fast.ai/foundation.html#star) and [`rstar`](https://fastcore.fast.ai/foundation.html#rstar) function adapters, which compose with every [`L`](https://fastcore.fast.ai/foundation.html#l) method (e.g. `t.map(star(f))`); relatedly, `spread` is replaced by [`star`](https://fastcore.fast.ai/foundation.html#star), and `dspread` is renamed to [`dstar`](https://fastcore.fast.ai/basics.html#dstar). Async helpers now live in the new `fastcore.aio` module: [`run_sync`](https://fastcore.fast.ai/aio.html#run_sync), [`iter_sync`](https://fastcore.fast.ai/aio.html#iter_sync), and [`ctx_sync`](https://fastcore.fast.ai/aio.html#ctx_sync) moved there from `net`, and [`maybe_await`](https://fastcore.fast.ai/aio.html#maybe_await), [`then`](https://fastcore.fast.ai/aio.html#then), [`mapa`](https://fastcore.fast.ai/aio.html#mapa), [`acache`](https://fastcore.fast.ai/aio.html#acache), [`reawaitable`](https://fastcore.fast.ai/aio.html#reawaitable), [`is_async_callable`](https://fastcore.fast.ai/aio.html#is_async_callable), and the other async utilities moved there from `xtras`. [`Config`](https://fastcore.fast.ai/xtras.html#config) and the config file functions moved from `foundation` to `xtras`. `fastcore.net` lost its request builders (`urlrequest`, `urlsend`, `do_request`, `urlcheck`) and `clean_type_str` is gone. `parallel_gen` is removed; the stdlib [`ProcessPoolExecutor`](https://fastcore.fast.ai/parallel.html#processpoolexecutor) `initializer` pattern replaces it (fastai’s `parallel_tokenize` shows the recipe). Python 3.11 or later is now required. If you need the old APIs, pin `fastcore<2`.
 
-Python is a powerful, dynamic language. Rather than bake everything into
-the language, it lets the programmer customize it to make it work for
-them. `fastcore` uses this flexibility to add to Python features
-inspired by other languages we’ve loved, mixins from Ruby, and currying,
-binding, and more from Haskell. It also adds some “missing features” and
-clean up some rough edges in the Python standard library, such as
-simplifying parallel processing, and bringing ideas from NumPy over to
-Python’s `list` type.
+Python is a powerful, dynamic language. Rather than bake everything into the language, it lets the programmer customize it to make it work for them. `fastcore` uses this flexibility to add to Python features inspired by other languages we’ve loved, mixins from Ruby, and currying, binding, and more from Haskell. It also adds some “missing features” and clean up some rough edges in the Python standard library, such as simplifying parallel processing, and bringing ideas from NumPy over to Python’s `list` type.
 
 ## Getting started
 
-To install fastcore run: `conda install fastcore -c fastai` (if you use
-Anaconda, which we recommend) or `pip install fastcore`. For an
-[editable
-install](https://stackoverflow.com/questions/35064426/when-would-the-e-editable-option-be-useful-with-pip-install),
-clone this repo and run: `pip install -e ".[dev]"`. fastcore is tested
-to work on Ubuntu, macOS and Windows (versions tested are those shown
-with the `-latest` suffix
-[here](https://docs.github.com/en/actions/reference/specifications-for-github-hosted-runners#supported-runners-and-hardware-resources)).
+To install fastcore run: `conda install fastcore -c fastai` (if you use Anaconda, which we recommend) or `pip install fastcore`. For an [editable install](https://stackoverflow.com/questions/35064426/when-would-the-e-editable-option-be-useful-with-pip-install), clone this repo and run: `pip install -e ".[dev]"`. fastcore is tested to work on Ubuntu, macOS and Windows (versions tested are those shown with the `-latest` suffix [here](https://docs.github.com/en/actions/reference/specifications-for-github-hosted-runners#supported-runners-and-hardware-resources)).
 
 `fastcore` contains many features, including:
 
 - `fastcore.test`: Simple testing functions
 - `fastcore.foundation`: Mixins, delegation, composition, and more
-- `fastcore.xtras`: Utility functions to help with functional-style
-  programming, parallel processing, and more
+- `fastcore.xtras`: Utility functions to help with functional-style programming, parallel processing, and more
 
-To get started, we recommend you read through [the fastcore
-tour](https://fastcore.fast.ai/tour.html).
+To get started, we recommend you read through [the fastcore tour](https://fastcore.fast.ai/tour.html).
 
 ## Contributing
 
-After you clone this repository, please run `nbdev_install_hooks` in
-your terminal. This sets up git hooks, which clean up the notebooks to
-remove the extraneous stuff stored in the notebooks (e.g. which cells
-you ran) which causes unnecessary merge conflicts.
+After you clone this repository, please run `nbdev_install_hooks` in your terminal. This sets up git hooks, which clean up the notebooks to remove the extraneous stuff stored in the notebooks (e.g. which cells you ran) which causes unnecessary merge conflicts.
 
 To run the tests in parallel, launch `nbdev_test`.
 
-Before submitting a PR, check that the local library and notebooks
-match.
+Before submitting a PR, check that the local library and notebooks match.
 
-- If you made a change to the notebooks in one of the exported cells,
-  you can export it to the library with `nbdev_prepare`.
-- If you made a change to the library, you can export it back to the
-  notebooks with `nbdev_update`.
+- If you made a change to the notebooks in one of the exported cells, you can export it to the library with `nbdev_prepare`.
+- If you made a change to the library, you can export it back to the notebooks with `nbdev_update`.

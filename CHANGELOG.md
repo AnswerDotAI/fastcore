@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.0.5
+
+### New Features
+
+- Refactor nbio: replace `apply_controls` with `clean_cli_output`, make `preferred_msg_out` public ([#851](https://github.com/AnswerDotAI/fastcore/issues/851))
+
+
 ## 2.0.4
 
 ### New Features

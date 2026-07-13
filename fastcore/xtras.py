@@ -713,12 +713,16 @@ def frontmatter(txt:str)->tuple:
 
 # %% ../nbs/03_xtras.ipynb #45eb5141
 def clean_cli_output(txt:str, strip:bool=True):
-    "Clean CLI output by handling alternate screen, carriage returns, and ANSI escapes"
+    r"Render CLI output as it appears on screen: alternate screen, `\r` overwrites, `\b` backspaces, and ANSI escapes"
     if '\x1b[?1049h' in txt:
         if '\x1b[?1049l' not in txt: return ''
         txt = txt.rsplit('\x1b[?1049l', 1)[-1]
     txt = txt.replace('\r\n', '\n')
-    res = '\n'.join(l.rsplit('\r', 1)[-1] for l in txt.split('\n'))
+    def _line(l):
+        l = l.rstrip('\r').rsplit('\r', 1)[-1]  # trailing \r overwrites nothing; else keep last overwrite
+        while (i := l.find('\b')) != -1: l = l[:i] if i==len(l)-1 else l[:max(0,i-1)] + l[i+1:]
+        return l
+    res = '\n'.join(_line(l) for l in txt.split('\n'))
     return strip_ansi(res, term_queries=True) if strip else res
 
 # %% ../nbs/03_xtras.ipynb #35368de5

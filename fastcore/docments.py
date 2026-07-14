@@ -57,7 +57,10 @@ def get_source(s):
 # %% ../nbs/04_docments.ipynb #91c0d15f
 def _parses(s):
     "Parse source of function, method, or dataclass `s`"
-    return parse(dedent(get_source(s) or ''))
+    try: return parse(dedent(get_source(s) or ''))
+    except SyntaxError:
+        if isinstance(s,str): raise
+        return parse('')   # live object whose file changed on disk since import: degrade to no docments
 
 def _tokens(s):
     "Tokenize Python code in string or function object `s`"

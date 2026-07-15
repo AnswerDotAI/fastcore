@@ -158,13 +158,17 @@ async def parallel_async(f, items, *args, n_workers=16, pause=0,
     import asyncio
     semaphore = asyncio.Semaphore(n_workers)
     async def limited_task(i, item):
-        coro = f(item, *args, **kwargs) if asyncio.iscoroutinefunction(f) else asyncio.to_thread(f, item, *args, **kwargs)
         if pause: await asyncio.sleep(i * pause)
         async with semaphore:
+            coro = f(item, *args, **kwargs) if asyncio.iscoroutinefunction(f) else asyncio.to_thread(f, item, *args, **kwargs)
             return await asyncio.wait_for(coro, timeout) if timeout else await coro
     if cancel_on_error:
-        async with asyncio.TaskGroup() as tg: tasks = [tg.create_task(limited_task(i, item)) for i,item in enumerate(items)]
-        return [t.result() for t in tasks]
+        tasks = [asyncio.ensure_future(limited_task(i, item)) for i,item in enumerate(items)]
+        try: return await asyncio.gather(*tasks)
+        except BaseException:
+            for t in tasks: t.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+            raise
     return await asyncio.gather(*[limited_task(i, item) for i,item in enumerate(items)], return_exceptions=return_exceptions)
 
 # %% ../nbs/03a_parallel.ipynb #6748aa27

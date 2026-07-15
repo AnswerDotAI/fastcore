@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.1.0
+
+### New Features
+
+- Add back Python 3.10 support by replacing TaskGroup with asyncio.gather, and defer coroutine creation until semaphore is acquired ([#853](https://github.com/AnswerDotAI/fastcore/issues/853))
+
+
 ## 2.0.6
 
 ### New Features

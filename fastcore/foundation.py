@@ -362,6 +362,10 @@ def copy(self:L):
     "Same as `list.copy`, but returns an `L`"
     return self._new(self.items.copy())
 
+# %% ../nbs/02_foundation.ipynb #0becb556
+@patch
+def __copy__(self:L): return self.copy()
+
 # %% ../nbs/02_foundation.ipynb #7b2691d6
 @patch
 def shuffle(self:L):

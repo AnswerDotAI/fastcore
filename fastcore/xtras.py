@@ -13,10 +13,10 @@ __all__ = ['UNSET', 'spark_chars', 'walk_join', 'walk', 'exttypes', 'globtastic'
            'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'frontmatter', 'clean_cli_output', 'unqid',
            'rtoken_hex', 'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link', 'sparkline',
            'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file', 'autostart', 'EventTimer',
-           'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'utc2local', 'local2utc', 'trace',
-           'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src',
-           'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple',
-           'CachedIter', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
+           'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'str_diff', 'utc2local', 'local2utc',
+           'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str',
+           'dataclass_src', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict',
+           'is_namedtuple', 'CachedIter', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb #3401d507
 from .imports import *
@@ -26,7 +26,7 @@ from .ansi import strip_ansi
 
 from importlib import import_module
 from functools import wraps
-import string,time,dataclasses
+import string,time,dataclasses,difflib
 from enum import Enum
 from contextlib import contextmanager,ExitStack
 from configparser import ConfigParser
@@ -936,6 +936,17 @@ def truncstr(s:str, maxlen:int, suf:str='…', space='', sizevar:str=None)->str:
     "Truncate `s` to length `maxlen`, adding suffix `suf` if truncated"
     if sizevar: suf = suf.format_map({sizevar: len(s)})
     return s[:maxlen-len(suf)]+suf if len(s)+len(space)>maxlen else s+space
+
+# %% ../nbs/03_xtras.ipynb #273a90fd
+def str_diff(
+    a:str, # Original text
+    b:str, # New text
+    n:int=1, # Context lines around changes
+    names:tuple=None, # Optional `(a_name,b_name)` labels; `---`/`+++` header omitted if None
+)->str: # Unified diff, `''` when equal
+    "Unified diff of `a` and `b`"
+    lines = list(difflib.unified_diff(a.splitlines(), b.splitlines(), *(names or ()), n=n, lineterm=''))
+    return '\n'.join(lines if names else lines[2:])
 
 # %% ../nbs/03_xtras.ipynb #32fa9ba8
 def utc2local(dt:datetime)->datetime:

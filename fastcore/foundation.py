@@ -153,6 +153,7 @@ class L(GetAttr, CollBase, metaclass=_L_Meta):
         return all_equal(b,self)
 
     def __iter__(self): return iter(self.items.itertuples() if hasattr(self.items,'iloc') else self.items)
+    def __json__(self): return list(self)
     def __contains__(self,b): return b in self.items
     def __reversed__(self): return self._new(reversed(self.items))
     def __invert__(self): return self._new(not i for i in self)

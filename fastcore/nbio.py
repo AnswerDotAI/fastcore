@@ -172,7 +172,7 @@ def validate_nb(nb):
     return nb
 
 # %% ../nbs/13_nbio.ipynb #530b9cd1
-from .xml import Code,Markdown,Raw,NB,Source,Out,to_xml,ft
+from .xml import NB,to_xml,ft,item2xml
 
 # %% ../nbs/13_nbio.ipynb #9f22b923
 def preferred_out(data, html1st=True, include_imgs=False):
@@ -276,15 +276,10 @@ def render_text(outputs, html1st=False):
     return items[0][0] if len(items)==1 else '\n'.join(o[1] for o in items)
 
 # %% ../nbs/13_nbio.ipynb #ca73be1c
-_ctfuns_nb = dict(code=Code, markdown=Markdown, raw=Raw)
-
 def cell2xml(cell, ids=True, incl_out=True):
     "Convert NbCell to concise XML format"
-    f = _ctfuns_nb[cell.cell_type]
-    kw = dict(id=cell.id) if ids else {}
-    output = getattr(cell, 'outputs', None) if incl_out else None
-    if not output: return f(cell.source, **kw)
-    return f(Source(cell.source), Out(render_text(output)), **kw)
+    outputs = getattr(cell, 'outputs', None) if incl_out else None
+    return item2xml(cell.cell_type, cell.source, render_text(outputs) if outputs else '', id=cell.id if ids else None)
 
 def cells2xml(cells, wrap=NB, ids=True, incl_out=True, **kw):
     "Convert notebook cells to XML format"

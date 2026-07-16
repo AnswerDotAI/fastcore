@@ -22,12 +22,12 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'fail_clean', 'dstar', 'copy_func', 'patch_to', 'patch', 'extend_enum', 'compile_re', 'ImportEnum',
            'StrEnum', 'str_enum', 'ValEnum', 'Stateful', 'NotStr', 'PrettyString', 'even_mults', 'num_cpus',
            'add_props', 'str2bool', 'str2int', 'str2float', 'str2list', 'str2date', 'to_bool', 'to_int', 'to_float',
-           'to_list', 'to_date', 'typed', 'exec_new', 'exec_import', 'sig_with_params', 'fdelegates', 'lt', 'gt', 'le',
-           'ge', 'eq', 'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
+           'to_list', 'to_date', 'typed', 'exec_new', 'exec_import', 'sig_with_params', 'fdelegates', 'xdumps', 'lt',
+           'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
 
 # %% ../nbs/01_basics.ipynb #0e91ed82
 from .imports import *
-import builtins,types,typing
+import builtins,types,typing,json
 from functools import cmp_to_key,wraps
 from copy import copy
 from datetime import date
@@ -1394,3 +1394,16 @@ def fdelegates(to):
         f.__signature__ = sig_with_params(sig, remove=['kwargs'], **new_params)
         return f
     return _f
+
+# %% ../nbs/01_basics.ipynb #3e6f50e5
+def _json_default(o, default=None):
+    f = getattr(o, '__json__', None)
+    if f: return f()
+    if default: return default(o)
+    raise TypeError(f'Object of type {type(o).__name__} is not JSON serializable')
+
+def xdumps(o, **kwargs):
+    "`json.dumps`, using `__json__` methods when available"
+    default = kwargs.pop('default', None)
+    return json.dumps(o, default=partial(_json_default, default=default), **kwargs)
+

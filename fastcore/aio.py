@@ -1,4 +1,4 @@
-"""Bridging async and sync code: `run_sync`, `iter_sync`, `ctx_sync`, `maybe_await`, and `then`
+"""Bridging async and sync code: `run_sync`, `iter_sync`, `ctx_sync`, `maybe_await`, and `then`, plus `Debounce` for coalescing bursts of calls
 
 Docs: https://fastcore.fast.ai/aio.html.md"""
 
@@ -6,7 +6,7 @@ Docs: https://fastcore.fast.ai/aio.html.md"""
 
 # %% auto #0
 __all__ = ['run_sync', 'iter_sync', 'ctx_sync', 'maybe_await', 'then', 'acache', 'CachedAwaitable', 'reawaitable',
-           'is_async_callable', 'to_aiter', 'maybe_aiter', 'mapa', 'noopa']
+           'is_async_callable', 'to_aiter', 'maybe_aiter', 'mapa', 'noopa', 'Debounce', 'debounced', 'throttled']
 
 # %% ../nbs/03c_aio.ipynb #7e2193be
 import asyncio,threading
@@ -136,3 +136,76 @@ async def mapa(f, items):
 async def noopa(x=None, *args, **kwargs):
     "Do nothing (async)"
     return x
+
+# %% ../nbs/03c_aio.ipynb #314d1e40
+class Debounce:
+    "Coalesce calls to `f` into one, made `wait` secs after calls stop (or `max_wait` secs after they start)"
+    def __init__(self, f, wait, max_wait=None, leading=False, trailing=True):
+        assert leading or trailing,"one of `leading`/`trailing` must be set"
+        store_attr()
+        self._task,self._q = None,None
+        try: self._loop = asyncio.get_running_loop()
+        except RuntimeError: self._loop = None
+
+    def _put_latest(self, q, call):
+        if q.full(): q.get_nowait()
+        q.put_nowait(call)
+
+    def __call__(self, *args, **kw):
+        try: loop = asyncio.get_running_loop()
+        except RuntimeError:
+            if self._loop is None: raise RuntimeError('Debounce must first be called from an async event loop') from None
+            return self._loop.call_soon_threadsafe(partial(self.__call__, *args, **kw))
+
+        if self._loop is None: self._loop = loop
+        elif loop is not self._loop: return self._loop.call_soon_threadsafe(partial(self.__call__, *args, **kw))
+
+        self._deadline = self._loop.time()+self.wait
+        call = (args, kw)
+        if self._task and not self._task.done(): self._put_latest(self._q, call)
+        else:
+            self._q = asyncio.Queue(maxsize=1)
+            self._cap = self._loop.time()+self.max_wait if self.max_wait else float('inf')
+            if not self.leading: self._put_latest(self._q, call)
+            self._task = self._loop.create_task(self._run(self._q, call if self.leading else None))
+
+    async def _fire(self, p): await maybe_await(self.f(*p[0], **p[1]))
+    async def _run(self, q, first):
+        if first is not None: await self._fire(first)
+
+        while True:
+            delay = min(self._deadline,self._cap) - self._loop.time()
+            if delay>0: await asyncio.sleep(delay); continue
+            if not self.trailing:
+                if not q.empty(): q.get_nowait()  # drop the rest of the burst
+                return
+            if q.empty(): return
+            await self._fire(q.get_nowait())
+            if q.empty(): return
+            if self.max_wait: self._cap = self._loop.time()+self.max_wait
+
+    def cancel(self):
+        "Discard any pending call"
+        if self._task and not self._task.done(): self._task.cancel()
+        self._task,self._q = None,None
+
+    async def flush(self):
+        "Run any pending call now instead of waiting"
+        p = self._q.get_nowait() if self._q and not self._q.empty() else None
+        self.cancel()
+        if p is not None: await self._fire(p)
+
+    def __set_name__(self, owner, name): self._name = name
+    def __get__(self, obj, objtype=None):
+        if obj is None: return self
+        res = obj.__dict__[self._name] = Debounce(partial(self.f, obj), self.wait, self.max_wait, self.leading, self.trailing)
+        return res
+
+# %% ../nbs/03c_aio.ipynb #7d9f6bcf
+def debounced(wait, max_wait=None, leading=False, trailing=True):
+    "Decorator: `Debounce` a function or method"
+    return partial(Debounce, wait=wait, max_wait=max_wait, leading=leading, trailing=trailing)
+
+def throttled(wait, leading=False):
+    "Decorator: fire at most once per `wait` secs (`Debounce` with `max_wait=wait`)"
+    return debounced(wait, max_wait=wait, leading=leading)

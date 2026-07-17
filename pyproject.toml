@@ -7,7 +7,7 @@ name = "fastcore"
 dynamic = ["version"]
 description = "Python supercharged for fastai development"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
 authors = [{name = "Jeremy Howard and Sylvain Gugger", email = "infos@fast.ai"}]
 keywords = ['python']
@@ -20,6 +20,9 @@ Documentation = "https://fastcore.fast.ai/"
 
 [project.entry-points.nbdev]
 fastcore = "fastcore._modidx:d"
+
+[project.entry-points.pyskills]
+"fastcore.tools" = "fastcore.tools"
 
 [project.optional-dependencies]
 dev = ['numpy', 'nbdev>=0.2.39', 'matplotlib', 'pillow', 'torch', 'pandas', 'nbclassic', 'pysym2md>=0.0.6', 'llms-txt', 'plum-dispatch', 'toolslm']

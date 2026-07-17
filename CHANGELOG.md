@@ -2,6 +2,22 @@
 
 <!-- do not remove -->
 
+## 2.1.1
+
+### New Features
+
+- Add `xdumps` with `__json__` protocol and `item2xml` for shared notebook/message XML rendering ([#855](https://github.com/AnswerDotAI/fastcore/issues/855))
+- Refactor tools.py into string-level editing primitives + file wrappers; add L.`__copy__`, `str_diff`, notebook validation, and pyskills entry point ([#854](https://github.com/AnswerDotAI/fastcore/issues/854))
+    - Add L.`__copy__`, `str_diff`, notebook validation, and pyskills entry point
+
+
+## 2.1.0
+
+### New Features
+
+- Add back Python 3.10 support by replacing TaskGroup with asyncio.gather, and defer coroutine creation until semaphore is acquired ([#853](https://github.com/AnswerDotAI/fastcore/issues/853))
+
+
 ## 2.0.6
 
 ### New Features

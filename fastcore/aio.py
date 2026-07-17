@@ -11,7 +11,7 @@ __all__ = ['run_sync', 'iter_sync', 'ctx_sync', 'maybe_await', 'then', 'acache',
 # %% ../nbs/03c_aio.ipynb #7e2193be
 import asyncio,threading
 from contextlib import contextmanager
-from functools import wraps
+from functools import wraps,update_wrapper
 from .imports import *
 from .xtras import UNSET
 from .basics import *
@@ -143,7 +143,8 @@ class Debounce:
     def __init__(self, f, wait, max_wait=None, leading=False, trailing=True):
         assert leading or trailing,"one of `leading`/`trailing` must be set"
         store_attr()
-        self._task,self._q = None,None
+        update_wrapper(self, f, updated=())
+        self._task,self._q,self._name = None,None,getattr(f, '__name__', None)
         try: self._loop = asyncio.get_running_loop()
         except RuntimeError: self._loop = None
 

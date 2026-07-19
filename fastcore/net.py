@@ -7,7 +7,8 @@ Docs: https://fastcore.fast.ai/net.html.md"""
 # %% auto #0
 __all__ = ['url_default_headers', 'ExceptionsHTTP', 'urlquote', 'urlwrap', 'HTTP4xxClientError', 'HTTP5xxServerError',
            'urlopener', 'urlopen', 'urlread', 'urljson', 'urlclean', 'urlretrieve', 'urldest', 'urlsave', 'urlvalid',
-           'start_server', 'start_client', 'tobytes', 'http_response', 'recv_once', 'HTTP400BadRequestError',
+           'start_server', 'start_client', 'tobytes', 'http_response', 'recv_once', 'waitfor', 'waitfor_async',
+           'is_port_free', 'wait_port_free', 'wait_port_free_async', 'HTTP400BadRequestError',
            'HTTP401UnauthorizedError', 'HTTP402PaymentRequiredError', 'HTTP403ForbiddenError', 'HTTP404NotFoundError',
            'HTTP405MethodNotAllowedError', 'HTTP406NotAcceptableError', 'HTTP407ProxyAuthRequiredError',
            'HTTP408RequestTimeoutError', 'HTTP409ConflictError', 'HTTP410GoneError', 'HTTP411LengthRequiredError',
@@ -23,7 +24,7 @@ from .utils import *
 from .parallel import *
 
 import json,urllib,contextlib,tempfile
-import socket,urllib.request,urllib,asyncio,threading
+import socket,urllib.request,urllib,asyncio,threading,time
 from contextlib import contextmanager
 from urllib.request import Request,urlretrieve
 from urllib.error import HTTPError,URLError
@@ -240,3 +241,39 @@ def recv_once(host:str='localhost', port:int=8000):
     res = conn.recv(1024)
     conn.sendall(http_response(res))
     return res
+
+# %% ../nbs/03b_net.ipynb #8896fe36
+def _waitfor(f, timeout, msg):
+    end = time.time()+timeout
+    while not f():
+        if time.time()>end: raise TimeoutError(msg or f"Timeout after {timeout}s")
+        yield 0.1
+
+def waitfor(f, timeout=20, msg=None):
+    "Call `f` every 0.1s until it returns truthy, raising `TimeoutError` with `msg` after `timeout` secs"
+    for d in _waitfor(f, timeout, msg): time.sleep(d)
+
+async def waitfor_async(f, timeout=20, msg=None):
+    "Async version of `waitfor`"
+    for d in _waitfor(f, timeout, msg): await asyncio.sleep(d)
+
+# %% ../nbs/03b_net.ipynb #38a94895
+def is_port_free(port, host='localhost'):
+    "Is `port` free on `host`?"
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    try:
+        sock.bind((host,port))
+        sock.listen(1)
+        return True
+    except OSError: return False
+    finally: sock.close()
+
+# %% ../nbs/03b_net.ipynb #e0a7369a
+def wait_port_free(port, host='localhost', max_wait=20):
+    "Wait for `port` to be free on `host`"
+    waitfor(partial(is_port_free, port, host), max_wait, f"Port {host}:{port} not free after {max_wait}s")
+
+async def wait_port_free_async(port, host='localhost', max_wait=20):
+    "Async wait for `port` to be free on `host`"
+    await waitfor_async(partial(is_port_free, port, host), max_wait, f"Port {host}:{port} not free after {max_wait}s")

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.1.2
+
+### New Features
+
+- Add multi-language directive parsing/repair to NbCell and net-waiting utilities from fasthtml (waitfor); added `take_lines` ([#857](https://github.com/AnswerDotAI/fastcore/issues/857))
+
+
 ## 2.1.1
 
 ### New Features

@@ -9,14 +9,14 @@ __all__ = ['UNSET', 'spark_chars', 'walk_join', 'walk', 'exttypes', 'globtastic'
            'img_bytes', 'detect_mime', 'bunzip', 'loads', 'loads_multi', 'dumps', 'untar_dir', 'repo_details', 'shell',
            'ssh', 'rsync_multi', 'run', 'open_file', 'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards',
            'atomic_save', 'load_mod', 'import_no_init', 'save_config_file', 'read_config_file', 'find_file_parents',
-           'Config', 'Unset', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy', 'mapped', 'IterLen', 'ReindexCollection',
-           'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'frontmatter', 'clean_cli_output', 'unqid',
-           'rtoken_hex', 'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link', 'sparkline',
-           'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file', 'autostart', 'EventTimer',
-           'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'str_diff', 'utc2local', 'local2utc',
-           'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str',
-           'dataclass_src', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict',
-           'is_namedtuple', 'CachedIter', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
+           'Config', 'Unset', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy', 'mapped', 'take_lines', 'IterLen',
+           'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'frontmatter',
+           'clean_cli_output', 'unqid', 'rtoken_hex', 'friendly_name', 'n_friendly_names', 'exec_eval',
+           'get_source_link', 'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file',
+           'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'str_diff',
+           'utc2local', 'local2utc', 'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md',
+           'type2str', 'dataclass_src', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub',
+           'is_typeddict', 'is_namedtuple', 'CachedIter', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb #3401d507
 from .imports import *
@@ -561,6 +561,17 @@ def is_listy(x):
 def mapped(f, it):
     "map `f` over `it`, unless it's not listy, in which case return `f(it)`"
     return L(it).map(f) if is_listy(it) else f(it)
+
+# %% ../nbs/03_xtras.ipynb #062ca713
+def take_lines(s, pat, atstart=True, atend=False, drop=False):
+    "Take contiguous lines matching `pat` from either end of `s`"
+    ls,pred = s.splitlines(keepends=True),re.compile(pat).search
+    i,j = 0,len(ls)
+    if atstart:
+        while i<j and pred(ls[i]): i += 1
+    if atend:
+        while i<j and pred(ls[j-1]): j -= 1
+    return ''.join(ls[i:j] if drop else ls[:i]+ls[j:])
 
 # %% ../nbs/03_xtras.ipynb #ab0758e6
 @patch

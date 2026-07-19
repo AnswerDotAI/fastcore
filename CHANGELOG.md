@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.1.3
+
+### New Features
+
+- rename file tools verb-first, add lnhash/exhash utilities and cell editing tools, require str metadata directive values ([#858](https://github.com/AnswerDotAI/fastcore/issues/858))
+
+
 ## 2.1.2
 
 ### New Features

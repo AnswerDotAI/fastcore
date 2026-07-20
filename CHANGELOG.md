@@ -2,6 +2,15 @@
 
 <!-- do not remove -->
 
+## 2.1.4
+
+### New Features
+
+- Add Notebook/NbCell session methods, CellRow snapshots, `summary_nb`/`find_cells`, `cell_ast_replace`; rename find→`find_cells` and view→`view_cell` ([#862](https://github.com/AnswerDotAI/fastcore/issues/862))
+- Add fastcore.editskill module documenting shared editing conventions and re-exporting tools + nbio; switch pyskills entry point to it ([#861](https://github.com/AnswerDotAI/fastcore/issues/861))
+- Add metadata directives as XML attrs in cell2xml ([#860](https://github.com/AnswerDotAI/fastcore/issues/860))
+
+
 ## 2.1.3
 
 ### New Features
@@ -2028,4 +2037,3 @@ If you need the old APIs, pin `fastcore<2`.
 ## Version 1.0.0
 
 - Initial release
-

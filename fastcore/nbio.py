@@ -11,7 +11,7 @@ __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace',
            'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb', 'first_code_ln', 'nb2dict', 'nb2str',
            'write_nb', 'cell_edit', 'view_cell', 'validate_cell', 'validate_nb', 'repair_cell', 'repair_nb',
            'preferred_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error', 'concat_streams', 'preferred_msg_out',
-           'render_output', 'render_outputs', 'render_text', 'cell2xml', 'cells2xml', 'Notebook']
+           'render_output', 'render_outputs', 'render_text', 'item2xml', 'cell2xml', 'cells2xml', 'Notebook']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -154,12 +154,16 @@ def _directive(s, lang='python'):
     return name, ('' if v=='true' else v)
 
 # %% ../nbs/13_nbio.ipynb #16c08410
-def _meta_directives(cell):
-    "Directives from the `nbdev` dict in cell metadata, as `{name: value}`; values must be str (`'true'` for a bare directive)"
-    d = cell.get('metadata',{}).get('nbdev',{})
+def _meta_directives(meta):
+    "Directives from the `nbdev` dict in metadata dict `meta`, as `{name: value}`; values must be str (`'true'` for a bare directive)"
+    d = (meta or {}).get('nbdev',{})
     if bad := [k for k,v in d.items() if not isinstance(v,str)]:
         raise TypeError(f"`nbdev` metadata directive values must be str (e.g 'true'/'false'), got non-str for: {bad}")
     return {k:'' if v=='true' else v for k,v in d.items()}
+
+def _dir_attrs(meta):
+    "Metadata directives as XML attrs: bare directives become True, so they render as bare attributes"
+    return {k:v or True for k,v in _meta_directives(meta).items()}
 
 def _unparse_dir(v):
     "Inverse of `_meta_directives` value parsing: value string back to a metadata value"
@@ -182,7 +186,7 @@ def _directives_get(self):
     if '_directives_' not in self:
         dirs,_ = self._partition()
         cmts = dict(t for t in (_directive(s, self.lang_) for s in dirs) if t)
-        meta = _meta_directives(self)
+        meta = _meta_directives(self.get('metadata'))
         self['_meta_names_'] = set(meta) - set(cmts)
         self['_directives_'] = cmts | {k:v for k,v in meta.items() if k not in cmts}
     return dict(self['_directives_'])
@@ -244,7 +248,9 @@ def nb2dict(d, k=None):
 # %% ../nbs/13_nbio.ipynb #21ffe533
 def nb2str(nb):
     "Convert `nb` to a `str`"
-    if isinstance(nb, (AttrDict,list)): nb = nb2dict(nb)
+    # Unconditional: a plain dict can hold live NbCells (e.g. spliced in by a processor), whose working
+    # attrs (`idx_` etc) and str `source` must not serialize. Idempotent on already-canonical dicts.
+    nb = nb2dict(nb)
     return dumps(nb, sort_keys=True, indent=1, ensure_ascii=False) + "\n"
 
 # %% ../nbs/13_nbio.ipynb #d979e25a
@@ -377,7 +383,7 @@ def repair_nb(nb):
     return res
 
 # %% ../nbs/13_nbio.ipynb #530b9cd1
-from .xml import NB,to_xml,ft,item2xml
+from .xml import NB,to_xml,ft
 
 # %% ../nbs/13_nbio.ipynb #9f22b923
 def preferred_out(data, html1st=True, include_imgs=False):
@@ -480,11 +486,24 @@ def render_text(outputs, html1st=False):
     if not items: return ''
     return items[0][0] if len(items)==1 else '\n'.join(o[1] for o in items)
 
+# %% ../nbs/13_nbio.ipynb #d32fc4bc
+def item2xml(
+    typ, # Tag name: the cell or message type, e.g. 'code', 'markdown', 'raw', 'prompt'
+    content='', # The item's source text
+    out='', # Rendered output text
+    id=None, # Optional id attribute
+    **attrs, # Extra attributes; falsy values are dropped, names stay verbatim (no hyphenation)
+):
+    "A notebook cell or dialog message as concise XML: content, then an `<out>` section when `out` is non-empty"
+    kw = {k:v for k,v in dict(id=id, **attrs).items() if v}
+    return ft(typ, content, ft('out', out), attrmap=str, **kw) if out else ft(typ, content, attrmap=str, **kw)
+
 # %% ../nbs/13_nbio.ipynb #ca73be1c
 def cell2xml(cell, ids=True, incl_out=True):
     "Convert NbCell to concise XML format"
     outputs = getattr(cell, 'outputs', None) if incl_out else None
-    return item2xml(cell.cell_type, cell.source, render_text(outputs) if outputs else '', id=cell.id if ids else None)
+    return item2xml(cell.cell_type, cell.source, render_text(outputs) if outputs else '', id=cell.id if ids else None,
+                    **_dir_attrs(cell.get('metadata')))
 
 def cells2xml(cells, wrap=NB, ids=True, incl_out=True, **kw):
     "Convert notebook cells to XML format"

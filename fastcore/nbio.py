@@ -1,6 +1,6 @@
 """Reading and writing Jupyter notebooks
 
-Cell tools apply `fastcore.tools`' string editing primitives to one notebook cell's source, addressed by path and cell id, mirroring that module's file tools: the same operations and parameters, with `path, cell_id` in place of `path`. Each editor returns a diff of the change, and `view_cell` shows a cell's source with optional line numbers or exhash addresses.
+Cell tools apply `fastcore.tools`' string editing primitives to one notebook cell's source, addressed by path and cell id, mirroring that module's file tools: the same operations and parameters, with `path, cell_id` in place of `path`. Each editor (including the structural `cell_ast_replace`) returns a diff of the change, and `view_cell` shows a cell's source with optional line numbers or exhash addresses.
 
 Naming and parameter conventions shared across the editing toolkit are documented in `fastcore.editskill`, which also re-exports this module's editing tools.
 
@@ -10,10 +10,11 @@ Docs: https://fastcore.fast.ai/nbio.html.md"""
 
 # %% auto #0
 __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines',
-           'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb', 'first_code_ln', 'nb2dict', 'nb2str',
-           'write_nb', 'cell_edit', 'view_cell', 'validate_cell', 'validate_nb', 'repair_cell', 'repair_nb',
-           'preferred_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error', 'concat_streams', 'preferred_msg_out',
-           'render_output', 'render_outputs', 'render_text', 'item2xml', 'cell2xml', 'cells2xml', 'Notebook']
+           'cell_ast_replace', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb', 'first_code_ln',
+           'nb2dict', 'nb2str', 'write_nb', 'cell_edit', 'view_cell', 'validate_cell', 'validate_nb', 'repair_cell',
+           'repair_nb', 'preferred_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error', 'concat_streams',
+           'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'item2xml', 'cell2xml', 'cells2xml',
+           'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'find_cells']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -21,9 +22,9 @@ from .xtras import rtoken_hex,clean_cli_output,take_lines,str_diff
 from .imports import *
 from .ansi import ansi2html
 from .meta import delegates,splice_sig
-from .tools import insert_line,str_replace,strs_replace,replace_lines,del_lines,lnhash
+from .tools import insert_line,str_replace,strs_replace,replace_lines,del_lines,ast_replace,lnhash
 
-import ast,functools
+import ast,copy,functools
 from collections import defaultdict
 from pprint import pformat,pprint
 from json import loads,dumps
@@ -280,6 +281,7 @@ def _nb_cell(nb, cell_id):
     return res[0]
 
 def cell_edit(f, name=None):
+    "Wrap text editor `f` as a cell editing function: `path, cell_id` addressing, diff-or-error return"
     def wrapper(path:str, cell_id:str, *args, **kw):
         nb = read_nb(path)
         cell = _nb_cell(nb, cell_id)
@@ -300,6 +302,7 @@ cell_str_replace = cell_edit(str_replace, 'cell_str_replace')
 cell_strs_replace = cell_edit(strs_replace, 'cell_strs_replace')
 cell_replace_lines = cell_edit(replace_lines, 'cell_replace_lines')
 cell_del_lines = cell_edit(del_lines, 'cell_del_lines')
+cell_ast_replace = cell_edit(ast_replace, 'cell_ast_replace')
 
 # %% ../nbs/13_nbio.ipynb #421b2b9c
 def view_cell(
@@ -545,6 +548,19 @@ class Notebook:
     @property
     def concise (self): return cells2xml(self.cells, path=self.path.name, incl_out=False)
 
+# %% ../nbs/13_nbio.ipynb #af50ea0b
+def _cell_method(f):
+    def method(self, *args, **kw):
+        old = self.source
+        self.set_source(f(old, *args, **kw))
+        return PrettyString(str_diff(old, self.source) or 'none: No changes.')
+    res = splice_sig(method, f, 'text')
+    res.__name__ = res.__qualname__ = f.__name__
+    res.__doc__ = (f.__doc__ or '') + "\nIn-memory edit of this cell's `source`, returning a diff; nothing is written to disk."
+    return res
+
+for _f in (insert_line, str_replace, strs_replace, replace_lines, del_lines, ast_replace): setattr(NbCell, _f.__name__, _cell_method(_f))
+
 # %% ../nbs/13_nbio.ipynb #161b6662
 @patch
 def add(self:Notebook, source, cell_type='code', idx=None, after=None, before=None, **kwargs):
@@ -567,7 +583,7 @@ def md(self:Notebook, source, idx=None, after=None, before=None, **kwargs):
 
 # %% ../nbs/13_nbio.ipynb #5a09a2fa
 @patch
-def find(self:Notebook, pat, cell_type=None):
+def find_cells(self:Notebook, pat, cell_type=None):
     "Find cells with source matching regex `pat`"
     return [c for c in self.cells if re.search(pat, c.source) and (not cell_type or c.cell_type==cell_type)]
 
@@ -585,8 +601,50 @@ def move(self:Notebook, src_ids, after=None, before=None):
 
 # %% ../nbs/13_nbio.ipynb #e064c39e
 @patch
-def view(self:Notebook, id, nums=True):
+def view_cell(self:Notebook, id, nums=True):
     "Show cell source with optional line numbers"
     lines = self[id].source.splitlines()
     if nums: lines = [f'{i+1:6d} │ {l}' for i,l in enumerate(lines)]
     return '\n'.join(lines)
+
+# %% ../nbs/13_nbio.ipynb #804670bc
+class CellRow:
+    "Snapshot of one cell, shown as `id:t[directives]:source` (t: c=code m=markdown r=raw)"
+    def __init__(self, c, maxlen=120):
+        self.id,self.cell_type,self.source,self.maxlen = c.id,c.cell_type,c.source,maxlen
+        self.meta = copy.deepcopy(dict(c.get('metadata',{})))
+    def __repr__(self):
+        d = self.meta.get('nbdev',{})
+        tag = ' '.join(k if v in ('','true') else f'{k}={v}' for k,v in d.items())
+        src = self.source.replace('\n', '\\n')
+        if len(src)>self.maxlen: src = src[:self.maxlen]+'…'
+        return f"{self.id}:{self.cell_type[0]}{'['+tag+']' if tag else ''}:{src}"
+
+class CellRows(list):
+    def __repr__(self): return '\n'.join(repr(o) for o in self)
+
+# %% ../nbs/13_nbio.ipynb #62d7f8d1
+@patch
+def summary(self:Notebook, maxlen=120):
+    "One `CellRow` line per cell"
+    return CellRows(CellRow(c, maxlen) for c in self.cells)
+
+def summary_nb(
+    path, # Notebook file to read
+    maxlen:int=120, # Maximum source characters per line
+):
+    "One snapshot line per cell of the notebook at `path`"
+    return Notebook.open(path).summary(maxlen)
+
+def find_cells(
+    path, # Notebook file to search
+    pat:str='', # Regex over cell source
+    cell_type:str=None, # Optional limit by type ('code', 'markdown', or 'raw')
+):
+    "Snapshot `CellRows` for matching cells in the notebook at `path`"
+    return CellRows(CellRow(c) for c in Notebook.open(path).find_cells(pat, cell_type))
+
+@patch
+def to_dict(self:Notebook):
+    "The plain dict form of the held notebook (`nb2dict`): the representation layer"
+    return nb2dict(self.nb)

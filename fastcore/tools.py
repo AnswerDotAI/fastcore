@@ -204,6 +204,7 @@ returns: diff of changes, or "none: No changes.", or "error: ..."
 
 # %% ../nbs/12_tools.ipynb #a6f7361d
 def file_edit(f, name=None):
+    "Wrap text editor `f` as a file editing function: `path` addressing, diff-or-error return"
     def wrapper(path:str, *args, **kw):
         path = Path(path).expanduser()
         text = path.read_text()

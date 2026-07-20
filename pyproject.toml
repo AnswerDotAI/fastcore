@@ -22,7 +22,7 @@ Documentation = "https://fastcore.fast.ai/"
 fastcore = "fastcore._modidx:d"
 
 [project.entry-points.pyskills]
-"fastcore.tools" = "fastcore.tools"
+"fastcore.editskill" = "fastcore.editskill"
 
 [project.optional-dependencies]
 dev = ['numpy', 'nbdev>=0.2.39', 'matplotlib', 'pillow', 'torch', 'pandas', 'nbclassic', 'pysym2md>=0.0.6', 'llms-txt', 'plum-dispatch', 'toolslm']

@@ -472,24 +472,27 @@ def render_outputs(outputs):
     if (not isinstance(outputs, (list,tuple))) or (outputs and not isinstance(outputs[0],dict)): return ''
     return '\n'.join(render_output(o) for o in concat_streams(outputs))
 
-# %% ../nbs/13_nbio.ipynb #88b0018a
-def _render_text(out, html1st=False):
+# %% ../nbs/13_nbio.ipynb #94121eb2
+def _render_text(out, html1st=False, include_imgs=False):
     typ = out['output_type']
-    mime,d = preferred_msg_out(out, html1st=html1st, include_imgs=False)
+    mime,d = preferred_msg_out(out, html1st=html1st, include_imgs=include_imgs)
     d = _join(d)
     if not d: return None
     attrs = {}
     if typ == 'stream': typ = out.get('name')
     elif typ in ('execute_result','display_data') and mime!='text/plain': attrs['mime'] = mime
     body = f'\n{d}' if d.endswith('\n') else f'\n{d}\n'
-    return d, to_xml(ft(typ, body, **attrs), do_escape=False, indent=False)
+    return d,to_xml(ft(typ, body, **attrs), do_escape=False, indent=False),mime
 
-def render_text(outputs, html1st=False):
-    "Render notebook outputs to concise text, using XML-ish tags when multiple outputs are present."
+def render_text(outputs, html1st=False, include_imgs=False):
+    "Render notebook outputs to concise text, retaining XML tags when needed to preserve structure."
     if (not isinstance(outputs, (list,tuple))) or (outputs and not isinstance(outputs[0],dict)): return ''
-    items = [o for out in concat_streams(outputs) if (o := _render_text(out, html1st=html1st))]
+    items = [o for out in concat_streams(outputs)
+             if (o := _render_text(out, html1st=html1st, include_imgs=include_imgs))]
     if not items: return ''
-    return items[0][0] if len(items)==1 else '\n'.join(o[1] for o in items)
+    if len(items)>1: return '\n'.join(o[1] for o in items)
+    d,xml,mime = items[0]
+    return xml if mime.startswith('image/') else d
 
 # %% ../nbs/13_nbio.ipynb #d32fc4bc
 def item2xml(

@@ -494,10 +494,11 @@ def item2xml(
     content='', # The item's source text
     out='', # Rendered output text
     id=None, # Optional id attribute
+    meta=None, # Cell/message metadata: directives in its `nbdev` dict render as attrs, bare ones as bare attrs
     **attrs, # Extra attributes; falsy values are dropped, names stay verbatim (no hyphenation)
 ):
     "A notebook cell or dialog message as concise XML: content, then an `<out>` section when `out` is non-empty"
-    kw = {k:v for k,v in dict(id=id, **attrs).items() if v}
+    kw = {k:v for k,v in {'id':id, **_dir_attrs(meta), **attrs}.items() if v}
     return ft(typ, content, ft('out', out), attrmap=str, **kw) if out else ft(typ, content, attrmap=str, **kw)
 
 # %% ../nbs/13_nbio.ipynb #ca73be1c
@@ -505,7 +506,7 @@ def cell2xml(cell, ids=True, incl_out=True):
     "Convert NbCell to concise XML format"
     outputs = getattr(cell, 'outputs', None) if incl_out else None
     return item2xml(cell.cell_type, cell.source, render_text(outputs) if outputs else '', id=cell.id if ids else None,
-                    **_dir_attrs(cell.get('metadata')))
+                    meta=cell.get('metadata'))
 
 def cells2xml(cells, wrap=NB, ids=True, incl_out=True, **kw):
     "Convert notebook cells to XML format"

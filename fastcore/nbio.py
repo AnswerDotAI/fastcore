@@ -18,7 +18,7 @@ __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace',
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
-from .xtras import rtoken_hex,clean_cli_output,take_lines,str_diff
+from .xtras import rtoken_hex,clean_cli_output,take_lines,str_diff,truncstr
 from .imports import *
 from .ansi import ansi2html
 from .meta import delegates,splice_sig
@@ -314,16 +314,22 @@ def view_cell(
     start_line:int=1, # Starting line to view
     end_line:int=None, # End line (defaults to last line if None; may be past EOF, which clamps to the last line)
     nums:bool=True, # Show line numbers?
-    lnhashs:bool=False # Show exhash `lineno|hash|` addresses instead of line numbers?
+    lnhashs:bool=False, # Show exhash `lineno|hash|` addresses instead of line numbers?
+    incl_out:bool=False, # Append the cell's outputs in an `<out>` block?
+    trunc_out:bool=True # Truncate included outputs to ~512 chars?
 ):
     "View a cell's source, optionally limited to 1-based line range"
-    lines = _nb_cell(read_nb(path), cell_id).source.splitlines()
+    cell = _nb_cell(read_nb(path), cell_id)
+    lines = cell.source.splitlines()
     if not lines: return ''
     if end_line is None or end_line > len(lines): end_line = len(lines)
     if end_line < 0: end_line = len(lines)+end_line+1
     if not (1 <= start_line <= len(lines)): return f'error: Invalid start_line {start_line}. Valid range: 1-{len(lines)}'
     fmt = (lambda i,l: lnhash(i,l)+l) if lnhashs else (lambda i,l: f'{i}: {l}') if nums else (lambda i,l: l)
-    return PrettyString('\n'.join(fmt(i,l) for i,l in enumerate(lines[start_line-1:end_line], start_line)))
+    res = '\n'.join(fmt(i,l) for i,l in enumerate(lines[start_line-1:end_line], start_line))
+    if incl_out and (o := render_text(cell.get('outputs') or [])):
+        res += f"\n<out>\n{truncstr(o, 512) if trunc_out else o}\n</out>"
+    return PrettyString(res)
 
 # %% ../nbs/13_nbio.ipynb #86453c0f
 def validate_cell(cell, idx=None):
@@ -604,11 +610,15 @@ def move(self:Notebook, src_ids, after=None, before=None):
 
 # %% ../nbs/13_nbio.ipynb #e064c39e
 @patch
-def view_cell(self:Notebook, id, nums=True):
+def view_cell(self:Notebook, id, nums=True, incl_out=False, trunc_out=True):
     "Show cell source with optional line numbers"
-    lines = self[id].source.splitlines()
+    c = self[id]
+    lines = c.source.splitlines()
     if nums: lines = [f'{i+1:6d} │ {l}' for i,l in enumerate(lines)]
-    return '\n'.join(lines)
+    res = '\n'.join(lines)
+    if incl_out and (o := render_text(c.get('outputs') or [])):
+        res += f"\n<out>\n{truncstr(o, 512) if trunc_out else o}\n</out>"
+    return res
 
 # %% ../nbs/13_nbio.ipynb #804670bc
 class CellRow:

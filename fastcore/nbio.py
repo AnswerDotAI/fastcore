@@ -304,6 +304,9 @@ cell_replace_lines = cell_edit(replace_lines, 'cell_replace_lines')
 cell_del_lines = cell_edit(del_lines, 'cell_del_lines')
 cell_ast_replace = cell_edit(ast_replace, 'cell_ast_replace')
 
+# %% ../nbs/13_nbio.ipynb #283fa02e
+__pyskill_params__ = {'replace_params': ('start_line', 'end_line', 'n_matches', 're_filter', 'invert_filter', 'use_regex')}
+
 # %% ../nbs/13_nbio.ipynb #421b2b9c
 def view_cell(
     path:str, # Notebook file to read

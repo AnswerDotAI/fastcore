@@ -61,3 +61,5 @@ __all__ = ['insert_line', 'str_replace', 'strs_replace', 'replace_lines', 'del_l
     'view_file', 'create_file', 'line_hash', 'lnhash', 'lnhash_at',
     'read_nb', 'write_nb', 'new_nb', 'mk_cell', 'validate_nb', 'validate_cell', 'repair_nb', 'repair_cell',
     'view_cell', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines', 'cell_ast_replace', 'Notebook', 'NbCell', 'find_cells', 'summary_nb']
+
+__pyskill_params__ = {'replace_params': ('start_line', 'end_line', 'n_matches', 're_filter', 'invert_filter', 'use_regex')}

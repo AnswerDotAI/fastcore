@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.1.5
+
+### New Features
+
+- Add `__pyskill_params__` replace-params group and `nums` option to `view_file` ([#864](https://github.com/AnswerDotAI/fastcore/issues/864))
+
+
 ## 2.1.4
 
 ### New Features

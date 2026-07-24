@@ -6,7 +6,8 @@ Docs: https://fastcore.fast.ai/aio.html.md"""
 
 # %% auto #0
 __all__ = ['run_sync', 'iter_sync', 'ctx_sync', 'maybe_await', 'then', 'acache', 'CachedAwaitable', 'reawaitable',
-           'is_async_callable', 'to_aiter', 'maybe_aiter', 'mapa', 'noopa', 'Debounce', 'debounced', 'throttled']
+           'is_async_callable', 'to_aiter', 'maybe_aiter', 'mapa', 'noopa', 'Debounce', 'debounced', 'throttled',
+           'enable_async_magics', 'disable_async_magics']
 
 # %% ../nbs/03c_aio.ipynb #7e2193be
 import asyncio,threading
@@ -210,3 +211,39 @@ def debounced(wait, max_wait=None, leading=False, trailing=True):
 def throttled(wait, leading=False):
     "Decorator: fire at most once per `wait` secs (`Debounce` with `max_wait=wait`)"
     return debounced(wait, max_wait=wait, leading=leading)
+
+# %% ../nbs/03c_aio.ipynb #58511536
+import re
+_magic_re = re.compile(r'^((?:[\w.]+\s*=\s*)?)(get_ipython\(\)\.run_(?:line|cell)_magic\(.*)$', flags=re.M)
+
+def _await_magics(src):
+    "Wrap top-level magic calls in transformed source so results are awaited via the shell's `_amagic`"
+    return _magic_re.sub(r'\1await get_ipython()._amagic(\2)', src)
+
+def enable_async_magics(
+    ip,       # An `InteractiveShell`
+    fmt=None  # Optional post-await result transform, e.g. FT->HTML conversion
+):
+    "Let line and cell magics on `ip` be async: coroutine results are awaited. Idempotent per shell."
+    if hasattr(ip, '_amagic'): return
+    async def _amagic(res):
+        res = await maybe_await(res)
+        return res if fmt is None else fmt(res)
+    ip._amagic = _amagic
+    tm = ip.input_transformer_manager
+    orig = tm.transform_cell
+    def transform_cell(cell):
+        out = orig(cell)
+        return _await_magics(out) if hasattr(ip, '_amagic') else out
+    transform_cell._orig = orig
+    tm.transform_cell = transform_cell
+
+def disable_async_magics(
+    ip  # An `InteractiveShell` previously passed to `enable_async_magics`
+):
+    "Undo `enable_async_magics` on `ip`"
+    if not hasattr(ip, '_amagic'): return
+    del ip._amagic
+    tm = ip.input_transformer_manager
+    t = tm.__dict__.get('transform_cell')
+    if t is not None and hasattr(t, '_orig'): tm.transform_cell = t._orig

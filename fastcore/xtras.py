@@ -1091,13 +1091,13 @@ def flexiclass(
 def asdict(o)->dict:
     "Convert `o` to a `dict`, supporting dataclasses, namedtuples, iterables, and `__dict__` attrs."
     if isinstance(o, dict): return o
+    r = None
     if hasattr(o, '_asdict'): r = o._asdict()
     elif is_dataclass(o): r = dataclasses.asdict(o)
     elif hasattr(o, '__iter__'):
         try: r = dict(o)
         except TypeError: pass
-    elif hasattr(o, '__flds__'): r = {x:getattr(o,x) for x in o.__flds__}
-    else: r = vars(o)
+    if r is None: r = {x:getattr(o,x) for x in o.__flds__} if hasattr(o, '__flds__') else vars(o)
     skip = set(getattr(o, '__skip__', []))
     return {k:v for k,v in r.items() if v is not UNSET and v is not MISSING and k not in skip}
 

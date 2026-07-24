@@ -1,6 +1,6 @@
 """Text and file editing primitives shared by the fastai editing tools
 
-The editors here are string-level: each takes `text` plus edit parameters and returns the new text, raising `ValueError` when an edit can't apply. The file tools below wrap them with path I/O and diff reporting; message-level wrappers live in llmsurgery. (This module previously held experimental LLM path-editing and command tools, superseded by safecmd, rgapi, and the tools here.) Naming, parameter, and workflow conventions for the whole editing toolkit, this module included, are documented in `fastcore.editskill`, which also re-exports these tools alongside `fastcore.nbio`'s.
+The editors here are string-level: each takes `text` plus edit parameters and returns the new text, raising `ValueError` when an edit can't apply. The file tools below wrap them with path I/O and diff reporting; message-level wrappers live in aidialog. (This module previously held experimental LLM path-editing and command tools, superseded by safecmd, rgapi, and the tools here.) Naming, parameter, and workflow conventions for the whole editing toolkit, this module included, are documented in `fastcore.editskill`, which also re-exports these tools alongside `fastcore.nbio`'s.
 
 `line_hash`, `lnhash`, and `lnhash_at` implement the [exhash](https://answerdotai.github.io/exhash) line-address format in pure Python: `lineno|hash|`, where the hash is 4 hex chars of crc32. They let any tool create lnhash-addressed views of text it holds, without depending on the exhash package.
 
@@ -85,6 +85,9 @@ def str_replace(
         return ''.join(lines)
     return _repl(text)
 
+# %% ../nbs/12_tools.ipynb #15e1f6e9
+__pyskill_params__ = {'replace_params': ('start_line', 'end_line', 'n_matches', 're_filter', 'invert_filter', 'use_regex')}
+
 # %% ../nbs/12_tools.ipynb #e9c8cbcc
 def strs_replace(
     text:str,
@@ -168,7 +171,8 @@ def view_file(
     path:str, # Path to view (expands `~` if needed)
     start_line:int=1, # Starting line to view
     end_line:int=None, # End line (defaults to last line if None; may be past EOF, which clamps to the last line - handy when the file size is unknown)
-    lnhashs:bool=False # Prefix `lineno|hash|` exhash addresses instead of `lineno: `
+    nums:bool=True, # Show line numbers?
+    lnhashs:bool=False # Show exhash `lineno|hash|` addresses instead of line numbers?
 ):
     "Read file contents, optionally limited to 1-based line range"
     path = Path(path).expanduser()
@@ -178,7 +182,8 @@ def view_file(
     if end_line < 0: end_line = len(lines)+end_line+1
     if not (1 <= start_line <= len(lines)): return f'error: Invalid start_line {start_line}. Valid range: 1-{len(lines)}'
     if end_line > len(lines): end_line = len(lines)
-    return PrettyString('\n'.join((lnhash(i,l) if lnhashs else f'{i}: ')+l for i,l in enumerate(lines[start_line-1:end_line], start_line)))
+    fmt = (lambda i,l: lnhash(i,l)+l) if lnhashs else (lambda i,l: f'{i}: {l}') if nums else (lambda i,l: l)
+    return PrettyString('\n'.join(fmt(i,l) for i,l in enumerate(lines[start_line-1:end_line], start_line)))
 
 # %% ../nbs/12_tools.ipynb #424d09e1
 def create_file(

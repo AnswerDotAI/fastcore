@@ -55,7 +55,11 @@ def _arg_kw(k, anno, doc, default, extra):
     if opt is None: opt = d is not inspect.Parameter.empty
     kw['help'] = (doc or '') + (f" (default: {kw['default']})" if 'default' in kw else '')
     if negated: kw['dest'] = k
-    return f"{'--' if opt else ''}{f'no-{k}' if negated else k}", {**kw, **extra}
+    name = f'no-{k}' if negated else k
+    short = first(c for c in k if c.isupper()) if opt else None
+    if short is None: return f"{'--' if opt else ''}{name}", {**kw, **extra}
+    kw['dest'] = k  # flags are lowercased, so argparse's derived dest would drop the capital
+    return (f'-{short.lower()}', f'--{name.lower()}'), {**kw, **extra}
 
 # %% ../nbs/06_script.ipynb #cceb4486
 class _HelpFormatter(argparse.HelpFormatter):
@@ -91,7 +95,7 @@ def anno_parser(func, prog:str=None):
         extra = next((o for o in meta if isinstance(o,dict)), {})
         anno = _union_type(anno) or anno
         name,kw = _arg_kw(k, anno, v.docment, v.default, extra)
-        p.add_argument(name, **kw)
+        p.add_argument(*tuplify(name), **kw)
     p.add_argument(f"--pdb", help=argparse.SUPPRESS, action='store_true')
     p.add_argument(f"--xtra", help=argparse.SUPPRESS, type=str)
     return p

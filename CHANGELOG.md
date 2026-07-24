@@ -2,6 +2,19 @@
 
 <!-- do not remove -->
 
+## 2.1.6
+
+### New Features
+
+- Add async IPython magic support, short flags from capital letters in script params ([#868](https://github.com/AnswerDotAI/fastcore/issues/868))
+- Add `incl_out`/`trunc_out` params to `view_cell` to optionally append rendered cell outputs ([#865](https://github.com/AnswerDotAI/fastcore/issues/865))
+
+### Bugs Squashed
+
+- Fix CI: `start_server` host mismatch in port test; add remold to dev deps ([#867](https://github.com/AnswerDotAI/fastcore/pull/867)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+- Fix asdict UnboundLocalError for iterables of non-pairs ([#866](https://github.com/AnswerDotAI/fastcore/pull/866)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+
+
 ## 2.1.5
 
 ### New Features

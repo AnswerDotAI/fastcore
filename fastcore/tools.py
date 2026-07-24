@@ -1,6 +1,6 @@
 """Text and file editing primitives shared by the fastai editing tools
 
-The editors here are string-level: each takes `text` plus edit parameters and returns the new text, raising `ValueError` when an edit can't apply. The file tools below wrap them with path I/O and diff reporting; message-level wrappers live in llmsurgery. (This module previously held experimental LLM path-editing and command tools, superseded by safecmd, rgapi, and the tools here.) Naming, parameter, and workflow conventions for the whole editing toolkit, this module included, are documented in `fastcore.editskill`, which also re-exports these tools alongside `fastcore.nbio`'s.
+The editors here are string-level: each takes `text` plus edit parameters and returns the new text, raising `ValueError` when an edit can't apply. The file tools below wrap them with path I/O and diff reporting; message-level wrappers live in aidialog. (This module previously held experimental LLM path-editing and command tools, superseded by safecmd, rgapi, and the tools here.) Naming, parameter, and workflow conventions for the whole editing toolkit, this module included, are documented in `fastcore.editskill`, which also re-exports these tools alongside `fastcore.nbio`'s.
 
 `line_hash`, `lnhash`, and `lnhash_at` implement the [exhash](https://answerdotai.github.io/exhash) line-address format in pure Python: `lineno|hash|`, where the hash is 4 hex chars of crc32. They let any tool create lnhash-addressed views of text it holds, without depending on the exhash package.
 

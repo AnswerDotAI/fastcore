@@ -1,10 +1,10 @@
 """Text, file, cell, and notebook editing from `fastcore.tools` and `fastcore.nbio`, plus the conventions the whole fastai editing toolkit follows. Read this before working with the editing tools in any package that shares them.
 
-`from fastcore.editskill import *` loads the fastcore editing layer: the text primitives and file tools of `fastcore.tools`, and the notebook I/O and cell editors of `fastcore.nbio`. Sibling packages extend the same toolkit, and where they are installed prefer them as noted: `exhash` for hash-verified editing, `rgapi` for search, `llmsurgery`/`dialoghelper` for dialogs.
+`from fastcore.editskill import *` loads the fastcore editing layer: the text primitives and file tools of `fastcore.tools`, and the notebook I/O and cell editors of `fastcore.nbio`. Sibling packages extend the same toolkit, and where they are installed prefer them as noted: `exhash` for hash-verified editing, `rgapi` for search, `aidialog`/`dialoghelper` for dialogs.
 
 ## Carriers
 
-Each editing function works on one carrier: text (a str in memory), a file (a path on disk), a cell (one cell's source in an .ipynb file, addressed by `path, cell_id`), or a notebook (the parsed .ipynb; `Notebook` and `NbCell` are its held-object forms). These are the representation layer: an .ipynb is a file of cells, whatever produced it. The dialog layer above adds the msg and dlg carriers: a Solveit dialog is an .ipynb whose cells are messages (notes, runnable code, prompt/reply pairs), and `llmsurgery.dlgskill` and `dialoghelper` provide the message tools, following the conventions here with their own nouns. The word picks the layer: cell tools answer representation questions ("why does Jupyter reject this file?"), msg tools answer content questions ("what does this message say?").
+Each editing function works on one carrier: text (a str in memory), a file (a path on disk), a cell (one cell's source in an .ipynb file, addressed by `path, cell_id`), or a notebook (the parsed .ipynb; `Notebook` and `NbCell` are its held-object forms). These are the representation layer: an .ipynb is a file of cells, whatever produced it. The dialog layer above adds the msg and dlg carriers: a Solveit dialog is an .ipynb whose cells are messages (notes, runnable code, prompt/reply pairs), and `aidialog.dlgskill` and `dialoghelper` provide the message tools, following the conventions here with their own nouns. The word picks the layer: cell tools answer representation questions ("why does Jupyter reject this file?"), msg tools answer content questions ("what does this message say?").
 
 ## Naming
 
@@ -13,7 +13,7 @@ Two name shapes cover the toolkit, and the pivot is the verb's direct object:
 - An operation on a whole carrier takes the carrier as its noun: verb_carrier. `view_file`, `create_file`, `read_nb`, `write_nb`, `view_cell`, `validate_nb`; in the dialog layer `view_msg` and `view_dlg`. Coined verbs follow the same shape: `lnhashview_cell` is "lnhashview this cell". When the verb's object is instead the medium's unit, and that unit names its carrier uniquely, no prefix is needed - the unit noun is the carrier signal: `find_msgs`, `add_msg`, `del_msgs` (msgs live only in dialogs), `find_cells`, `summary_nb`'s rows (cells live only in notebooks).
 - An operation within a carrier already owns its noun (`insert_line`, `del_lines`, `replace_lines`, `str_replace`), so the carrier prefixes as a namespace and the op name survives intact: carrier_op, as in `file_del_lines`, `cell_del_lines`, `msg_del_lines`. The bare op names are the text-level primitives, and every carrier version keeps the identical signature after its address arguments, so each family is learned once and recognized everywhere.
 
-The exceptions are deliberate and closed. `str_replace` keeps the name and argument order established by Anthropic's text editor tool. Instrument-named ops put the instrument first and elide their unit: `ast_replace` (the AST pattern is how the edit finds its target) and `exhash` (hash-verified line addresses travel inside its commands), carrier-prefixed like any other line-level op: `file_ast_replace`, `msg_ast_replace`, `file_exhash`, `cell_exhash`. Converters are named x2y (`nb2dict`, `cell2xml`; in llmsurgery, `dlg` on exactly one side of every converter), and on a held object the converter is a `to_y` method (`nb.to_dict()`). Plural marks arity: `view_cell` takes one cell, `lnhashview_cells` several, `del_msgs` many.
+The exceptions are deliberate and closed. `str_replace` keeps the name and argument order established by Anthropic's text editor tool. Instrument-named ops put the instrument first and elide their unit: `ast_replace` (the AST pattern is how the edit finds its target) and `exhash` (hash-verified line addresses travel inside its commands), carrier-prefixed like any other line-level op: `file_ast_replace`, `msg_ast_replace`, `file_exhash`, `cell_exhash`. Converters are named x2y (`nb2dict`, `cell2xml`; in aidialog, `dlg` on exactly one side of every converter), and on a held object the converter is a `to_y` method (`nb.to_dict()`). Plural marks arity: `view_cell` takes one cell, `lnhashview_cells` several, `del_msgs` many.
 
 ## Parameters
 
@@ -36,7 +36,7 @@ Every operation has two shapes with one contract each. The function is a transac
 
 Edits say where with line numbers or lnhash addresses. Take addresses from the read you were already doing instead of with a second look: views accept `nums=True` or `lnhashs=True`, and searches return addresses directly (`rg(lnhashs=True)`). Prefer lnhash addresses whenever `exhash` is installed: they are verified against current content at edit time, so a stale address fails loudly instead of editing nearby text, which is exactly what makes taking addresses early safe. Plain line numbers are unverified and shift as edits apply, so re-view after each edit and apply multi-edits bottom-to-top. `exhash.skill` owns the address format and the verified editor.
 
-When you don't yet know where to edit, locate with a summary first: `rgapi`'s `rg(summary=True)` and `nbrg`, and llmsurgery's `summary_dlg`, each show one line per natural unit of their medium (block, cell, message), carrying the unit's address. Summaries locate, views read, addresses edit, diffs confirm.
+When you don't yet know where to edit, locate with a summary first: `rgapi`'s `rg(summary=True)` and `nbrg`, and aidialog's `summary_dlg`, each show one line per natural unit of their medium (block, cell, message), carrying the unit's address. For prose, config, and other paragraph-shaped text, blocks are usually the right unit for reading too: one summary row shows the whole matched paragraph with its boundary addresses, where a line-mode hit shows a fragment that then needs a context view. Summaries locate, views read, addresses edit, diffs confirm.
 
 ## What's where
 
@@ -45,7 +45,7 @@ When you don't yet know where to edit, locate with a summary first: `rgapi`'s `r
 - `exhash.skill`: hash-verified editing for files and cells; prefer it for edits where installed.
 - `rgapi.skill`: `rg`/`fd`/`ls`/`nbrg` search with lnhash output.
 - `remold`: structural search and rewrite for Python source (declarative ast-grep rules, LibCST matcher transforms, symbol queries); the engine behind `ast_replace`.
-- `llmsurgery.dlgskill`, `dialoghelper`: the dialog layer, including its own theory of dialogs and projections.
+- `aidialog.dlgskill`, `dialoghelper`: the dialog layer, including its own theory of dialogs and projections.
 
 Docs: https://fastcore.fast.ai/tools.html.md and https://fastcore.fast.ai/nbio.html.md
 """

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.1.7
+
+### New Features
+
+- Add `pos` parameter to `call_parse` and `anno_parser` to make named function params positional CLI args ([#869](https://github.com/AnswerDotAI/fastcore/issues/869))
+
+
 ## 2.1.6
 
 ### New Features

@@ -1,4 +1,10 @@
-"""A fast way to turn your python function into a script.
+"""Creates a CLI from a Python function decorated with `call_parse`.
+
+The function's parameters become the script's arguments, its docstring becomes the program description, and its [docments](https://fastcore.fast.ai/docments.html) comments become the help for each argument. Parameters without a default are positional, and parameters with one become flags, unless `call_parse(pos=[...])` names them as positional too. A capital letter in a parameter's name also declares a short flag, so `Resume:int=None` has both `-r` and `--resume`, and keeps `Resume` as its name in Python.
+
+A `bool` parameter is a `store_true` flag defaulting to `False`. If its default is `True` it becomes a `--no-` prefixed `store_false` flag instead. Use `bool_arg` when you want a `--flag true|false` argument. Union types such as `int|str` try each type in turn, and `enum` types such as those from `str_enum` become argparse choices. Anything docments can't express goes in an `Annotated[type, "help", dict(...)]` annotation, whose `opt`, `action`, `nargs`, `const`, `choices`, `required`, and `version` keys are passed to argparse.
+
+A decorated function is always the CLI entry point, but only the entry point reads `sys.argv`. It is parsed when the function's file is run directly (`python foo.py`, `python -m foo`, or `%run`), and when the function is called with no arguments from the top level of such a file, which is how `console_scripts` wrappers invoke it. Every other call ignores argv and behaves as an ordinary Python call, whether from a notebook, the REPL, or another function. `is_cli()` tells the function which way it was invoked, so it can print a result on the command line and return it to Python callers.
 
 Docs: https://fastcore.fast.ai/script.html.md"""
 
@@ -87,12 +93,15 @@ def _union_type(t):
     return _union_parser(get_args(t))
 
 # %% ../nbs/06_script.ipynb #5e5bea67
-def anno_parser(func, prog:str=None):
+def anno_parser(func, prog:str=None, pos:list=None):
     "Look at params (with type/docments/`Annotated` annotations) in func and return an `ArgumentParser`"
     p = argparse.ArgumentParser(description=func.__doc__, prog=prog, formatter_class=_HelpFormatter)
     for k,v in docments(func, full=True, returns=False, eval_str=True).items():
         anno,meta = ann_parts(v.anno)
         extra = next((o for o in meta if isinstance(o,dict)), {})
+        if pos and k in pos:
+            if anno in (bool,store_true,store_false): raise ValueError(f"positional param {k!r} can't be a bool: a flag takes no value")
+            extra = merge({'opt':False}, {'nargs':'?'} if v.default is not inspect.Parameter.empty else {}, extra)
         anno = _union_type(anno) or anno
         name,kw = _arg_kw(k, anno, v.docment, v.default, extra)
         p.add_argument(*tuplify(name), **kw)
@@ -137,11 +146,11 @@ def _is_script_run(frame):
 # %% ../nbs/06_script.ipynb #dee5e259
 _cli_func = ContextVar('_cli_func', default=None)
 
-def _run_cli(func, nested):
+def _run_cli(func, nested, pos=None):
     "Parse `sys.argv` with `anno_parser` and call `func` with the result"
     with set_ctx(_cli_func, func):
         if len(sys.argv)>1 and sys.argv[1]=='': sys.argv.pop(1)
-        p = anno_parser(func)
+        p = anno_parser(func, pos=pos)
         if nested: args, sys.argv[1:] = p.parse_known_args()
         else: args = p.parse_args()
         args = args.__dict__
@@ -150,19 +159,19 @@ def _run_cli(func, nested):
         res = tfunc(**merge(args, args_from_prog(func, xtra)))
         return asyncio.run(res) if inspect.isawaitable(res) else res
 
-def call_parse(func=None, nested=False):
+def call_parse(func=None, nested=False, pos:list=None):
     "Decorator to create a simple CLI from `func` using `anno_parser`"
-    if func is None: return partial(call_parse, nested=nested)
+    if func is None: return partial(call_parse, nested=nested, pos=pos)
     @wraps(func)
     def _f(*args, **kwargs):
         if args or kwargs or _cli_func.get() is not None: return func(*args, **kwargs)
-        if _is_script_run(inspect.currentframe().f_back): return _run_cli(func, nested)
+        if _is_script_run(inspect.currentframe().f_back): return _run_cli(func, nested, pos)
         with set_ctx(_cli_func, False): return func(*args, **kwargs)
 
     frame = inspect.currentframe().f_back
     if _is_script_run(frame):
         frame.f_globals[func.__name__] = _f
-        return _run_cli(func, nested)
+        return _run_cli(func, nested, pos)
     else: return _f
 
 # %% ../nbs/06_script.ipynb #f4961093

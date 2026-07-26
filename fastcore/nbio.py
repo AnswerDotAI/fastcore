@@ -332,18 +332,39 @@ def view_cell(
     return PrettyString(res)
 
 # %% ../nbs/13_nbio.ipynb #86453c0f
+def _is_text(x):
+    "Is `x` a valid nbformat multiline string: str, or list of str?"
+    return isinstance(x,str) or (isinstance(x,list) and all(isinstance(o,str) for o in x))
+
+def _output_err(o):
+    "Error message for structural problems in code cell output `o`, or None if fine"
+    if not isinstance(o, dict): return "output must be a dict"
+    ot = o.get('output_type')
+    if ot=='stream':
+        if not isinstance(o.get('name'), str): return "stream requires a str name"
+        if not _is_text(o.get('text')): return "stream requires text"
+    elif ot in ('display_data','execute_result'):
+        if not isinstance(o.get('data'), dict): return f"{ot} requires a data dict"
+        if not isinstance(o.get('metadata'), dict): return f"{ot} requires a metadata dict"
+        if ot=='execute_result' and ('execution_count' not in o or not (o['execution_count'] is None or isinstance(o['execution_count'], int))):
+            return "execute_result requires an int or None execution_count"
+    elif ot=='error':
+        if not (isinstance(o.get('ename'), str) and isinstance(o.get('evalue'), str)): return "error requires str ename and evalue"
+        if not (isinstance(o.get('traceback'), list) and _is_text(o.get('traceback'))): return "error requires a traceback list of str"
+    else: return f"unknown output_type {ot!r}"
+
 def validate_cell(cell, idx=None):
     "Raise `ValueError` for structural problems in notebook cell dict `cell`; returns it unchanged if fine"
     where = f"cell {cell.get('id', idx)}"
     ct = cell.get('cell_type')
     if ct not in ('code','markdown','raw'): raise ValueError(f"{where}: unknown cell_type {ct!r}")
-    src = cell.get('source', '')
-    if not (isinstance(src,str) or (isinstance(src,list) and all(isinstance(o,str) for o in src))):
-        raise ValueError(f"{where}: source must be str or list of str")
+    if not _is_text(cell.get('source', '')): raise ValueError(f"{where}: source must be str or list of str")
     if not isinstance(cell.get('metadata', {}), dict): raise ValueError(f"{where}: metadata must be a dict")
     if ct=='code':
         if not isinstance(cell.get('outputs'), list): raise ValueError(f"{where}: code cell requires an outputs list")
         if 'execution_count' not in cell: raise ValueError(f"{where}: code cell requires execution_count")
+        for j,o in enumerate(cell['outputs']):
+            if msg := _output_err(o): raise ValueError(f"{where} output {j}: {msg}")
     elif k := first(k for k in ('outputs','execution_count') if k in cell): raise ValueError(f"{where}: {k} not allowed in a {ct} cell")
     return cell
 
@@ -360,7 +381,7 @@ def repair_cell(cell, idx=None):
     "Fix deterministic structural problems in `cell`, returning a list of repairs made"
     res,where = [],f"cell {cell.get('id', idx)}"
     src = cell.get('source', '')
-    if not (isinstance(src,str) or (isinstance(src,list) and all(isinstance(o,str) for o in src))):
+    if not _is_text(src):
         cell['source'] = ''.join(map(str, listify(src)))
         res.append(f"{where}: coerced source to text")
     if not isinstance(cell.get('metadata', {}), dict):
@@ -373,6 +394,19 @@ def repair_cell(cell, idx=None):
         if 'execution_count' not in cell:
             cell['execution_count'] = None
             res.append(f"{where}: added execution_count")
+        outs = []
+        for j,o in enumerate(cell['outputs']):
+            if isinstance(o, dict):
+                ot = o.get('output_type')
+                if ot in ('display_data','execute_result') and not isinstance(o.get('metadata'), dict):
+                    o['metadata'] = {}
+                    res.append(f"{where} output {j}: set metadata")
+                if ot=='execute_result' and ('execution_count' not in o or not (o['execution_count'] is None or isinstance(o['execution_count'], int))):
+                    o['execution_count'] = None
+                    res.append(f"{where} output {j}: set execution_count")
+            if msg := _output_err(o): res.append(f"{where} output {j}: removed output ({msg})")
+            else: outs.append(o)
+        cell['outputs'] = outs
     else:
         for k in ('outputs','execution_count'):
             if k in cell:

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.1.9
+
+### New Features
+
+- Add `fenced` to wrap text in a code fence longer than any run of the fence char ([#871](https://github.com/AnswerDotAI/fastcore/issues/871))
+
+
 ## 2.1.8
 
 ### New Features

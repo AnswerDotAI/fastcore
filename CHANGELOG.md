@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.1.8
+
+### New Features
+
+- Add Path.`read_jsonl` for parsing newline-delimited JSON files with line-numbered error reporting ([#870](https://github.com/AnswerDotAI/fastcore/issues/870))
+
+
 ## 2.1.7
 
 ### New Features

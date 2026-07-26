@@ -2,6 +2,34 @@
 
 <!-- do not remove -->
 
+## 2.1.10
+
+### New Features
+
+- Add structural validation and repair for code cell outputs (`output_type`, data, metadata, traceback) ([#872](https://github.com/AnswerDotAI/fastcore/issues/872))
+
+
+## 2.1.9
+
+### New Features
+
+- Add `fenced` to wrap text in a code fence longer than any run of the fence char ([#871](https://github.com/AnswerDotAI/fastcore/issues/871))
+
+
+## 2.1.8
+
+### New Features
+
+- Add Path.`read_jsonl` for parsing newline-delimited JSON files with line-numbered error reporting ([#870](https://github.com/AnswerDotAI/fastcore/issues/870))
+
+
+## 2.1.7
+
+### New Features
+
+- Add `pos` parameter to `call_parse` and `anno_parser` to make named function params positional CLI args ([#869](https://github.com/AnswerDotAI/fastcore/issues/869))
+
+
 ## 2.1.6
 
 ### New Features

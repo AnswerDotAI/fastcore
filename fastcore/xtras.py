@@ -13,10 +13,11 @@ __all__ = ['UNSET', 'spark_chars', 'walk_join', 'walk', 'exttypes', 'globtastic'
            'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'frontmatter',
            'clean_cli_output', 'unqid', 'rtoken_hex', 'friendly_name', 'n_friendly_names', 'exec_eval',
            'get_source_link', 'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file',
-           'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'str_diff',
-           'utc2local', 'local2utc', 'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md',
-           'type2str', 'dataclass_src', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub',
-           'is_typeddict', 'is_namedtuple', 'CachedIter', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
+           'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'fenced',
+           'str_diff', 'utc2local', 'local2utc', 'trace', 'modified_env', 'ContextManagers', 'shufflish',
+           'console_help', 'hl_md', 'type2str', 'dataclass_src', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict',
+           'vars_pub', 'is_typeddict', 'is_namedtuple', 'CachedIter', 'flexicache', 'time_policy', 'mtime_policy',
+           'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb #3401d507
 from .imports import *
@@ -585,6 +586,15 @@ def read_json(self:Path, encoding=None, errors=None):
     "Same as `read_text` followed by `loads`"
     return loads(self.read_text(encoding=encoding, errors=errors))
 
+# %% ../nbs/03_xtras.ipynb #69a6fa3a
+@patch
+def read_jsonl(self:Path, encoding=None, errors=None):
+    "Parse newline-delimited JSON, returning one object per line"
+    def _load(i,l):
+        try: return loads(l)
+        except ValueError as e: raise ValueError(f'{self}:{i}: {e}') from e
+    with self.open(encoding=encoding, errors=errors) as f: return [_load(i,l) for i,l in enumerate(f,1)]
+
 # %% ../nbs/03_xtras.ipynb #d6d8d893
 @patch
 def mk_write(self:Path, data, encoding=None, errors=None, mode=511, uid=-1, gid=-1):
@@ -947,6 +957,13 @@ def truncstr(s:str, maxlen:int, suf:str='…', space='', sizevar:str=None)->str:
     "Truncate `s` to length `maxlen`, adding suffix `suf` if truncated"
     if sizevar: suf = suf.format_map({sizevar: len(s)})
     return s[:maxlen-len(suf)]+suf if len(s)+len(space)>maxlen else s+space
+
+# %% ../nbs/03_xtras.ipynb #2f5e6b12
+def fenced(text:str, info:str='', ch:str='`')->str:
+    "Wrap `text` in a fence of `ch`, one char longer than any run of `ch` inside it (min 3)"
+    fence = ch*max(3, 1+max(map(len, re.findall(re.escape(ch)+'+', text)), default=0))
+    body = text.rstrip('\n')
+    return f'{fence}{info}\n{body}\n{fence}'
 
 # %% ../nbs/03_xtras.ipynb #273a90fd
 def str_diff(

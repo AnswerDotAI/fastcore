@@ -14,10 +14,10 @@ __all__ = ['UNSET', 'spark_chars', 'walk_join', 'walk', 'exttypes', 'globtastic'
            'clean_cli_output', 'unqid', 'rtoken_hex', 'friendly_name', 'n_friendly_names', 'exec_eval',
            'get_source_link', 'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file',
            'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'fenced',
-           'str_diff', 'utc2local', 'local2utc', 'trace', 'modified_env', 'ContextManagers', 'shufflish',
-           'console_help', 'hl_md', 'type2str', 'dataclass_src', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict',
-           'vars_pub', 'is_typeddict', 'is_namedtuple', 'CachedIter', 'flexicache', 'time_policy', 'mtime_policy',
-           'timed_cache']
+           'fenced_blocks', 'str_diff', 'utc2local', 'local2utc', 'trace', 'modified_env', 'ContextManagers',
+           'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src', 'nullable_dc', 'make_nullable',
+           'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple', 'CachedIter', 'flexicache',
+           'time_policy', 'mtime_policy', 'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb #3401d507
 from .imports import *
@@ -964,6 +964,25 @@ def fenced(text:str, info:str='', ch:str='`')->str:
     fence = ch*max(3, 1+max(map(len, re.findall(re.escape(ch)+'+', text)), default=0))
     body = text.rstrip('\n')
     return f'{fence}{info}\n{body}\n{fence}'
+
+# %% ../nbs/03_xtras.ipynb #a914f01a
+def fenced_blocks(text:str, # Markdown text to scan
+                  ch:str='`' # Fence character
+                 )->list: # `(info, body, start, end)` per block; `start`/`end` are char offsets of the whole block
+    "Top-level fenced blocks in `text`, fence-nesting-aware: the inverse of `fenced`"
+    res,fence,info,body,bstart = [],None,None,None,None
+    pos = 0
+    for line in text.splitlines(keepends=True):
+        t = line.rstrip('\n')
+        run = len(t) - len(t.lstrip(ch)) if t.startswith(ch) else 0
+        if fence is None:
+            if run>=3: fence,info,body,bstart = run,t[run:].strip(),[],pos
+        elif run>=fence and not t[run:].strip(): 
+            res.append((info, ''.join(body), bstart, pos+len(line)))
+            fence = None
+        else: body.append(line)
+        pos += len(line)
+    return res
 
 # %% ../nbs/03_xtras.ipynb #273a90fd
 def str_diff(

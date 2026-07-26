@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.1.11
+
+### New Features
+
+- Add `fenced_blocks` to extract top-level, fence-nesting-aware code blocks from markdown text ([#873](https://github.com/AnswerDotAI/fastcore/issues/873))
+
+
 ## 2.1.10
 
 ### New Features

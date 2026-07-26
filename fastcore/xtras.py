@@ -585,6 +585,15 @@ def read_json(self:Path, encoding=None, errors=None):
     "Same as `read_text` followed by `loads`"
     return loads(self.read_text(encoding=encoding, errors=errors))
 
+# %% ../nbs/03_xtras.ipynb #69a6fa3a
+@patch
+def read_jsonl(self:Path, encoding=None, errors=None):
+    "Parse newline-delimited JSON, returning one object per line"
+    def _load(i,l):
+        try: return loads(l)
+        except ValueError as e: raise ValueError(f'{self}:{i}: {e}') from e
+    with self.open(encoding=encoding, errors=errors) as f: return [_load(i,l) for i,l in enumerate(f,1)]
+
 # %% ../nbs/03_xtras.ipynb #d6d8d893
 @patch
 def mk_write(self:Path, data, encoding=None, errors=None, mode=511, uid=-1, gid=-1):

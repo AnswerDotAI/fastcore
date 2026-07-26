@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.1.10
+
+### New Features
+
+- Add structural validation and repair for code cell outputs (`output_type`, data, metadata, traceback) ([#872](https://github.com/AnswerDotAI/fastcore/issues/872))
+
+
 ## 2.1.9
 
 ### New Features

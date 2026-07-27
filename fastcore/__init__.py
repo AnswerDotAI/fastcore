@@ -37,12 +37,21 @@ test_eq(x.unique(), [1,2,3,4,5])
 
 Modules:
 
+- `fastcore.aio`: Bridging async and sync code: `run_sync`, `iter_sync`, `ctx_sync`, `maybe_await`, and `then`
 - `fastcore.basics`: Basic functionality used in the fastai library
+- `fastcore.docments`: Document parameters using comments.
 - `fastcore.editskill`: Text, file, cell, and notebook editing from `fastcore.tools` and `fastcore.nbio`, plus the conventions the whole fastai editing toolkit follows. Read this before working with the editing tools in any package that shares them.
 - `fastcore.foundation`: The `L` class and helpers for it
+- `fastcore.meta`: Metaclasses
 - `fastcore.nbio`: Reading and writing Jupyter notebooks
+- `fastcore.net`: Network, HTTP, and URL functions
+- `fastcore.parallel`: Threading and multiprocessing functions
 - `fastcore.script`: Creates a CLI from a Python function decorated with `call_parse`.
+- `fastcore.style`: Fast styling for friendly CLIs.
 - `fastcore.test`: Helper functions to quickly write tests in notebooks
-- `fastcore.tools`: Text and file editing primitives shared by the fastai editing tools"""
+- `fastcore.tools`: Text and file editing primitives shared by the fastai editing tools
+- `fastcore.xdg`: XDG Base Directory Specification helpers.
+- `fastcore.xml`: Concise generation of XML.
+- `fastcore.xtras`: Utility functions used in the fastai library"""
 
 __version__ = "2.1.13"

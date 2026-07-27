@@ -1,10 +1,97 @@
 """Creates a CLI from a Python function decorated with `call_parse`.
 
-The function's parameters become the script's arguments, its docstring becomes the program description, and its [docments](https://fastcore.fast.ai/docments.html) comments become the help for each argument. Parameters without a default are positional, and parameters with one become flags, unless `call_parse(pos=[...])` names them as positional too. A capital letter in a parameter's name also declares a short flag, so `Resume:int=None` has both `-r` and `--resume`, and keeps `Resume` as its name in Python.
+The function's parameters become the script's arguments, its docstring becomes the program description, and its [docments](https://fastcore.fast.ai/docments.html) comments become the help for each argument.
 
-A `bool` parameter is a `store_true` flag defaulting to `False`. If its default is `True` it becomes a `--no-` prefixed `store_false` flag instead. Use `bool_arg` when you want a `--flag true|false` argument. Union types such as `int|str` try each type in turn, and `enum` types such as those from `str_enum` become argparse choices. Anything docments can't express goes in an `Annotated[type, "help", dict(...)]` annotation, whose `opt`, `action`, `nargs`, `const`, `choices`, `required`, and `version` keys are passed to argparse.
+Here's a complete example (`examples/test_fastcore.py` in the fastcore repo):
 
-A decorated function is always the CLI entry point, but only the entry point reads `sys.argv`. It is parsed when the function's file is run directly (`python foo.py`, `python -m foo`, or `%run`), and when the function is called with no arguments from the top level of such a file, which is how `console_scripts` wrappers invoke it. Every other call ignores argv and behaves as an ordinary Python call, whether from a notebook, the REPL, or another function. `is_cli()` tells the function which way it was invoked, so it can print a result on the command line and return it to Python callers.
+```python
+from fastcore.script import *
+@call_parse
+def main(
+    msg:str, # The message
+    upper:bool # Convert to uppercase?
+):
+    "Print `msg`, optionally converting to uppercase"
+    print(msg.upper() if upper else msg)
+```
+
+Copy that into a file and run it, and you get a CLI with help, defaults, and error handling, with no `if __name__ == "__main__"` or argument parsing code:
+
+```
+$ examples/test_fastcore.py --help
+usage: test_fastcore.py [-h] [--upper] msg
+
+Print `msg`, optionally converting to uppercase
+
+positional arguments:
+  msg         The message
+
+options:
+  -h, --help  show this help message and exit
+  --upper     Convert to uppercase? (default: False)
+```
+
+The function is still a plain Python function too, so it can also be called normally, e.g from a REPL such as Jupyter.
+
+## Annotated params
+
+For `argparse` features that docments can't express, use `typing.Annotated` type hints instead of plain types:
+
+```python
+from fastcore.script import *
+from typing import Annotated
+@call_parse
+def main(msg:Annotated[str, "The message"],
+         upper:Annotated[store_true, "Convert to uppercase?"]):
+    "Print `msg`, optionally converting to uppercase"
+    print(msg.upper() if upper else msg)
+```
+
+The first element of `Annotated` is the parameter's type, and the first string in its metadata is its help. A `dict` in the metadata passes extra arguments to argparse: its keys can be `opt`, `action`, `nargs`, `const`, `choices`, `required`, and `version`. All but `opt` go straight to `add_argument`; `opt` is a bool that overrides whether the param is a flag or positional, which is normally inferred from whether it has a default.
+
+## Short flags
+
+A capital letter in a parameter name declares a short flag: the capitalized letter becomes the short spelling and the lowercased name the long one, so `Resume:int=None` gets both `-r` and `--resume`. The capital can be any letter (`sUggest:str=None` gives `-u/--suggest`), only the first capital counts, and names without capitals get a long flag only. Since the flags are lowercased, the parameter's actual name keeps its capital -- so a Python caller writes `main(Resume=3)`, which usefully advertises that it's invoking a CLI entry point. Positional (default-less) parameters have no flags, so capitals there are left alone.
+
+## Positional params
+
+Parameters without a default are positional, and the rest are flags. Pass `pos` to `call_parse` (or to `anno_parser`) to keep named parameters positional even when they have a default, in which case they are optional on the command line and take the default when omitted. Command line order follows the signature, not the order of the names in `pos`. Naming a bool parameter in `pos` raises, since a flag takes no value.
+
+## Param types
+
+A `bool` parameter is a `store_true` flag defaulting to `False`. If its default is `True` it becomes a `--no-` prefixed `store_false` flag instead, so passing the flag turns it off. Use `bool_arg` as the type when you want an explicit `--flag true|false` argument that honors its default.
+
+Union types such as `int|str` try each type in turn, and `enum` types such as those from `str_enum` become argparse choices.
+
+## The CLI entry point
+
+The decorated function is always the CLI entry point, and only the entry point gets `sys.argv`: argv is parsed when the function's file is run directly (`python foo.py`, `python -m foo`, or `%run foo.py`), or when it's called with no arguments from the top-level body of a directly-run file (which is how console script wrappers invoke it). Every other call is a plain Python call that ignores argv, whether from a notebook, the REPL, another function, or another `call_parse` function.
+
+Use the `nested` keyword argument to create nested parsers, where earlier parsers consume only their known args from `sys.argv` before later parsers are used. This is useful to create one command line application that executes another. For example:
+
+```sh
+myrunner --keyword 1 script.py -- <script.py args>
+```
+
+A separating `--` after the first application's args is recommended though not always required, otherwise args may be parsed in unexpected ways. For example:
+
+```sh
+myrunner script.py -h
+```
+
+would display `myrunner`'s help and not `script.py`'s.
+
+A function usable both from the command line and from Python can call `is_cli` to tell which way it was invoked, e.g. returning a value to Python callers but printing it (or exiting with an error code) when run as a CLI:
+
+```python
+@call_parse
+def sum_args(a:int=0, b:int=0):
+    "Add `a` and `b`"
+    if is_cli(): print(a+b)
+    else: return a+b
+
+test_eq(sum_args(1,2), 3)  # Python call: returns the value, prints nothing
+```
 
 Docs: https://fastcore.fast.ai/script.html.md"""
 

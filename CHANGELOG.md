@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.1.12
+
+### New Features
+
+- Add module docstrings, humanize(), `render_md`(), `expect_fail` regex param, and update llms.txt ([#874](https://github.com/AnswerDotAI/fastcore/issues/874))
+
+
 ## 2.1.11
 
 ### New Features

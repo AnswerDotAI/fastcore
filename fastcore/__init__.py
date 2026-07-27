@@ -45,4 +45,4 @@ Modules:
 - `fastcore.test`: Helper functions to quickly write tests in notebooks
 - `fastcore.tools`: Text and file editing primitives shared by the fastai editing tools"""
 
-__version__ = "2.1.12"
+__version__ = "2.1.13"

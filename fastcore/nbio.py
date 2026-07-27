@@ -13,8 +13,8 @@ __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace',
            'cell_ast_replace', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb', 'first_code_ln',
            'nb2dict', 'nb2str', 'write_nb', 'cell_edit', 'view_cell', 'validate_cell', 'validate_nb', 'repair_cell',
            'repair_nb', 'preferred_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error', 'concat_streams',
-           'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'item2xml', 'cell2xml', 'cells2xml',
-           'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'find_cells']
+           'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'render_md', 'item2xml', 'cell2xml',
+           'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'find_cells']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -432,6 +432,8 @@ def repair_nb(nb):
 
 # %% ../nbs/13_nbio.ipynb #530b9cd1
 from .xml import NB,to_xml,ft
+from .xtras import fenced
+from .ansi import strip_ansi
 
 # %% ../nbs/13_nbio.ipynb #9f22b923
 def preferred_out(data, html1st=True, include_imgs=False):
@@ -533,6 +535,37 @@ def render_text(outputs, html1st=False):
     items = [o for out in concat_streams(outputs) if (o := _render_text(out, html1st=html1st))]
     if not items: return ''
     return items[0][0] if len(items)==1 else '\n'.join(o[1] for o in items)
+
+# %% ../nbs/13_nbio.ipynb #224d4d9a
+def _render_md(out, html1st=True):
+    "One output as a Markdown part: `('txt',s)` pools into a shared fence, `('md',s)` stands alone"
+    mime,d = preferred_msg_out(out, html1st=html1st, include_imgs=True)
+    d = _join(d)
+    if not d: return None
+    if   mime=='text/plain': return 'txt', strip_ansi(d)
+    elif mime=='text/html': return 'md', fenced(d.strip(), '{=html}')
+    elif mime=='application/javascript': return 'md', fenced(f'<script>{d}</script>', '{=html}')
+    elif mime=='image/svg+xml': return 'md', fenced(d.strip(), '{=html}')
+    elif mime in ('text/markdown','text/latex'): return 'md', d.strip()
+    elif mime in ('image/jpeg','image/png'): return 'md', f'![](data:{mime};base64,{"".join(d.split())})'
+    return None
+
+def render_md(outputs, html1st=True):
+    "Render notebook outputs as Markdown: text pooled into ```output fences, HTML in `{=html}` fences, markdown inlined, images as data URIs"
+    if (not isinstance(outputs, (list,tuple))) or (outputs and not isinstance(outputs[0],dict)): return ''
+    parts,buf = [],[]
+    def _flush():
+        if (txt := ''.join(buf).rstrip()): parts.append(fenced(txt, 'output'))
+        buf.clear()
+    for out in concat_streams(outputs):
+        if not (r := _render_md(out, html1st=html1st)): continue
+        k,s = r
+        if k=='txt': buf.append(s if s.endswith('\n') else s+'\n')
+        else:
+            _flush()
+            parts.append(s)
+    _flush()
+    return '\n\n'.join(parts)
 
 # %% ../nbs/13_nbio.ipynb #d32fc4bc
 def item2xml(

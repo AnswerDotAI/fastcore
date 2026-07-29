@@ -439,7 +439,7 @@ from .ansi import strip_ansi
 def preferred_out(data, html1st=True, include_imgs=False):
     preftyps = ('application/javascript', 'text/latex')
     preftyps = (('text/html', 'text/markdown') if html1st else ('text/markdown', 'text/html')) + preftyps
-    if include_imgs: preftyps += 'image/jpeg','image/png','image/svg+xml'
+    if include_imgs: preftyps += 'image/jpeg','image/png','image/webp','image/gif','image/svg+xml'
     preftyps += ('text/plain',)
     for mt in preftyps:
         if (text := data.get(mt)): return mt,text
@@ -547,7 +547,7 @@ def _render_md(out, html1st=True):
     elif mime=='application/javascript': return 'md', fenced(f'<script>{d}</script>', '{=html}')
     elif mime=='image/svg+xml': return 'md', fenced(d.strip(), '{=html}')
     elif mime in ('text/markdown','text/latex'): return 'md', d.strip()
-    elif mime in ('image/jpeg','image/png'): return 'md', f'![](data:{mime};base64,{"".join(d.split())})'
+    elif mime in ('image/jpeg','image/png','image/webp','image/gif'): return 'md', f'![](data:{mime};base64,{"".join(d.split())})'
     return None
 
 def render_md(outputs, html1st=True):

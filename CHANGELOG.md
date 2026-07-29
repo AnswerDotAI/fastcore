@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.1.15
+
+### New Features
+
+- Add `metadec` to simplify writing decorators usable with or without params ([#879](https://github.com/AnswerDotAI/fastcore/issues/879))
+
+
 ## 2.1.14
 
 ### New Features

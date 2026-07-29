@@ -542,7 +542,7 @@ def _render_md(out, html1st=True):
     mime,d = preferred_msg_out(out, html1st=html1st, include_imgs=True)
     d = _join(d)
     if not d: return None
-    if   mime=='text/plain': return 'txt', strip_ansi(d)
+    if   mime=='text/plain': return 'txt', d
     elif mime=='text/html': return 'md', fenced(d.strip(), '{=html}')
     elif mime=='application/javascript': return 'md', fenced(f'<script>{d}</script>', '{=html}')
     elif mime=='image/svg+xml': return 'md', fenced(d.strip(), '{=html}')
@@ -550,12 +550,14 @@ def _render_md(out, html1st=True):
     elif mime in ('image/jpeg','image/png'): return 'md', f'![](data:{mime};base64,{"".join(d.split())})'
     return None
 
-def render_md(outputs, html1st=True):
-    "Render notebook outputs as Markdown: text pooled into ```output fences, HTML in `{=html}` fences, markdown inlined, images as data URIs"
+def render_md(outputs, html1st=True, ansi='strip'):
+    "Render notebook outputs as Markdown: text pooled into ```output fences, HTML in `{=html}` fences, markdown inlined, images as data URIs; `ansi='html'` renders ANSI colors in pooled text as an `{=html}` block instead of stripping them"
     if (not isinstance(outputs, (list,tuple))) or (outputs and not isinstance(outputs[0],dict)): return ''
     parts,buf = [],[]
     def _flush():
-        if (txt := ''.join(buf).rstrip()): parts.append(fenced(txt, 'output'))
+        if (txt := ''.join(buf).rstrip()):
+            if ansi=='html' and '\x1b' in txt: parts.append(fenced(f'<pre><code class="ansi">{ansi2html(txt)}</code></pre>', '{=html}'))
+            else: parts.append(fenced(strip_ansi(txt), 'output'))
         buf.clear()
     for out in concat_streams(outputs):
         if not (r := _render_md(out, html1st=html1st)): continue

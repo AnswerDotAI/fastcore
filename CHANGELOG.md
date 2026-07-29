@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.1.14
+
+### New Features
+
+- Add `athreaded` to `fastcore.aio` for running blocking functions in a worker thread from async code ([#878](https://github.com/AnswerDotAI/fastcore/issues/878))
+
+
 ## 2.1.13
 
 ### New Features

@@ -26,42 +26,39 @@ try:
 except: pass
 
 # %% ../nbs/03a_parallel.ipynb #21e71104
+@metadec
 def threaded(
+    f, # Function to run
+    *,
     process=False, # Create a Process instead of a Thread?
     daemon=False   # Use daemon mode?
-): # The Process or Thread created, which will have `result` attr injected in once complete
+): # Wrapped `f`, returning on call the Process or Thread created, which will have `result` attr injected in once complete
     "Run `f` in a `Thread` (or `Process` if `process=True`), and returns it"
-    def _r(f):
-        def g(_obj_td, *args, **kwargs):
-            res = f(*args, **kwargs)
-            _obj_td.result = res
-        @wraps(f)
-        def _f(*args, **kwargs):
-            Proc = get_context('fork').Process if sys.platform == 'darwin' else Process
-            res = (Thread,Proc)[process](target=g, args=args, kwargs=kwargs)
-            res._args = (res,)+res._args
-            if daemon: res.daemon = True
-            res.start()
-            return res
-        return _f
-    if callable(process):
-        o = process
-        process = False
-        return _r(o)
-    return _r
+    def g(_obj_td, *args, **kwargs):
+        res = f(*args, **kwargs)
+        _obj_td.result = res
+    @wraps(f)
+    def _f(*args, **kwargs):
+        Proc = get_context('fork').Process if sys.platform == 'darwin' else Process
+        res = (Thread,Proc)[process](target=g, args=args, kwargs=kwargs)
+        res._args = (res,)+res._args
+        if daemon: res.daemon = True
+        res.start()
+        return res
+    return _f
 
 # %% ../nbs/03a_parallel.ipynb #dbccb558
-def startthread(f=None, daemon=False):
+@metadec
+def startthread(f, *, daemon=False):
     "Like `threaded`, but start thread immediately"
-    def _f(f): return threaded(daemon=daemon)(f)()
-    return _f(f) if f else _f
+    return threaded(f, daemon=daemon)()
 
 
 # %% ../nbs/03a_parallel.ipynb #a32d66c4
-def startproc(f=None, daemon=False):
-    "Like `threaded(True)`, but start Process immediately"
-    def _f(f): return threaded(True, daemon=daemon)(f)()
-    return _f(f) if f else _f
+@metadec
+def startproc(f, *, daemon=False):
+    "Like `threaded(process=True)`, but start Process immediately"
+    return threaded(f, process=True, daemon=daemon)()
 
 
 # %% ../nbs/03a_parallel.ipynb #44d4651b

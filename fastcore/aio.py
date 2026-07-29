@@ -26,6 +26,7 @@ from functools import wraps
 from .imports import *
 from .xtras import UNSET
 from .basics import *
+from .meta import metadec
 
 # %% ../nbs/03c_aio.ipynb #ac2bc26d
 _loop,_loop_lock = None,threading.Lock()
@@ -71,9 +72,9 @@ def ctx_sync(acm):
     else: run_sync(acm.__aexit__(None,None,None))
 
 # %% ../nbs/03c_aio.ipynb #e6e9e7a3
-def athreaded(f=None, *, executor=None):
+@metadec
+def athreaded(f, *, executor=None):
     "Run `f` in a worker thread, awaitably; use as `@athreaded` or `@athreaded(executor=...)`"
-    if f is None: return partial(athreaded, executor=executor)
     @wraps(f)
     async def _f(*args, **kwargs):
         ctx = contextvars.copy_context()

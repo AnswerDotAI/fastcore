@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 2.1.13
+
+### New Features
+
+- Preserve subclass type in L.`__getitem__` by routing through `_new` instead of constructing a bare L ([#876](https://github.com/AnswerDotAI/fastcore/issues/876))
+- Add module-level docstring summaries to all fastcore submodules ([#875](https://github.com/AnswerDotAI/fastcore/issues/875))
+
+
 ## 2.1.12
 
 ### New Features

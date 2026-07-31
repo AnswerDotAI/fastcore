@@ -5,6 +5,7 @@ from .parallel import *
 from .net import *
 from .test import *
 from .meta import *
+from .apisurface import *
 from .imports import *
 from .script import *
 from .docments import *

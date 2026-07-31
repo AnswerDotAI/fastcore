@@ -39,8 +39,8 @@ Docs: https://fastcore.fast.ai/basics.html.md"""
 
 # %% auto #0
 __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'arg0', 'arg1', 'arg2', 'arg3', 'arg4', 'Self',
-           'type_map', 'ifnone', 'maybe_attr', 'basic_repr', 'BasicRepr', 'is_array', 'listify', 'tuplify', 'true',
-           'NullType', 'tonull', 'get_class', 'mk_class', 'wrap_class', 'ignore_exceptions', 'exec_local',
+           'type_map', 'ifnone', 'req', 'maybe_attr', 'basic_repr', 'BasicRepr', 'is_array', 'listify', 'tuplify',
+           'true', 'NullType', 'tonull', 'get_class', 'mk_class', 'wrap_class', 'ignore_exceptions', 'exec_local',
            'risinstance', 'ver2tuple', 'Inf', 'in_', 'ret_true', 'ret_false', 'stop', 'gen', 'chunked', 'otherwise',
            'custom_dir', 'adict', 'AttrDict', 'AttrDictDefault', 'NS', 'get_annotations_ex', 'eval_type', 'type_hints',
            'annotations', 'anno_ret', 'signature_ex', 'union2tuple', 'argnames', 'with_cast', 'store_attr', 'attrdict',
@@ -78,6 +78,12 @@ defaults = SimpleNamespace()
 def ifnone(a, b):
     "`b` if `a` is None else `a`"
     return b if a is None else a
+
+# %% ../nbs/01_basics.ipynb #33120b1b
+def req(x, msg=None, exc=ValueError):
+    "`x` unless it's `None`, in which case raise `exc(msg)`"
+    if x is None: raise exc(msg)
+    return x
 
 # %% ../nbs/01_basics.ipynb #9a1fe004
 def maybe_attr(o, attr):

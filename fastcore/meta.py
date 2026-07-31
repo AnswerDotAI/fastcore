@@ -23,7 +23,7 @@ Docs: https://fastcore.fast.ai/meta.html.md"""
 
 # %% auto #0
 __all__ = ['test_sig', 'FixSigMeta', 'PrePostInitMeta', 'AutoInit', 'NewChkMeta', 'BypassNewMeta', 'empty2none', 'anno_dict',
-           'use_kwargs_dict', 'use_kwargs', 'delegates', 'method', 'delegated', 'funcs_kwargs', 'splice_sig']
+           'use_kwargs_dict', 'use_kwargs', 'delegates', 'method', 'delegated', 'funcs_kwargs', 'metadec', 'splice_sig']
 
 # %% ../nbs/05_meta.ipynb #d26e95dd
 from .imports import *
@@ -225,6 +225,17 @@ def funcs_kwargs(as_method=False):
     "Replace methods in `cls._methods` with those from `kwargs`"
     if callable(as_method): return _funcs_kwargs(as_method, False)
     return partial(_funcs_kwargs, as_method=as_method)
+
+# %% ../nbs/05_meta.ipynb #47fe29a9
+def metadec(d):
+    "Decorator for decorators: make `d(f, *, ...)` usable as `@d` or `@d(**params)`"
+    ps = list(inspect.signature(d).parameters.values())[1:]
+    assert all(p.kind in (p.KEYWORD_ONLY, p.VAR_KEYWORD) for p in ps), f'{d.__name__}: metadec config params must be keyword-only'
+    @wraps(d)
+    def _d(f=None, **kwargs):
+        if f is None: return partial(_d, **kwargs)
+        return d(f, **kwargs)
+    return _d
 
 # %% ../nbs/05_meta.ipynb #b69b0276
 def splice_sig(wrapper, fn, *skips):

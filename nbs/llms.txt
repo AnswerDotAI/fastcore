@@ -39,7 +39,8 @@ test_eq(x.unique(), [1,2,3,4,5])
 
 ## Modules
 
-- [fastcore.aio](https://fastcore.fast.ai/aio.html.md): Bridging async and sync code: `run_sync`, `iter_sync`, `ctx_sync`, `maybe_await`, and `then`
+- [fastcore.aio](https://fastcore.fast.ai/aio.html.md): Bridging async and sync code: `run_sync`, `iter_sync`, `ctx_sync`, `athreaded`, `maybe_await`, and `then`, plus `Debounce` for coalescing bursts of calls
+- [fastcore.apisurface](https://fastcore.fast.ai/apisurface.html.md): Turn operation metadata into documented, introspectable callables: real signatures, informative docstrings, and browsable grouped namespaces
 - [fastcore.basics](https://fastcore.fast.ai/basics.html.md): Basic functionality used in the fastai library
 - [fastcore.docments](https://fastcore.fast.ai/docments.html.md): Document parameters using comments.
 - `fastcore.editskill`: Text, file, cell, and notebook editing from `fastcore.tools` and `fastcore.nbio`, plus the conventions the whole fastai editing toolkit follows. Read this before working with the editing tools in any package that shares them. (Docs: https://fastcore.fast.ai/tools.html.md and https://fastcore.fast.ai/nbio.html.md)

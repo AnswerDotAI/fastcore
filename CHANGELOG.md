@@ -2,6 +2,35 @@
 
 <!-- do not remove -->
 
+## 2.1.16
+
+### New Features
+
+- Add fastcore.apisurface module for building documented callables from operation metadata, plus basics.req ([#881](https://github.com/AnswerDotAI/fastcore/issues/881))
+
+
+## 2.1.15
+
+### New Features
+
+- Add `metadec` to simplify writing decorators usable with or without params ([#879](https://github.com/AnswerDotAI/fastcore/issues/879))
+
+
+## 2.1.14
+
+### New Features
+
+- Add `athreaded` to `fastcore.aio` for running blocking functions in a worker thread from async code ([#878](https://github.com/AnswerDotAI/fastcore/issues/878))
+
+
+## 2.1.13
+
+### New Features
+
+- Preserve subclass type in L.`__getitem__` by routing through `_new` instead of constructing a bare L ([#876](https://github.com/AnswerDotAI/fastcore/issues/876))
+- Add module-level docstring summaries to all fastcore submodules ([#875](https://github.com/AnswerDotAI/fastcore/issues/875))
+
+
 ## 2.1.12
 
 ### New Features

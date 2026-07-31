@@ -144,7 +144,7 @@ class L(GetAttr, CollBase, metaclass=_L_Meta):
     def __getitem__(self, idx):
         "Retrieve `idx` (can be list of indices, or mask, or int) items"
         if isinstance(idx,int) and not hasattr(self.items,'iloc'): return self.items[idx]
-        return self._get(idx) if is_indexer(idx) else L(self._get(idx), use_list=None)
+        return self._get(idx) if is_indexer(idx) else self._new(self._get(idx))
 
     def _get(self, i):
         if is_indexer(i) or isinstance(i,slice): return getattr(self.items,'iloc',self.items)[i]

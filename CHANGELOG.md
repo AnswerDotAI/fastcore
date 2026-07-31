@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.1.16
+
+### New Features
+
+- Add fastcore.apisurface module for building documented callables from operation metadata, plus basics.req ([#881](https://github.com/AnswerDotAI/fastcore/issues/881))
+
+
 ## 2.1.15
 
 ### New Features

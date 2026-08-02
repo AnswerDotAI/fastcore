@@ -10,13 +10,12 @@ Docs: https://fastcore.fast.ai/nbio.html.md"""
 
 # %% auto #0
 __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines',
-           'cell_ast_replace', 'AI_RENDERERS', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb',
-           'first_code_ln', 'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'cell_edit', 'view_cell', 'validate_cell',
-           'validate_nb', 'repair_cell', 'repair_nb', 'preferred_out', 'join_out', 'mk_stream', 'mk_result',
-           'mk_display', 'mk_error', 'concat_streams', 'preferred_msg_out', 'render_output', 'render_outputs',
-           'render_text', 'render_md', 'normalize_text_latex', 'render_output_ai', 'render_outputs_ai', 'item2xml',
-           'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'find_cells', 'pack_frames',
-           'unpack_frames', 'msg2out', 'msgs2outs']
+           'cell_ast_replace', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb', 'first_code_ln',
+           'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'cell_edit', 'view_cell', 'validate_cell', 'validate_nb',
+           'repair_cell', 'repair_nb', 'preferred_out', 'join_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error',
+           'concat_streams', 'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'item2xml',
+           'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'find_cells', 'select_cells',
+           'pack_frames', 'unpack_frames', 'msg2out', 'msgs2outs']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -457,7 +456,6 @@ def preferred_out(data, html1st=True, include_imgs=False):
 def join_out(d):
     "Join Jupyter's list-of-lines output data into one string"
     return ''.join(d) if isinstance(d, list) else d
-_join = join_out
 
 
 # %% ../nbs/13_nbio.ipynb #51fcbb01
@@ -487,7 +485,7 @@ def concat_streams(outputs):
     for out in outputs:
         if out['output_type'] == 'stream':
             name = out['name']
-            streams[name] = streams.get(name, '') + _join(out['text'])
+            streams[name] = streams.get(name, '') + join_out(out['text'])
         elif out['output_type'] in ('error','execute_result'): execute_results.append(out)
         else: res.append(out)
     for name in ('stdout','stderr'):
@@ -500,7 +498,7 @@ def concat_streams(outputs):
 def preferred_msg_out(out, **kwargs):
     "Preferred mime type and content for any Jupyter output dict (stream, error, or data-bearing)"
     typ = out['output_type']
-    if typ == 'stream': return 'text/plain', _join(out.get('text', ""))
+    if typ == 'stream': return 'text/plain', join_out(out.get('text', ""))
     elif typ == 'error': return 'text/plain', '\n'.join(out.get('traceback', []))
     elif typ in ('execute_result', 'display_data'): return preferred_out(out.get('data', {}), **kwargs)
     return 'text/plain',f'Error: Failed to parse unknown output - {out}'
@@ -512,7 +510,7 @@ def render_output(out):
         res = ansi2html(str(text))
         return f'<pre class="!border-0 !rounded-none !my-0 !p-0"><code class="nohighlight">{res}</code></pre>'
     ptyp,d = preferred_msg_out(out, html1st=True, include_imgs=True)
-    d = _join(d)
+    d = join_out(d)
     if   ptyp=='text/plain': return _fmt(d)
     elif ptyp=='text/html': return d
     elif ptyp=='application/javascript': return f'<script>{d}</script>'
@@ -533,7 +531,7 @@ def render_outputs(outputs):
 def _render_text(out, html1st=False):
     typ = out['output_type']
     mime,d = preferred_msg_out(out, html1st=html1st, include_imgs=False)
-    d = _join(d)
+    d = join_out(d)
     if not d: return None
     attrs = {}
     if typ == 'stream': typ = out.get('name')
@@ -547,75 +545,6 @@ def render_text(outputs, html1st=False):
     items = [o for out in concat_streams(outputs) if (o := _render_text(out, html1st=html1st))]
     if not items: return ''
     return items[0][0] if len(items)==1 else '\n'.join(o[1] for o in items)
-
-# %% ../nbs/13_nbio.ipynb #224d4d9a
-def _render_md(out, html1st=True):
-    "One output as a Markdown part: `('txt',s)` pools into a shared fence, `('md',s)` stands alone"
-    mime,d = preferred_msg_out(out, html1st=html1st, include_imgs=True)
-    d = _join(d)
-    if not d: return None
-    if   mime=='text/plain': return 'txt', strip_ansi(d)
-    elif mime=='text/html': return 'md', fenced(d.strip(), '{=html}')
-    elif mime=='application/javascript': return 'md', fenced(f'<script>{d}</script>', '{=html}')
-    elif mime=='image/svg+xml': return 'md', fenced(d.strip(), '{=html}')
-    elif mime in ('text/markdown','text/latex'): return 'md', d.strip()
-    elif mime in ('image/jpeg','image/png'): return 'md', f'![](data:{mime};base64,{"".join(d.split())})'
-    return None
-
-def render_md(outputs, html1st=True):
-    "Render notebook outputs as Markdown: text pooled into ```output fences, HTML in `{=html}` fences, markdown inlined, images as data URIs"
-    if (not isinstance(outputs, (list,tuple))) or (outputs and not isinstance(outputs[0],dict)): return ''
-    parts,buf = [],[]
-    def _flush():
-        if (txt := ''.join(buf).rstrip()): parts.append(fenced(txt, 'output'))
-        buf.clear()
-    for out in concat_streams(outputs):
-        if not (r := _render_md(out, html1st=html1st)): continue
-        k,s = r
-        if k=='txt': buf.append(s if s.endswith('\n') else s+'\n')
-        else:
-            _flush()
-            parts.append(s)
-    _flush()
-    return '\n\n'.join(parts)
-
-# %% ../nbs/13_nbio.ipynb #3ef574d7
-_display_env = re.compile(r'\\begin\{(align|equation|gather|multline|eqnarray)')
-
-def _latex_parts(s):
-    "(display, bare tex) for a Jupyter `text/latex` payload"
-    for pat,disp in ((r'\\\[(.*)\\\]', True), (r'\\\((.*)\\\)', False), (r'\$\$(.*)\$\$', True), (r'\$(.*)\$', False)):
-        if m := re.fullmatch(pat, s, re.DOTALL): return disp, m.group(1)
-    return bool(_display_env.match(s)), s
-
-def normalize_text_latex(s:str, dollars=False):
-    r"Canonicalize a `text/latex` payload to `\(...\)`/`\[...\]` delimiters, or `$...$`/`$$...$$` with `dollars`"
-    if not s: return s
-    disp,tex = _latex_parts(s)
-    l,r = (('$$','$$') if disp else ('$','$')) if dollars else ((r'\[',r'\]') if disp else (r'\(',r'\)'))
-    return f'{l}{tex}{r}'
-
-AI_RENDERERS = {  # chkstyle: ignore-node
-    'text/plain': lambda d: strip_ansi(str(join_out(d))),
-    'text/html': join_out,
-    'text/markdown': join_out,
-    'text/latex': lambda d: normalize_text_latex(join_out(d)),
-    'application/javascript': lambda d: f'<script>{join_out(d)}</script>',
-}
-
-# %% ../nbs/13_nbio.ipynb #5e9cb23b
-def render_output_ai(out, renderers=None, dollars=False):
-    "Plain-text rendering of one Jupyter output, as the AI sees it; `renderers` overrides/extends the per-mime table and `dollars` picks `$`-spelled math"
-    r = AI_RENDERERS | ({'text/latex': lambda d: normalize_text_latex(join_out(d), dollars=True)} if dollars else {}) | (renderers or {})
-    ptyp,d = preferred_msg_out(out, html1st=False, include_imgs=False)
-    return r.get(ptyp, lambda d: '')(d)
-
-def render_outputs_ai(outputs, renderers=None, dollars=False):
-    "Plain-text rendering of a Jupyter output list for LLM context"
-    if (not isinstance(outputs, (list,tuple))) or (outputs and not isinstance(outputs[0],dict)):
-        print(f"Unexpected outputs: {outputs}")
-        return ''
-    return '\n'.join(render_output_ai(o, renderers=renderers, dollars=dollars) for o in concat_streams(outputs))
 
 # %% ../nbs/13_nbio.ipynb #d32fc4bc
 def item2xml(
@@ -776,6 +705,35 @@ def find_cells(
 def to_dict(self:Notebook):
     "The plain dict form of the held notebook (`nb2dict`): the representation layer"
     return nb2dict(self.nb)
+
+# %% ../nbs/13_nbio.ipynb #4db01b15
+def _is_exported(cell): return cell.has_directive('export') or cell.has_directive('exports')
+def _is_noeval(cell):
+    return 'nbdev_export'+'(' in cell.source or (cell.directive('eval') or '').lower()=='false'
+
+def select_cells(
+    nb, # A notebook read with `read_nb`
+    msgid:str=None, # Cell id, or unique prefix, to match
+    above:bool=False, # Include the matched cell and all cells above it?
+    below:bool=False, # Include the matched cell and all cells below it?
+    all:bool=False, # Include all code cells (ignores `msgid`)?
+    exported:bool=False, # Only cells with `#| export` or `#| exports`?
+    skip_noeval:bool=False # Skip `#| eval: false` and `nbdev_export` cells (like `nbdev-test`)?
+):
+    "Select code cells from `nb` by cell id or unique prefix"
+    cells = [o for o in nb.cells if o.cell_type=='code']
+    if not all:
+        if not msgid: raise ValueError('`msgid` required unless `all=True`')
+        idxs = [i for i,o in enumerate(cells) if str(o.id).startswith(msgid)]
+        if not idxs: raise ValueError(f'No code cell id starting with {msgid!r}')
+        if len(idxs)>1: raise ValueError(f'Multiple code cell ids start with {msgid!r}: {", ".join(str(cells[i].id) for i in idxs)}')
+        idx = idxs[0]
+        if above: cells = cells[:idx+1]
+        elif below: cells = cells[idx:]
+        else: cells = [cells[idx]]
+    if exported: cells = [o for o in cells if _is_exported(o)]
+    if skip_noeval: cells = [o for o in cells if not _is_noeval(o)]
+    return cells
 
 # %% ../nbs/13_nbio.ipynb #4a98dab7
 def pack_frames(body:bytes, buffers=())->bytes:

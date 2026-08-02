@@ -54,16 +54,19 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'last_match', 'joins', 'fastuple', 'bind', 'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate',
            'using_attr', 'negate', 'fail_clean', 'dstar', 'copy_func', 'patch_to', 'patch', 'extend_enum', 'compile_re',
            'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum', 'Stateful', 'NotStr', 'PrettyString', 'even_mults',
-           'num_cpus', 'add_props', 'str2bool', 'str2int', 'str2float', 'str2list', 'str2date', 'to_bool', 'to_int',
-           'to_float', 'to_list', 'to_date', 'typed', 'exec_new', 'exec_import', 'sig_with_params', 'fdelegates',
-           'xdumps', 'lt', 'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
+           'num_cpus', 'add_props', 'str2bool', 'str2int', 'str2float', 'str2list', 'str2date', 'str2dt', 'to_bool',
+           'to_int', 'to_float', 'to_list', 'to_date', 'typed', 'exec_new', 'exec_import', 'sig_with_params',
+           'fdelegates', 'xdumps', 'revive_dates', 'lt', 'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub', 'mul', 'truediv',
+           'is_', 'is_not', 'mod']
 
 # %% ../nbs/01_basics.ipynb #0e91ed82
 from .imports import *
 import builtins,types,typing,json
 from functools import cmp_to_key,wraps
 from copy import copy
-from datetime import date
+from datetime import date,datetime,time
+from uuid import UUID
+from pathlib import PurePath
 from collections import abc
 try: from types import UnionType
 except ImportError: UnionType = None
@@ -1364,6 +1367,11 @@ def str2date(s:str)->date:
     "`date.fromisoformat` with empty string handling"
     return date.fromisoformat(s) if s else None
 
+# %% ../nbs/01_basics.ipynb #577658f5
+def str2dt(s:str)->datetime:
+    "`datetime.fromisoformat` with `Z` suffix and empty string handling"
+    return datetime.fromisoformat(s.replace('Z','+00:00')) if s else None
+
 # %% ../nbs/01_basics.ipynb #deccef73
 def to_bool(arg): return str2bool(arg) if isinstance(arg, str) else bool(arg)
 def to_int(arg): return str2int(arg) if isinstance(arg, str) else int(arg)
@@ -1449,6 +1457,9 @@ def fdelegates(to):
 def _json_default(o, default=None):
     f = getattr(o, '__json__', None)
     if f: return f()
+    if isinstance(o, (datetime,date,time)): return o.isoformat()
+    if isinstance(o, (UUID,PurePath)): return str(o)
+    if isinstance(o, enum.Enum): return o.value
     if default: return default(o)
     raise TypeError(f'Object of type {type(o).__name__} is not JSON serializable')
 
@@ -1457,3 +1468,15 @@ def xdumps(o, **kwargs):
     default = kwargs.pop('default', None)
     return json.dumps(o, default=partial(_json_default, default=default), **kwargs)
 
+
+# %% ../nbs/01_basics.ipynb #05aeeae4
+_iso8601_re = re.compile(r'\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(Z|[+-]\d\d:\d\d)?')
+
+def revive_dates(o):
+    "Recursively convert ISO8601-formatted strings in a decoded JSON tree into `datetime` objects"
+    if isinstance(o, dict): return {k:revive_dates(v) for k,v in o.items()}
+    if isinstance(o, (list,tuple)): return [revive_dates(x) for x in o]
+    if isinstance(o, str) and _iso8601_re.fullmatch(o):
+        try: return str2dt(o)
+        except ValueError: return o
+    return o

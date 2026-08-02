@@ -10,11 +10,13 @@ Docs: https://fastcore.fast.ai/nbio.html.md"""
 
 # %% auto #0
 __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines',
-           'cell_ast_replace', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb', 'first_code_ln',
-           'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'cell_edit', 'view_cell', 'validate_cell', 'validate_nb',
-           'repair_cell', 'repair_nb', 'preferred_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error',
-           'concat_streams', 'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'render_md',
-           'item2xml', 'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'find_cells']
+           'cell_ast_replace', 'AI_RENDERERS', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb',
+           'first_code_ln', 'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'cell_edit', 'view_cell', 'validate_cell',
+           'validate_nb', 'repair_cell', 'repair_nb', 'preferred_out', 'join_out', 'mk_stream', 'mk_result',
+           'mk_display', 'mk_error', 'concat_streams', 'preferred_msg_out', 'render_output', 'render_outputs',
+           'render_text', 'render_md', 'normalize_text_latex', 'render_output_ai', 'render_outputs_ai', 'item2xml',
+           'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'find_cells', 'pack_frames',
+           'unpack_frames', 'msg2out', 'msgs2outs']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -24,7 +26,7 @@ from .ansi import ansi2html
 from .meta import delegates,splice_sig
 from .tools import insert_line,str_replace,strs_replace,replace_lines,del_lines,ast_replace,lnhash
 
-import ast,copy,functools
+import ast,copy,functools,struct
 from collections import defaultdict
 from pprint import pformat,pprint
 from json import loads,dumps
@@ -452,7 +454,11 @@ def preferred_out(data, html1st=True, include_imgs=False):
     return 'text/plain',''
 
 # %% ../nbs/13_nbio.ipynb #24a47a87
-def _join(d): return ''.join(d) if isinstance(d, list) else d
+def join_out(d):
+    "Join Jupyter's list-of-lines output data into one string"
+    return ''.join(d) if isinstance(d, list) else d
+_join = join_out
+
 
 # %% ../nbs/13_nbio.ipynb #51fcbb01
 def mk_stream(name, text):
@@ -572,6 +578,44 @@ def render_md(outputs, html1st=True):
             parts.append(s)
     _flush()
     return '\n\n'.join(parts)
+
+# %% ../nbs/13_nbio.ipynb #3ef574d7
+_display_env = re.compile(r'\\begin\{(align|equation|gather|multline|eqnarray)')
+
+def _latex_parts(s):
+    "(display, bare tex) for a Jupyter `text/latex` payload"
+    for pat,disp in ((r'\\\[(.*)\\\]', True), (r'\\\((.*)\\\)', False), (r'\$\$(.*)\$\$', True), (r'\$(.*)\$', False)):
+        if m := re.fullmatch(pat, s, re.DOTALL): return disp, m.group(1)
+    return bool(_display_env.match(s)), s
+
+def normalize_text_latex(s:str, dollars=False):
+    r"Canonicalize a `text/latex` payload to `\(...\)`/`\[...\]` delimiters, or `$...$`/`$$...$$` with `dollars`"
+    if not s: return s
+    disp,tex = _latex_parts(s)
+    l,r = (('$$','$$') if disp else ('$','$')) if dollars else ((r'\[',r'\]') if disp else (r'\(',r'\)'))
+    return f'{l}{tex}{r}'
+
+AI_RENDERERS = {  # chkstyle: ignore-node
+    'text/plain': lambda d: strip_ansi(str(join_out(d))),
+    'text/html': join_out,
+    'text/markdown': join_out,
+    'text/latex': lambda d: normalize_text_latex(join_out(d)),
+    'application/javascript': lambda d: f'<script>{join_out(d)}</script>',
+}
+
+# %% ../nbs/13_nbio.ipynb #5e9cb23b
+def render_output_ai(out, renderers=None, dollars=False):
+    "Plain-text rendering of one Jupyter output, as the AI sees it; `renderers` overrides/extends the per-mime table and `dollars` picks `$`-spelled math"
+    r = AI_RENDERERS | ({'text/latex': lambda d: normalize_text_latex(join_out(d), dollars=True)} if dollars else {}) | (renderers or {})
+    ptyp,d = preferred_msg_out(out, html1st=False, include_imgs=False)
+    return r.get(ptyp, lambda d: '')(d)
+
+def render_outputs_ai(outputs, renderers=None, dollars=False):
+    "Plain-text rendering of a Jupyter output list for LLM context"
+    if (not isinstance(outputs, (list,tuple))) or (outputs and not isinstance(outputs[0],dict)):
+        print(f"Unexpected outputs: {outputs}")
+        return ''
+    return '\n'.join(render_output_ai(o, renderers=renderers, dollars=dollars) for o in concat_streams(outputs))
 
 # %% ../nbs/13_nbio.ipynb #d32fc4bc
 def item2xml(
@@ -732,3 +776,34 @@ def find_cells(
 def to_dict(self:Notebook):
     "The plain dict form of the held notebook (`nb2dict`): the representation layer"
     return nb2dict(self.nb)
+
+# %% ../nbs/13_nbio.ipynb #4a98dab7
+def pack_frames(body:bytes, buffers=())->bytes:
+    "Pack `body` and binary `buffers` into a legacy Jupyter websocket binary frame"
+    parts = [body, *(bytes(b) for b in buffers)]
+    offs = [4*(len(parts)+1)]
+    for p in parts[:-1]: offs.append(offs[-1]+len(p))
+    return b''.join([struct.pack(f'!{len(parts)+1}I', len(parts), *offs), *parts])
+
+def unpack_frames(bmsg:bytes)->tuple:
+    "Split a legacy Jupyter websocket binary frame into `(body, buffers)`"
+    n = struct.unpack('!I', bmsg[:4])[0]
+    offs = [*struct.unpack(f'!{n}I', bmsg[4:4*(n+1)]), None]
+    parts = [bmsg[a:b] for a,b in zip(offs[:-1], offs[1:])]
+    return parts[0], parts[1:]
+
+# %% ../nbs/13_nbio.ipynb #ec976147
+def _msg_type(msg): return msg.get('msg_type') or msg['header']['msg_type']
+
+def msg2out(msg):
+    "nbformat-style output dict for Jupyter iopub message dict `msg`"
+    mt,c = _msg_type(msg),msg['content']
+    if mt=='stream': return dict(output_type=mt, name=c['name'], text=c['text'])
+    if mt=='error': return dict(output_type=mt, ename=c['ename'], evalue=c['evalue'], traceback=c['traceback'])
+    if mt=='execute_result': return dict(output_type=mt, metadata=c.get('metadata') or {}, data=c['data'], execution_count=c.get('execution_count'))
+    if mt=='display_data': return dict(output_type=mt, metadata=c.get('metadata') or {}, data=c['data'])
+    raise ValueError(f'Unrecognized output msg type: {mt!r}')
+
+def msgs2outs(msgs):
+    "nbformat-style output dicts for the output messages in `msgs`, skipping other message types"
+    return [msg2out(m) for m in msgs if _msg_type(m) in ('stream','execute_result','display_data','error')]

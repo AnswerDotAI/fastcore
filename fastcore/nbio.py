@@ -11,10 +11,10 @@ Docs: https://fastcore.fast.ai/nbio.html.md"""
 # %% auto #0
 __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines',
            'cell_ast_replace', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb', 'first_code_ln',
-           'nb2dict', 'nb2str', 'write_nb', 'cell_edit', 'view_cell', 'validate_cell', 'validate_nb', 'repair_cell',
-           'repair_nb', 'preferred_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error', 'concat_streams',
-           'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'render_md', 'item2xml', 'cell2xml',
-           'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'find_cells']
+           'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'cell_edit', 'view_cell', 'validate_cell', 'validate_nb',
+           'repair_cell', 'repair_nb', 'preferred_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error',
+           'concat_streams', 'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'render_md',
+           'item2xml', 'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'find_cells']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -176,6 +176,12 @@ def _dir_line(k, v, lang='python', quarto=False):
     "A canonical directive comment line; with `quarto`, bare directives render as `: true`"
     if quarto and not v: v = 'true'
     return f"{langs[lang]}| {k}" + (f": {v}" if v else '') + '\n'
+
+# %% ../nbs/13_nbio.ipynb #726e4f03
+def dir_tag(meta):
+    "Meta-form nbdev directives in `meta` as a compact `[k k=v]` bracket tag, or `''` if none"
+    tag = ' '.join(k if not v else f'{k}={v}' for k,v in _meta_directives(meta).items())
+    return f'[{tag}]' if tag else ''
 
 # %% ../nbs/13_nbio.ipynb #428ecb6a
 @patch
@@ -694,11 +700,9 @@ class CellRow:
         self.id,self.cell_type,self.source,self.maxlen = c.id,c.cell_type,c.source,maxlen
         self.meta = copy.deepcopy(dict(c.get('metadata',{})))
     def __repr__(self):
-        d = self.meta.get('nbdev',{})
-        tag = ' '.join(k if v in ('','true') else f'{k}={v}' for k,v in d.items())
         src = self.source.replace('\n', '\\n')
         if len(src)>self.maxlen: src = src[:self.maxlen]+'…'
-        return f"{self.id}:{self.cell_type[0]}{'['+tag+']' if tag else ''}:{src}"
+        return f"{self.id}:{self.cell_type[0]}{dir_tag(self.meta)}:{src}"
 
 class CellRows(list):
     def __repr__(self): return '\n'.join(repr(o) for o in self)

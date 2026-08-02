@@ -713,27 +713,26 @@ def _is_noeval(cell):
 
 def select_cells(
     nb, # A notebook read with `read_nb`
-    msgid:str=None, # Cell id, or unique prefix, to match
-    above:bool=False, # Include the matched cell and all cells above it?
-    below:bool=False, # Include the matched cell and all cells below it?
-    all:bool=False, # Include all code cells (ignores `msgid`)?
+    *msgids:str, # Cell ids, or unique prefixes, to match
+    above:bool=False, # Include each matched cell and all cells above it?
+    below:bool=False, # Include each matched cell and all cells below it?
+    all:bool=False, # Include all code cells (ignores `msgids`)?
     exported:bool=False, # Only cells with `#| export` or `#| exports`?
     skip_noeval:bool=False # Skip `#| eval: false` and `nbdev_export` cells (like `nbdev-test`)?
 ):
-    "Select code cells from `nb` by cell id or unique prefix"
+    "Select code cells from `nb` by cell id or unique prefix, in the order given"
     cells = [o for o in nb.cells if o.cell_type=='code']
-    if not all:
-        if not msgid: raise ValueError('`msgid` required unless `all=True`')
+    def _one(msgid):
         idxs = [i for i,o in enumerate(cells) if str(o.id).startswith(msgid)]
         if not idxs: raise ValueError(f'No code cell id starting with {msgid!r}')
         if len(idxs)>1: raise ValueError(f'Multiple code cell ids start with {msgid!r}: {", ".join(str(cells[i].id) for i in idxs)}')
         idx = idxs[0]
-        if above: cells = cells[:idx+1]
-        elif below: cells = cells[idx:]
-        else: cells = [cells[idx]]
-    if exported: cells = [o for o in cells if _is_exported(o)]
-    if skip_noeval: cells = [o for o in cells if not _is_noeval(o)]
-    return cells
+        return cells[:idx+1] if above else cells[idx:] if below else [cells[idx]]
+    if not all and not msgids: raise ValueError('`msgids` required unless `all=True`')
+    sel = cells if all else [c for m in msgids for c in _one(m)]
+    if exported: sel = [o for o in sel if _is_exported(o)]
+    if skip_noeval: sel = [o for o in sel if not _is_noeval(o)]
+    return sel
 
 # %% ../nbs/13_nbio.ipynb #4a98dab7
 def pack_frames(body:bytes, buffers=())->bytes:

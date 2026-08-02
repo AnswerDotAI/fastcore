@@ -84,6 +84,7 @@ def athreaded(f, *, executor=None):
 # %% ../nbs/03c_aio.ipynb #2a2643a1
 async def maybe_await(o):
     "Await `o` if needed, and return it"
+    __tracebackhide__ = True
     from inspect import isawaitable
     return await o if isawaitable(o) else o
 
@@ -174,6 +175,7 @@ def enable_async_magics(
     "Let line and cell magics on `ip` be async: coroutine results are awaited. Idempotent per shell."
     if hasattr(ip, '_amagic'): return
     async def _amagic(res):
+        __tracebackhide__ = True
         res = await maybe_await(res)
         return res if fmt is None else fmt(res)
     ip._amagic = _amagic

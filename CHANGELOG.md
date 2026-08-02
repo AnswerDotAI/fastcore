@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 2.1.17
+
+### New Features
+
+- Add str2dt/`revive_dates` and xdumps stdlib type support, plus nbio AI output renderers, websocket frame packing, and iopub msg-to-output conversion ([#883](https://github.com/AnswerDotAI/fastcore/issues/883))
+- Add `dir_tag` to format nbdev cell directives as a compact bracket tag, and use it in `CellRow.__repr__` ([#882](https://github.com/AnswerDotAI/fastcore/issues/882))
+
+
 ## 2.1.16
 
 ### New Features

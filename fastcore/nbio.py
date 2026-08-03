@@ -315,18 +315,7 @@ cell_ast_replace = cell_edit(ast_replace, 'cell_ast_replace')
 __pyskill_params__ = {'replace_params': ('start_line', 'end_line', 'n_matches', 're_filter', 'invert_filter', 'use_regex')}
 
 # %% ../nbs/13_nbio.ipynb #421b2b9c
-def view_cell(
-    path:str, # Notebook file to read
-    cell_id:str, # Id of the cell to view (exact, or unique prefix)
-    start_line:int=1, # Starting line to view
-    end_line:int=None, # End line (defaults to last line if None; may be past EOF, which clamps to the last line)
-    nums:bool=True, # Show line numbers?
-    lnhashs:bool=False, # Show exhash `lineno|hash|` addresses instead of line numbers?
-    incl_out:bool=False, # Append the cell's outputs in an `<out>` block?
-    trunc_out:bool=True # Truncate included outputs to ~512 chars?
-):
-    "View a cell's source, optionally limited to 1-based line range"
-    cell = _nb_cell(read_nb(path), cell_id)
+def _view_cell(cell, start_line, end_line, nums, lnhashs, incl_out, trunc_out):
     lines = cell.source.splitlines()
     if not lines: return ''
     if end_line is None or end_line > len(lines): end_line = len(lines)
@@ -336,7 +325,25 @@ def view_cell(
     res = '\n'.join(fmt(i,l) for i,l in enumerate(lines[start_line-1:end_line], start_line))
     if incl_out and (o := render_text(cell.get('outputs') or [])):
         res += f"\n<out>\n{truncstr(o, 512) if trunc_out else o}\n</out>"
-    return PrettyString(res)
+    return res
+
+def view_cell(
+    path:str, # Notebook file to read
+    *cell_ids:str, # Ids of the cells to view (each exact, or a unique prefix)
+    start_line:int=1, # Starting line to view
+    end_line:int=None, # End line (defaults to last line if None; may be past EOF, which clamps to the last line)
+    nums:bool=True, # Show line numbers?
+    lnhashs:bool=False, # Show exhash `lineno|hash|` addresses instead of line numbers?
+    incl_out:bool=False, # Append each cell's outputs in an `<out>` block?
+    trunc_out:bool=True # Truncate included outputs to ~512 chars?
+):
+    "View one or more cells' sources, optionally limited to 1-based line range; each cell follows a `# cell <id>` header when several"
+    if not cell_ids: raise TypeError("view_cell() requires at least one cell id")
+    nb = read_nb(path)
+    cells = [_nb_cell(nb, c) for c in cell_ids]
+    res = [_view_cell(c, start_line, end_line, nums, lnhashs, incl_out, trunc_out) for c in cells]
+    if len(res)==1: return PrettyString(res[0])
+    return PrettyString('\n'.join(f'# cell {c.id}\n{r}' for c,r in zip(cells,res)))
 
 # %% ../nbs/13_nbio.ipynb #86453c0f
 def _is_text(x):

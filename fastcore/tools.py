@@ -6,7 +6,7 @@ The editors here are string-level: each takes `text` plus edit parameters and re
 
 File tools wrap the primitives with path I/O, returning unified diffs of what changed ("none: No changes." / "error: ..." otherwise). The path is the first argument, e.g:
 
-    view_file('~/a/b.py', start_line=3)
+    view_files('~/a/b.py', start_line=3)
     create_file('~/a/b/c.py', 'content here')
     file_str_replace('myfile.py', 'old_name', 'new_name')
     file_del_lines('myfile.py', 2, 4)
@@ -21,7 +21,7 @@ Docs: https://fastcore.fast.ai/tools.html.md"""
 # %% auto #0
 __all__ = ['file_insert_line', 'file_str_replace', 'file_strs_replace', 'file_replace_lines', 'file_del_lines',
            'file_ast_replace', 'insert_line', 'str_replace', 'strs_replace', 'replace_lines', 'del_lines', 'line_hash',
-           'lnhash', 'lnhash_at', 'view_file', 'create_file', 'file_edit', 'ast_replace']
+           'lnhash', 'lnhash_at', 'view_files', 'create_file', 'file_edit', 'ast_replace']
 
 # %% ../nbs/12_tools.ipynb #578246d2
 import zlib
@@ -177,7 +177,7 @@ def _view_file(path, start_line, end_line, nums, lnhashs):
     fmt = (lambda i,l: lnhash(i,l)+l) if lnhashs else (lambda i,l: f'{i}: {l}') if nums else (lambda i,l: l)
     return '\n'.join(fmt(i,l) for i,l in enumerate(lines[start_line-1:end_line], start_line))
 
-def view_file(
+def view_files(
     *paths:str, # Paths to view (each expands `~` if needed)
     start_line:int=1, # Starting line to view
     end_line:int=None, # End line (defaults to last line if None; may be past EOF, which clamps to the last line - handy when the file size is unknown)
@@ -185,7 +185,7 @@ def view_file(
     lnhashs:bool=False # Show exhash `lineno|hash|` addresses instead of line numbers?
 ):
     "Read one or more files, optionally limited to 1-based line range; each file follows a `# file <path>` header when several"
-    if not paths: raise TypeError("view_file() requires at least one path")
+    if not paths: raise TypeError("view_files() requires at least one path")
     res = [_view_file(p, start_line, end_line, nums, lnhashs) for p in paths]
     if len(res)==1: return PrettyString(res[0])
     return PrettyString('\n'.join(f'# file {p}\n{r}' for p,r in zip(paths,res)))

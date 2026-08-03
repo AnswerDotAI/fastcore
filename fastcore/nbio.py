@@ -1,6 +1,6 @@
 """Reading and writing Jupyter notebooks
 
-Cell tools apply `fastcore.tools`' string editing primitives to one notebook cell's source, addressed by path and cell id, mirroring that module's file tools: the same operations and parameters, with `path, cell_id` in place of `path`. Each editor (including the structural `cell_ast_replace`) returns a diff of the change, and `view_cell` shows a cell's source with optional line numbers or exhash addresses.
+Cell tools apply `fastcore.tools`' string editing primitives to one notebook cell's source, addressed by path and cell id, mirroring that module's file tools: the same operations and parameters, with `path, cell_id` in place of `path`. Each editor (including the structural `cell_ast_replace`) returns a diff of the change, and `view_cells` shows one or more cells' sources with optional line numbers or exhash addresses.
 
 Naming and parameter conventions shared across the editing toolkit are documented in `fastcore.editskill`, which also re-exports this module's editing tools.
 
@@ -11,7 +11,7 @@ Docs: https://fastcore.fast.ai/nbio.html.md"""
 # %% auto #0
 __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines',
            'cell_ast_replace', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb', 'first_code_ln',
-           'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'cell_edit', 'view_cell', 'validate_cell', 'validate_nb',
+           'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'cell_edit', 'view_cells', 'validate_cell', 'validate_nb',
            'repair_cell', 'repair_nb', 'preferred_out', 'join_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error',
            'concat_streams', 'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'item2xml',
            'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'find_cells', 'select_cells',
@@ -327,7 +327,7 @@ def _view_cell(cell, start_line, end_line, nums, lnhashs, incl_out, trunc_out):
         res += f"\n<out>\n{truncstr(o, 512) if trunc_out else o}\n</out>"
     return res
 
-def view_cell(
+def view_cells(
     path:str, # Notebook file to read
     *cell_ids:str, # Ids of the cells to view (each exact, or a unique prefix)
     start_line:int=1, # Starting line to view
@@ -338,7 +338,7 @@ def view_cell(
     trunc_out:bool=True # Truncate included outputs to ~512 chars?
 ):
     "View one or more cells' sources, optionally limited to 1-based line range; each cell follows a `# cell <id>` header when several"
-    if not cell_ids: raise TypeError("view_cell() requires at least one cell id")
+    if not cell_ids: raise TypeError("view_cells() requires at least one cell id")
     nb = read_nb(path)
     cells = [_nb_cell(nb, c) for c in cell_ids]
     res = [_view_cell(c, start_line, end_line, nums, lnhashs, incl_out, trunc_out) for c in cells]

@@ -10,12 +10,13 @@ Docs: https://fastcore.fast.ai/nbio.html.md"""
 
 # %% auto #0
 __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines',
-           'cell_ast_replace', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb', 'first_code_ln',
-           'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'cell_edit', 'view_cell', 'validate_cell', 'validate_nb',
-           'repair_cell', 'repair_nb', 'preferred_out', 'join_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error',
-           'concat_streams', 'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'item2xml',
-           'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'find_cells', 'select_cells',
-           'exec_cell', 'show_cell', 'pack_frames', 'unpack_frames', 'msg2out', 'msgs2outs']
+           'cell_ast_replace', 'IMG_MIMES', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb',
+           'first_code_ln', 'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'cell_edit', 'view_cell', 'validate_cell',
+           'validate_nb', 'repair_cell', 'repair_nb', 'preferred_out', 'join_out', 'mk_stream', 'mk_result',
+           'mk_display', 'mk_error', 'concat_streams', 'preferred_msg_out', 'render_output', 'render_outputs',
+           'render_text', 'item2xml', 'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb',
+           'find_cells', 'select_cells', 'exec_cell', 'show_cell', 'pack_frames', 'unpack_frames', 'msg2out',
+           'msgs2outs']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -443,10 +444,12 @@ from .xtras import fenced
 from .ansi import strip_ansi
 
 # %% ../nbs/13_nbio.ipynb #9f22b923
+IMG_MIMES = ('image/jpeg','image/png','image/webp')  # raster mimes vision APIs accept; svg renders as text instead
+
 def preferred_out(data, html1st=True, include_imgs=False):
     preftyps = ('application/javascript', 'text/latex')
     preftyps = (('text/html', 'text/markdown') if html1st else ('text/markdown', 'text/html')) + preftyps
-    if include_imgs: preftyps += 'image/jpeg','image/png','image/svg+xml'
+    if include_imgs: preftyps += IMG_MIMES + ('image/svg+xml',)
     preftyps += ('text/plain',)
     for mt in preftyps:
         if (text := data.get(mt)): return mt,text

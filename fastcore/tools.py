@@ -6,7 +6,7 @@ The editors here are string-level: each takes `text` plus edit parameters and re
 
 File tools wrap the primitives with path I/O, returning unified diffs of what changed ("none: No changes." / "error: ..." otherwise). The path is the first argument, e.g:
 
-    view_file('~/a/b.py', 3)
+    view_file('~/a/b.py', start_line=3)
     create_file('~/a/b/c.py', 'content here')
     file_str_replace('myfile.py', 'old_name', 'new_name')
     file_del_lines('myfile.py', 2, 4)
@@ -178,19 +178,14 @@ def _view_file(path, start_line, end_line, nums, lnhashs):
     return '\n'.join(fmt(i,l) for i,l in enumerate(lines[start_line-1:end_line], start_line))
 
 def view_file(
-    *args:str|int, # Paths to view (each expands `~` if needed); up to two int args are `start_line`/`end_line`
+    *paths:str, # Paths to view (each expands `~` if needed)
     start_line:int=1, # Starting line to view
     end_line:int=None, # End line (defaults to last line if None; may be past EOF, which clamps to the last line - handy when the file size is unknown)
     nums:bool=True, # Show line numbers?
     lnhashs:bool=False # Show exhash `lineno|hash|` addresses instead of line numbers?
 ):
     "Read one or more files, optionally limited to 1-based line range; each file follows a `# file <path>` header when several"
-    lns = [o for o in args if isinstance(o,int)]
-    paths = [o for o in args if not isinstance(o,int)]
     if not paths: raise TypeError("view_file() requires at least one path")
-    if len(lns)>2: raise TypeError(f"At most two int args (start_line, end_line), got {len(lns)}")
-    if lns: start_line = lns[0]
-    if len(lns)==2: end_line = lns[1]
     res = [_view_file(p, start_line, end_line, nums, lnhashs) for p in paths]
     if len(res)==1: return PrettyString(res[0])
     return PrettyString('\n'.join(f'# file {p}\n{r}' for p,r in zip(paths,res)))

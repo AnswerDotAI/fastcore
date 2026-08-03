@@ -44,7 +44,7 @@ Modules:
 - `fastcore.editskill`: Text, file, cell, and notebook editing from `fastcore.tools` and `fastcore.nbio`, plus the conventions the whole fastai editing toolkit follows. Read this before working with the editing tools in any package that shares them.
 - `fastcore.foundation`: The `L` class and helpers for it
 - `fastcore.meta`: Metaclasses
-- `fastcore.nbio`: Reading and writing Jupyter notebooks
+- `fastcore.nbio`: Reading, writing, and running Jupyter notebooks
 - `fastcore.net`: Network, HTTP, and URL functions
 - `fastcore.parallel`: Threading and multiprocessing functions
 - `fastcore.script`: Creates a CLI from a Python function decorated with `call_parse`.

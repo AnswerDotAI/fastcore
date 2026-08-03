@@ -1,4 +1,4 @@
-"""Reading and writing Jupyter notebooks
+"""Reading, writing, and running Jupyter notebooks
 
 Cell tools apply `fastcore.tools`' string editing primitives to one notebook cell's source, addressed by path and cell id, mirroring that module's file tools: the same operations and parameters, with `path, cell_id` in place of `path`. Each editor (including the structural `cell_ast_replace`) returns a diff of the change, and `view_cells` shows one or more cells' sources with optional line numbers or exhash addresses.
 
@@ -10,12 +10,13 @@ Docs: https://fastcore.fast.ai/nbio.html.md"""
 
 # %% auto #0
 __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines',
-           'cell_ast_replace', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb', 'first_code_ln',
-           'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'cell_edit', 'view_cells', 'validate_cell', 'validate_nb',
-           'repair_cell', 'repair_nb', 'preferred_out', 'join_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error',
-           'concat_streams', 'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'item2xml',
-           'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'find_cells', 'select_cells',
-           'pack_frames', 'unpack_frames', 'msg2out', 'msgs2outs']
+           'cell_ast_replace', 'IMG_MIMES', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb',
+           'first_code_ln', 'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'cell_edit', 'view_cells', 'validate_cell',
+           'validate_nb', 'repair_cell', 'repair_nb', 'preferred_out', 'join_out', 'mk_stream', 'mk_result',
+           'mk_display', 'mk_error', 'concat_streams', 'preferred_msg_out', 'render_output', 'render_outputs',
+           'render_text', 'item2xml', 'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb',
+           'find_cells', 'select_cells', 'exec_cell', 'show_cell', 'pack_frames', 'unpack_frames', 'msg2out',
+           'msgs2outs']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -25,7 +26,7 @@ from .ansi import ansi2html
 from .meta import delegates,splice_sig
 from .tools import insert_line,str_replace,strs_replace,replace_lines,del_lines,ast_replace,lnhash
 
-import ast,copy,functools,struct
+import ast,copy,functools,inspect,struct,traceback
 from collections import defaultdict
 from pprint import pformat,pprint
 from json import loads,dumps
@@ -450,10 +451,12 @@ from .xtras import fenced
 from .ansi import strip_ansi
 
 # %% ../nbs/13_nbio.ipynb #9f22b923
+IMG_MIMES = ('image/jpeg','image/png','image/webp')  # raster mimes vision APIs accept; svg renders as text instead
+
 def preferred_out(data, html1st=True, include_imgs=False):
     preftyps = ('application/javascript', 'text/latex')
     preftyps = (('text/html', 'text/markdown') if html1st else ('text/markdown', 'text/html')) + preftyps
-    if include_imgs: preftyps += 'image/jpeg','image/png','image/svg+xml'
+    if include_imgs: preftyps += IMG_MIMES + ('image/svg+xml',)
     preftyps += ('text/plain',)
     for mt in preftyps:
         if (text := data.get(mt)): return mt,text
@@ -740,6 +743,45 @@ def select_cells(
     if exported: sel = [o for o in sel if _is_exported(o)]
     if skip_noeval: sel = [o for o in sel if not _is_noeval(o)]
     return sel
+
+# %% ../nbs/13_nbio.ipynb #b30755db
+async def exec_cell(
+    shell, # An IPython `InteractiveShell` (or compatible: `transform_cell`, `compile`, `user_ns`, `events`)
+    src:str, # Cell source: magics, `!` commands, and top-level `await` all work
+): # The final bare expression's value (None if there is none, or a trailing `;` suppresses it)
+    "Run cell `src` in `shell` as a library call: the value and any exception go to the caller, and only the code's own output is shown"
+    __tracebackhide__ = True
+    xsrc = shell.transform_cell(src)
+    tree,cfname = ast.parse(xsrc),shell.compile.cache(xsrc)
+    expr = tree.body.pop().value if tree.body and isinstance(tree.body[-1], ast.Expr) else None
+    async def _go(node, mode):
+        __tracebackhide__ = "__ipython_bottom__"  # to the debugger: all frames above are host machinery
+        co = compile(ast.fix_missing_locations(node), cfname, mode, flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
+        r = eval(co, shell.user_global_ns, shell.user_ns)
+        return await r if co.co_flags & inspect.CO_COROUTINE else r
+    shell.events.trigger('pre_execute')
+    r = None
+    try:
+        if tree.body: await _go(tree, 'exec')
+        if expr is not None: r = await _go(ast.Expression(body=expr), 'eval')
+    finally: shell.events.trigger('post_execute')
+    if src.rstrip().endswith(';') and not src.lstrip().startswith('%%'): return
+    return r
+
+# %% ../nbs/13_nbio.ipynb #6b39aa5b
+async def show_cell(
+    shell, # An IPython `InteractiveShell` (or compatible), as `exec_cell`
+    src:str, # Cell source, as `exec_cell`
+    raise_exc:bool=True, # Raise a failing cell's exception? Else display its traceback as the outcome
+):
+    "Run cell `src` in `shell` and display its result, notebook-style"
+    from IPython.display import display
+    try: r = await exec_cell(shell, src)
+    except Exception:
+        if raise_exc: raise
+        traceback.print_exc()
+        return
+    if r is not None: display(r)
 
 # %% ../nbs/13_nbio.ipynb #4a98dab7
 def pack_frames(body:bytes, buffers=())->bytes:

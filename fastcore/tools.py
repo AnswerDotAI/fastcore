@@ -146,9 +146,9 @@ def del_lines(
 
 # %% ../nbs/12_tools.ipynb #6274581f
 def line_hash(
-    line:str # A single line of text, without trailing newline
+    line:str # Text to hash; when hashing a single line, omit its trailing newline
 )->str:
-    "4-char hex exhash hash of `line`"
+    "4-char hex hash of `line`"
     return f'{zlib.crc32(line.encode()) & 0xffff:04x}'
 
 def lnhash(

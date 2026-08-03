@@ -10,10 +10,10 @@ Each editing function works on one carrier: text (a str in memory), a file (a pa
 
 Two name shapes cover the toolkit, and the pivot is the verb's direct object:
 
-- An operation on a whole carrier takes the carrier as its noun: verb_carrier. `view_file`, `create_file`, `read_nb`, `write_nb`, `view_cell`, `validate_nb`; in the dialog layer `view_msg` and `view_dlg`. Coined verbs follow the same shape: `lnhashview_cell` is "lnhashview this cell". When the verb's object is instead the medium's unit, and that unit names its carrier uniquely, no prefix is needed - the unit noun is the carrier signal: `find_msgs`, `add_msg`, `del_msgs` (msgs live only in dialogs), `find_cells`, `summary_nb`'s rows (cells live only in notebooks).
+- An operation on a whole carrier takes the carrier as its noun: verb_carrier. `view_files`, `create_file`, `read_nb`, `write_nb`, `view_cells`, `validate_nb`; in the dialog layer `view_msgs` and `view_dlg`. Coined verbs follow the same shape: `lnhashview_cells` is "lnhashview these cells". When the verb's object is instead the medium's unit, and that unit names its carrier uniquely, no prefix is needed - the unit noun is the carrier signal: `find_msgs`, `add_msg`, `del_msgs` (msgs live only in dialogs), `find_cells`, `summary_nb`'s rows (cells live only in notebooks).
 - An operation within a carrier already owns its noun (`insert_line`, `del_lines`, `replace_lines`, `str_replace`), so the carrier prefixes as a namespace and the op name survives intact: carrier_op, as in `file_del_lines`, `cell_del_lines`, `msg_del_lines`. The bare op names are the text-level primitives, and every carrier version keeps the identical signature after its address arguments, so each family is learned once and recognized everywhere.
 
-The exceptions are deliberate and closed. `str_replace` keeps the name and argument order established by Anthropic's text editor tool. Instrument-named ops put the instrument first and elide their unit: `ast_replace` (the AST pattern is how the edit finds its target) and `exhash` (hash-verified line addresses travel inside its commands), carrier-prefixed like any other line-level op: `file_ast_replace`, `msg_ast_replace`, `file_exhash`, `cell_exhash`. Converters are named x2y (`nb2dict`, `cell2xml`; in aidialog, `dlg` on exactly one side of every converter), and on a held object the converter is a `to_y` method (`nb.to_dict()`). Plural marks arity: `view_cell` takes one cell, `lnhashview_cells` several, `del_msgs` many.
+The exceptions are deliberate and closed. `str_replace` keeps the name and argument order established by Anthropic's text editor tool. Instrument-named ops put the instrument first and elide their unit: `ast_replace` (the AST pattern is how the edit finds its target) and `exhash` (hash-verified line addresses travel inside its commands), carrier-prefixed like any other line-level op: `file_ast_replace`, `msg_ast_replace`, `file_exhash`, `cell_exhash`. Converters are named x2y (`nb2dict`, `cell2xml`; in aidialog, `dlg` on exactly one side of every converter), and on a held object the converter is a `to_y` method (`nb.to_dict()`). Views take one or more targets, so they use the plural name whatever the count: `view_files`, `view_cells`, and the dialog layer's `view_msgs`; `view_file` stays alongside `view_files` as the single-file form, keeping the name and positional line range established by Anthropic's text editor tool.
 
 ## Parameters
 
@@ -52,14 +52,14 @@ Docs: https://fastcore.fast.ai/tools.html.md and https://fastcore.fast.ai/nbio.h
 
 from fastcore.tools import (insert_line, str_replace, strs_replace, replace_lines, del_lines, ast_replace,
     file_insert_line, file_str_replace, file_strs_replace, file_replace_lines, file_del_lines, file_ast_replace,
-    view_file, create_file, line_hash, lnhash, lnhash_at)
+    view_file, view_files, create_file, line_hash, lnhash, lnhash_at)
 from fastcore.nbio import (read_nb, write_nb, new_nb, mk_cell, validate_nb, validate_cell, repair_nb, repair_cell,
-    view_cell, cell_insert_line, cell_str_replace, cell_strs_replace, cell_replace_lines, cell_del_lines, cell_ast_replace, Notebook, NbCell, find_cells, summary_nb)
+    view_cells, cell_insert_line, cell_str_replace, cell_strs_replace, cell_replace_lines, cell_del_lines, cell_ast_replace, Notebook, NbCell, find_cells, summary_nb)
 
 __all__ = ['insert_line', 'str_replace', 'strs_replace', 'replace_lines', 'del_lines', 'ast_replace',
     'file_insert_line', 'file_str_replace', 'file_strs_replace', 'file_replace_lines', 'file_del_lines', 'file_ast_replace',
-    'view_file', 'create_file', 'line_hash', 'lnhash', 'lnhash_at',
+    'view_file', 'view_files', 'create_file', 'line_hash', 'lnhash', 'lnhash_at',
     'read_nb', 'write_nb', 'new_nb', 'mk_cell', 'validate_nb', 'validate_cell', 'repair_nb', 'repair_cell',
-    'view_cell', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines', 'cell_ast_replace', 'Notebook', 'NbCell', 'find_cells', 'summary_nb']
+    'view_cells', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines', 'cell_ast_replace', 'Notebook', 'NbCell', 'find_cells', 'summary_nb']
 
 __pyskill_params__ = {'replace_params': ('start_line', 'end_line', 'n_matches', 're_filter', 'invert_filter', 'use_regex')}

@@ -52,13 +52,13 @@ Docs: https://fastcore.fast.ai/tools.html.md and https://fastcore.fast.ai/nbio.h
 
 from fastcore.tools import (insert_line, str_replace, strs_replace, replace_lines, del_lines, ast_replace,
     file_insert_line, file_str_replace, file_strs_replace, file_replace_lines, file_del_lines, file_ast_replace,
-    view_file, view_files, create_file, line_hash, lnhash, lnhash_at)
+    view_file, create_file, line_hash, lnhash, lnhash_at)
 from fastcore.nbio import (read_nb, write_nb, new_nb, mk_cell, validate_nb, validate_cell, repair_nb, repair_cell,
     view_cell, cell_insert_line, cell_str_replace, cell_strs_replace, cell_replace_lines, cell_del_lines, cell_ast_replace, Notebook, NbCell, find_cells, summary_nb)
 
 __all__ = ['insert_line', 'str_replace', 'strs_replace', 'replace_lines', 'del_lines', 'ast_replace',
     'file_insert_line', 'file_str_replace', 'file_strs_replace', 'file_replace_lines', 'file_del_lines', 'file_ast_replace',
-    'view_file', 'view_files', 'create_file', 'line_hash', 'lnhash', 'lnhash_at',
+    'view_file', 'create_file', 'line_hash', 'lnhash', 'lnhash_at',
     'read_nb', 'write_nb', 'new_nb', 'mk_cell', 'validate_nb', 'validate_cell', 'repair_nb', 'repair_cell',
     'view_cell', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines', 'cell_ast_replace', 'Notebook', 'NbCell', 'find_cells', 'summary_nb']
 

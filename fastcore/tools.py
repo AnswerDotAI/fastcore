@@ -21,7 +21,7 @@ Docs: https://fastcore.fast.ai/tools.html.md"""
 # %% auto #0
 __all__ = ['file_insert_line', 'file_str_replace', 'file_strs_replace', 'file_replace_lines', 'file_del_lines',
            'file_ast_replace', 'insert_line', 'str_replace', 'strs_replace', 'replace_lines', 'del_lines', 'line_hash',
-           'lnhash', 'lnhash_at', 'view_file', 'view_files', 'create_file', 'file_edit', 'ast_replace']
+           'lnhash', 'lnhash_at', 'view_file', 'create_file', 'file_edit', 'ast_replace']
 
 # %% ../nbs/12_tools.ipynb #578246d2
 import zlib
@@ -167,34 +167,33 @@ def lnhash_at(
     return lnhash(line, s[line-1])
 
 # %% ../nbs/12_tools.ipynb #806c957b
-def view_file(
-    path:str, # Path to view (expands `~` if needed)
-    start_line:int=1, # Starting line to view
-    end_line:int=None, # End line (defaults to last line if None; may be past EOF, which clamps to the last line - handy when the file size is unknown)
-    nums:bool=True, # Show line numbers?
-    lnhashs:bool=False # Show exhash `lineno|hash|` addresses instead of line numbers?
-):
-    "Read file contents, optionally limited to 1-based line range"
-    path = Path(path).expanduser()
-    lines = path.read_text().splitlines()
+def _view_file(path, start_line, end_line, nums, lnhashs):
+    lines = Path(path).expanduser().read_text().splitlines()
     if not lines: return ''
     if end_line is None: end_line = len(lines)
     if end_line < 0: end_line = len(lines)+end_line+1
     if not (1 <= start_line <= len(lines)): return f'error: Invalid start_line {start_line}. Valid range: 1-{len(lines)}'
     if end_line > len(lines): end_line = len(lines)
     fmt = (lambda i,l: lnhash(i,l)+l) if lnhashs else (lambda i,l: f'{i}: {l}') if nums else (lambda i,l: l)
-    return PrettyString('\n'.join(fmt(i,l) for i,l in enumerate(lines[start_line-1:end_line], start_line)))
+    return '\n'.join(fmt(i,l) for i,l in enumerate(lines[start_line-1:end_line], start_line))
 
-# %% ../nbs/12_tools.ipynb #aaba417a
-def view_files(
-    *paths:str, # Paths to view (each expands `~` if needed)
-    start_line:int=1, # Starting line to view (applied to each file)
-    end_line:int=None, # End line (defaults to last line if None; may be past EOF, which clamps to the last line)
+def view_file(
+    *args:str|int, # Paths to view (each expands `~` if needed); up to two int args are `start_line`/`end_line`
+    start_line:int=1, # Starting line to view
+    end_line:int=None, # End line (defaults to last line if None; may be past EOF, which clamps to the last line - handy when the file size is unknown)
     nums:bool=True, # Show line numbers?
     lnhashs:bool=False # Show exhash `lineno|hash|` addresses instead of line numbers?
 ):
-    "Show several files, each preceded by a `# file <path>` header"
-    return PrettyString('\n'.join(f'# file {p}\n{view_file(p, start_line, end_line, nums=nums, lnhashs=lnhashs)}' for p in paths))
+    "Read one or more files, optionally limited to 1-based line range; each file follows a `# file <path>` header when several"
+    lns = [o for o in args if isinstance(o,int)]
+    paths = [o for o in args if not isinstance(o,int)]
+    if not paths: raise TypeError("view_file() requires at least one path")
+    if len(lns)>2: raise TypeError(f"At most two int args (start_line, end_line), got {len(lns)}")
+    if lns: start_line = lns[0]
+    if len(lns)==2: end_line = lns[1]
+    res = [_view_file(p, start_line, end_line, nums, lnhashs) for p in paths]
+    if len(res)==1: return PrettyString(res[0])
+    return PrettyString('\n'.join(f'# file {p}\n{r}' for p,r in zip(paths,res)))
 
 # %% ../nbs/12_tools.ipynb #424d09e1
 def create_file(

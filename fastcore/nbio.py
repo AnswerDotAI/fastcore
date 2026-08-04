@@ -15,8 +15,7 @@ __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace',
            'validate_nb', 'repair_cell', 'repair_nb', 'preferred_out', 'join_out', 'mk_stream', 'mk_result',
            'mk_display', 'mk_error', 'concat_streams', 'preferred_msg_out', 'render_output', 'render_outputs',
            'render_text', 'item2xml', 'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb',
-           'find_cells', 'select_cells', 'exec_cell', 'show_cell', 'pack_frames', 'unpack_frames', 'msg2out',
-           'msgs2outs']
+           'find_cells', 'select_cells', 'exec_cell', 'show_cell', 'msg2out', 'msgs2outs']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -26,7 +25,7 @@ from .ansi import ansi2html
 from .meta import delegates,splice_sig
 from .tools import insert_line,str_replace,strs_replace,replace_lines,del_lines,ast_replace,lnhash
 
-import ast,copy,functools,inspect,struct,traceback
+import ast,copy,functools,inspect,traceback
 from collections import defaultdict
 from pprint import pformat,pprint
 from json import loads,dumps
@@ -775,21 +774,6 @@ async def show_cell(
         traceback.print_exc()
         return
     if r is not None: display(r)
-
-# %% ../nbs/13_nbio.ipynb #4a98dab7
-def pack_frames(body:bytes, buffers=())->bytes:
-    "Pack `body` and binary `buffers` into a legacy Jupyter websocket binary frame"
-    parts = [body, *(bytes(b) for b in buffers)]
-    offs = [4*(len(parts)+1)]
-    for p in parts[:-1]: offs.append(offs[-1]+len(p))
-    return b''.join([struct.pack(f'!{len(parts)+1}I', len(parts), *offs), *parts])
-
-def unpack_frames(bmsg:bytes)->tuple:
-    "Split a legacy Jupyter websocket binary frame into `(body, buffers)`"
-    n = struct.unpack('!I', bmsg[:4])[0]
-    offs = [*struct.unpack(f'!{n}I', bmsg[4:4*(n+1)]), None]
-    parts = [bmsg[a:b] for a,b in zip(offs[:-1], offs[1:])]
-    return parts[0], parts[1:]
 
 # %% ../nbs/13_nbio.ipynb #ec976147
 def _msg_type(msg): return msg.get('msg_type') or msg['header']['msg_type']

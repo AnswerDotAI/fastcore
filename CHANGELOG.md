@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.1.19
+
+### New Features
+
+- move `pack_frames`/`unpack_frames` websocket binary framing helpers to jupywire ([#890](https://github.com/AnswerDotAI/fastcore/issues/890))
+
+
 ## 2.1.18
 
 ### New Features

@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 2.1.18
+
+### New Features
+
+- Move funccall from toolslm ([#889](https://github.com/AnswerDotAI/fastcore/issues/889))
+- Add `IMG_MIMES` constant and support image/webp in `preferred_out` ([#888](https://github.com/AnswerDotAI/fastcore/issues/888))
+- Add `exec_cell` and `show_cell` to nbio for running notebook cells in a live IPython shell ([#886](https://github.com/AnswerDotAI/fastcore/issues/886))
+- `select_cells`: accept multiple cell ids; hide `maybe_await`/`_amagic` frames in tracebacks ([#885](https://github.com/AnswerDotAI/fastcore/issues/885))
+- Add `select_cells` to nbio, move `render_md`/AI output renderers back to aidialog ([#884](https://github.com/AnswerDotAI/fastcore/issues/884))
+
+
 ## 2.1.17
 
 ### New Features

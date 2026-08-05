@@ -11,11 +11,12 @@ Docs: https://fastcore.fast.ai/nbio.html.md"""
 # %% auto #0
 __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines',
            'cell_ast_replace', 'IMG_MIMES', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb',
-           'first_code_ln', 'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'cell_edit', 'view_cell', 'validate_cell',
-           'validate_nb', 'repair_cell', 'repair_nb', 'preferred_out', 'join_out', 'mk_stream', 'mk_result',
-           'mk_display', 'mk_error', 'concat_streams', 'preferred_msg_out', 'render_output', 'render_outputs',
-           'render_text', 'item2xml', 'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb',
-           'find_cells', 'select_cells', 'exec_cell', 'show_cell', 'msg2out', 'msgs2outs']
+           'first_code_ln', 'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'find_id', 'cell_edit', 'view_cell',
+           'validate_cell', 'validate_nb', 'repair_cell', 'repair_nb', 'preferred_out', 'join_out', 'mk_stream',
+           'mk_result', 'mk_display', 'mk_error', 'concat_streams', 'preferred_msg_out', 'render_output',
+           'render_outputs', 'render_text', 'item2xml', 'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows',
+           'summary_nb', 'Found', 'FoundCells', 'find_cells', 'deep_merge', 'update_cell', 'select_cells', 'exec_cell',
+           'show_cell', 'msg2out', 'msgs2outs']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -113,7 +114,8 @@ def dict2nb(js=None, **kwargs):
 
 # %% ../nbs/13_nbio.ipynb #0626f06e
 def read_nb(path):
-    "Return notebook at `path`"
+    "Return notebook at `path` (expands `~`)"
+    path = Path(path).expanduser()
     res = dict2nb(_read_json(path, encoding='utf-8'))
     res['path_'] = str(path)
     return res
@@ -265,12 +267,23 @@ def nb2str(nb):
 
 # %% ../nbs/13_nbio.ipynb #d979e25a
 def write_nb(nb, path):
-    "Write `nb` to `path`"
+    "Write `nb` to `path` (expands `~`)"
     new = nb2str(nb)
-    path = Path(path)
+    path = Path(path).expanduser()
     old = Path(path).read_text(encoding='utf-8') if path.exists() else None
     if new!=old:
         with open(path, 'w', encoding='utf-8') as f: f.write(new)
+
+# %% ../nbs/13_nbio.ipynb #20cffe88
+def find_id(
+    items, # Items carrying `.id` attrs
+    k:str, # Id to find: exact, or unique prefix
+    unit:str='item', # Unit name for error messages
+):
+    "The item with id `k`; a missing or ambiguous id raises `KeyError` naming the problem"
+    res = [o for o in items if o.id==k] or [o for o in items if o.id.startswith(k)]
+    if len(res)!=1: raise KeyError(f"{'ambiguous' if res else 'no'} {unit} id: {k!r}")
+    return res[0]
 
 # %% ../nbs/13_nbio.ipynb #3453e541
 _cell_edit_doc = """
@@ -283,9 +296,7 @@ returns: diff of changes, or "none: No changes.", or "error: ..."
 
 def _nb_cell(nb, cell_id):
     "Cell in `nb` with id `cell_id` (exact match, or unique prefix)"
-    res = [c for c in nb.cells if c.id==cell_id] or [c for c in nb.cells if c.id.startswith(cell_id)]
-    if len(res)!=1: raise KeyError(f"{'ambiguous' if res else 'no'} cell id: {cell_id!r}")
-    return res[0]
+    return find_id(nb.cells, cell_id, 'cell')
 
 def cell_edit(f, name=None):
     "Wrap text editor `f` as a cell editing function: `path, cell_id` addressing, diff-or-error return"
@@ -585,7 +596,7 @@ class Notebook:
 
     @classmethod
     def open(cls, path):
-        path = Path(path).resolve()
+        path = Path(path).expanduser().resolve()
         return cls(read_nb(path), path)
 
     def save(self, path=None): write_nb(self.nb, path or self.path)
@@ -595,7 +606,7 @@ class Notebook:
     @property
     def meta(self): return self.nb.metadata
 
-    def __getitem__(self, k): return self.cells[k] if isinstance(k, (int, slice)) else self._id2cell[k]
+    def __getitem__(self, k): return self.cells[k] if isinstance(k, (int, slice)) else _nb_cell(self.nb, k)
     def __setitem__(self, k, source): self[k].set_source(source)
     def __len__(self): return len(self.cells)
     def __iter__(self): return iter(self.cells)
@@ -638,12 +649,6 @@ def md(self:Notebook, source, idx=None, after=None, before=None, **kwargs):
     "Add a new cell with `source` at `idx` (default: end), or `after`/`before` a cell id"
     return self.add(source, cell_type='markdown', idx=idx, after=after, before=before, **kwargs)
 
-# %% ../nbs/13_nbio.ipynb #5a09a2fa
-@patch
-def find_cells(self:Notebook, pat, cell_type=None):
-    "Find cells with source matching regex `pat`"
-    return [c for c in self.cells if re.search(pat, c.source) and (not cell_type or c.cell_type==cell_type)]
-
 # %% ../nbs/13_nbio.ipynb #63ba4a93
 @patch
 def move(self:Notebook, src_ids, after=None, before=None):
@@ -670,14 +675,15 @@ def view_cell(self:Notebook, id, nums=True, incl_out=False, trunc_out=True):
 
 # %% ../nbs/13_nbio.ipynb #804670bc
 class CellRow:
-    "Snapshot of one cell, shown as `id:t[directives]:source` (t: c=code m=markdown r=raw)"
-    def __init__(self, c, maxlen=120):
-        self.id,self.cell_type,self.source,self.maxlen = c.id,c.cell_type,c.source,maxlen
+    "Snapshot of one cell, shown as `id:t[directives]:source` (t: c=code m=markdown r=raw); a context row from a find shows `-` in place of its final `:`"
+    def __init__(self, c, maxlen=120, kind='match'):
+        self.id,self.cell_type,self.source,self.maxlen,self.kind = c.id,c.cell_type,c.source,maxlen,kind
         self.meta = copy.deepcopy(dict(c.get('metadata',{})))
     def __repr__(self):
         src = self.source.replace('\n', '\\n')
         if len(src)>self.maxlen: src = src[:self.maxlen]+'…'
-        return f"{self.id}:{self.cell_type[0]}{dir_tag(self.meta)}:{src}"
+        sep = ':' if self.kind=='match' else '-'
+        return f"{self.id}:{self.cell_type[0]}{dir_tag(self.meta)}{sep}{src}"
 
 class CellRows(list):
     def __repr__(self): return '\n'.join(repr(o) for o in self)
@@ -694,19 +700,101 @@ def summary_nb(
 ):
     "One snapshot line per cell of the notebook at `path`"
     return Notebook.open(path).summary(maxlen)
-
-def find_cells(
-    path, # Notebook file to search
-    pat:str='', # Regex over cell source
-    cell_type:str=None, # Optional limit by type ('code', 'markdown', or 'raw')
-):
-    "Snapshot `CellRows` for matching cells in the notebook at `path`"
-    return CellRows(CellRow(c) for c in Notebook.open(path).find_cells(pat, cell_type))
-
 @patch
 def to_dict(self:Notebook):
     "The plain dict form of the held notebook (`nb2dict`): the representation layer"
     return nb2dict(self.nb)
+
+# %% ../nbs/13_nbio.ipynb #86609cd9
+class Found:
+    "Mixin for find-result containers: `matched` ids, id-only indexing, and match/context kinds"
+    _unit = 'item'
+    def __init__(self, items=None, matched=None):
+        super().__init__(items if items is not None else [])
+        self.matched = set(matched) if matched is not None else {o.id for o in self}
+    def kind(self, o): return 'match' if o.id in self.matched else 'context'
+    def __getitem__(self, k):
+        if not isinstance(k, str): raise TypeError(
+            f"Find results include context rows, so a position may hold a neighbour of the match: "
+            f"index by {self._unit} id (exact or unique prefix), e.g. res[{next(iter(sorted(self.matched)), 'ab12')!r}]")
+        return find_id(self, k, self._unit)
+
+# %% ../nbs/13_nbio.ipynb #32793977
+class FoundCells(Found, list):
+    "Find results: cells indexed by id (exact or unique prefix), shown as `CellRow` lines with context rows marked"
+    _unit = 'cell'
+    def __repr__(self):
+        rows = [c if isinstance(c, CellRow) else CellRow(c) for c in self]
+        for r in rows: r.kind = self.kind(r)
+        return '\n'.join(repr(r) for r in rows)
+
+# %% ../nbs/13_nbio.ipynb #93d8cd94
+@patch
+def find_cells(self:Notebook,
+    pat:str='', # Regex over cell source
+    cell_type:str=None, # Optional limit by type ('code', 'markdown', or 'raw')
+    ids='', # Optional limit by cell ids (comma-separated str, or list); exact or unique prefixes
+    context:int=None, # Cells of context around matches (default 1)
+):
+    "Find live cells matching all the given criteria, plus `context` neighbouring cells"
+    if context is None: context = 1
+    if ids: ids = {_nb_cell(self.nb, i.strip() if isinstance(i,str) else i.id).id for i in (ids.split(',') if isinstance(ids,str) else ids)}
+    cs = self.cells
+    idxs = [i for i,c in enumerate(cs) if (not pat or re.search(pat, c.source)) and (not cell_type or c.cell_type==cell_type) and (not ids or c.id in ids)]
+    keep = sorted({j for i in idxs for j in range(max(0,i-context), min(len(cs),i+context+1))})
+    return FoundCells([cs[j] for j in keep], matched={cs[i].id for i in idxs})
+
+# %% ../nbs/13_nbio.ipynb #cb639e77
+def find_cells(
+    path, # Notebook file to search
+    pat:str='', # Regex over cell source
+    cell_type:str=None, # Optional limit by type ('code', 'markdown', or 'raw')
+    ids='', # Optional limit by cell ids (comma-separated str, or list); exact or unique prefixes
+    context:int=None, # Cells of context around matches (default 1)
+):
+    "Snapshot `FoundCells` for matching cells in the notebook at `path`"
+    fc = Notebook.open(path).find_cells(pat, cell_type, ids=ids, context=context)
+    return FoundCells([CellRow(c) for c in fc], matched=fc.matched)
+
+# %% ../nbs/13_nbio.ipynb #202a29f1
+def deep_merge(
+    d:dict, # Base dict
+    u:dict, # Updates: nested dicts merge recursively, and a `None` value deletes its key
+):
+    "Copy of `d` updated by `u`"
+    res = dict(d)
+    for k,v in u.items():
+        if v is None: res.pop(k, None)
+        elif isinstance(v, dict) and isinstance(res.get(k), dict): res[k] = deep_merge(res[k], v)
+        else: res[k] = v
+    return res
+
+# %% ../nbs/13_nbio.ipynb #54cc2827
+def update_cell(
+    path:str, # Notebook file to modify
+    cell_id:str, # Id of the cell to update (exact, or unique prefix)
+    mergemeta:dict=None, # `deep_merge` into cell metadata; a `None` value deletes its key
+    export:bool=None, # Add (True) or remove (False) the nbdev export directive, in whichever form the cell uses
+    **kwargs, # Attributes to assign, e.g. `cell_type=`, `source=`, or `metadata=` (replacing it wholesale)
+):
+    "Update a cell's attributes, metadata, or export directive"
+    nb = read_nb(path)
+    c = _nb_cell(nb, cell_id)
+    def _snap(): return f"{to_xml(cell2xml(c, incl_out=False))}\nmeta: {dict(sorted(c.get('metadata',{}).items()))}"
+    before = _snap()
+    for k,v in kwargs.items(): c[k] = v
+    if mergemeta is not None: c.metadata = deep_merge(dict(c.get('metadata',{})), mergemeta)
+    if export is not None:
+        d = c.directives
+        if export: d.setdefault('export', '')
+        else:
+            d.pop('export', None)
+            d.pop('exports', None)
+        c.directives = d
+    repair_cell(c)
+    validate_cell(c)
+    write_nb(nb, path)
+    return PrettyString(str_diff(before, _snap()) or 'none: No changes.')
 
 # %% ../nbs/13_nbio.ipynb #4db01b15
 def _is_exported(cell): return cell.has_directive('export') or cell.has_directive('exports')

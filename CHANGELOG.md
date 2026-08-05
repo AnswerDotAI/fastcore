@@ -2,6 +2,15 @@
 
 <!-- do not remove -->
 
+## 2.1.20
+
+### New Features
+
+- nbio: add `find_id`, FoundCells context-aware `find_cells`, `update_cell` and `deep_merge`; expand ~ in nb paths; id prefix lookup ([#891](https://github.com/AnswerDotAI/fastcore/issues/891))
+- Extend `render_md` with ansi='html' to render ANSI colors as an {=html} block ([#880](https://github.com/AnswerDotAI/fastcore/pull/880)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+- Add WebP and GIF image support ([#877](https://github.com/AnswerDotAI/fastcore/pull/877)), thanks to [@RensDimmendaal](https://github.com/RensDimmendaal)
+
+
 ## 2.1.19
 
 ### New Features

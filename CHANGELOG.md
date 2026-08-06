@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.1
+
+### New Features
+
+- Make OpGroup.`__doc__` a property so subgroups added after init appear in the listing ([#894](https://github.com/AnswerDotAI/fastcore/issues/894))
+
+
 ## 2.2.0
 
 ### Breaking Changes

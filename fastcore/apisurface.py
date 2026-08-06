@@ -112,11 +112,13 @@ class OpGroup:
     "Namespace for grouped operations: each op is an attribute, and the repr lists them all"
     def __init__(self, name: str, ops):
         self.name,self.ops,self.subgroups = name,list(ops),{}
-        repr_md = []
-        for op in self.ops:
-            setattr(self, op.name, op)
-            if hasattr(op, '__signature__'): repr_md.append(f"- {_op_line(op, op.__signature__)}")
-        self.__doc__ = "\n".join(repr_md)
+        for op in self.ops: setattr(self, op.name, op)
+
+    @property
+    def __doc__(self):
+        res = [f"- {_op_line(op, op.__signature__)}" for op in self.ops if hasattr(op, '__signature__')]
+        res.extend(f"- {k}/" for k in sorted(self.subgroups))
+        return "\n".join(res)
 
     def __dir__(self): return object.__dir__(self)
     def __allow__(self): return self.ops + list(self.subgroups.values())

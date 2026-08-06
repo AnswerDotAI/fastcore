@@ -99,12 +99,9 @@ def basic_repr(flds=None):
     if isinstance(flds, str): flds = re.split(', *', flds)
     flds = list(flds or [])
     def _f(self):
-        m = str(type(self).__module__) + '.'
-        if m == '__main__.': m = ''
-        res = f'{m}{type(self).__name__}'
         fs = flds if flds else [o for o in vars(self) if not o.startswith('_')]
         sig = ', '.join(f'{o}={getattr(self,o)!r}' for o in fs)
-        return f'{res}({sig})'
+        return f'{type(self).__qualname__}({sig})'
     return _f
 
 # %% ../nbs/01_basics.ipynb #cacf57ce

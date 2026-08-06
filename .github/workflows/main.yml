@@ -38,6 +38,7 @@ jobs:
       run: |
         pip install -Uqq "nbdev>3"
         pip install -e ".[dev]"
+        python -c "import matplotlib.pyplot"
     - name: Run tests
       run: nbdev-test
       env:

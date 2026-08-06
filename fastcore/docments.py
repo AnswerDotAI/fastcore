@@ -454,7 +454,10 @@ class ShowDocRenderer:
         try: self.sig = signature(sym, eval_str=True)
         except (ValueError,TypeError): self.sig = None
         self.docs = _docstring(sym)
-        self.dm = DocmentText(sym, maxline=maxline, docstring=False)
+        try: self.dm = DocmentText(sym, maxline=maxline, docstring=False)
+        except Exception as e:
+            warnings.warn(f'docments unavailable for {self.nm}: {type(e).__name__}: {e}')
+            self.dm = f'{self.nm}{self.sig or "(...)"}'
         self.fn = _fullname(sym)
 
     __repr__ = basic_repr()

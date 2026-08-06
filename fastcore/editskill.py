@@ -43,7 +43,7 @@ When you don't yet know where to edit, locate with a summary first: `rgapi`'s `r
 - `fastcore.tools`: text primitives, file tools, and `line_hash`/`lnhash`/`lnhash_at` for creating addresses without exhash installed.
 - `fastcore.nbio`: notebook read/write/validate/repair, cell construction, cell editors, and the `Notebook`/`NbCell` session objects with their snapshot queries (`find_cells`, `summary_nb`).
 - `exhash.skill`: hash-verified editing for files and cells; prefer it for edits where installed.
-- `rgapi.skill`: `rg`/`fd`/`ls`/`nbrg` search with lnhash output.
+- `rgapi.skill`: `rg`/`fd`/`ls`/`nbrg` search with lnhash output, and `rgstr` to search text already in hand.
 - `remold`: structural search and rewrite for Python source (declarative ast-grep rules, LibCST matcher transforms, symbol queries); the engine behind `ast_replace`.
 - `aidialog.dlgskill`, `dialoghelper`: the dialog layer, including its own theory of dialogs and projections.
 

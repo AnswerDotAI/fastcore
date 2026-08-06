@@ -2,6 +2,18 @@
 
 <!-- do not remove -->
 
+## 2.2.0
+
+### Breaking Changes
+
+- Use `__qualname__` in `basic_repr` ([#893](https://github.com/AnswerDotAI/fastcore/issues/893))
+
+### New Features
+
+- Note that path param expands ~ in file/cell editing functions ([#892](https://github.com/AnswerDotAI/fastcore/pull/892)), thanks to [@ncoop57](https://github.com/ncoop57)
+- Warn instead of raising when docments source is unreadable ([#893](https://github.com/AnswerDotAI/fastcore/issues/893))
+
+
 ## 2.1.20
 
 ### New Features

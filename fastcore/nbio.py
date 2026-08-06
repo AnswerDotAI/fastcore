@@ -289,7 +289,7 @@ def find_id(
 _cell_edit_doc = """
 This is a *cell* editing function.
 
-Cell editing standard parameters are `path`: notebook file to modify, and `cell_id`: id of the cell to edit (exact, or unique prefix)
+Cell editing standard parameters are `path`: notebook file to modify (expands `~`), and `cell_id`: id of the cell to edit (exact, or unique prefix)
 
 returns: diff of changes, or "none: No changes.", or "error: ..."
 """
@@ -327,7 +327,7 @@ __pyskill_params__ = {'replace_params': ('start_line', 'end_line', 'n_matches', 
 
 # %% ../nbs/13_nbio.ipynb #421b2b9c
 def view_cell(
-    path:str, # Notebook file to read
+    path:str, # Notebook file to read (expands `~`)
     cell_id:str, # Id of the cell to view (exact, or unique prefix)
     start_line:int=1, # Starting line to view
     end_line:int=None, # End line (defaults to last line if None; may be past EOF, which clamps to the last line)

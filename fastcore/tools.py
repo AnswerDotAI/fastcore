@@ -202,7 +202,7 @@ def create_file(
 _file_edit_doc = """
 This is a *file* editing function.
 
-File editing standard parameter is `path`: Path to the file to modify
+File editing standard parameter is `path`: Path to the file to modify (expands `~`)
 
 returns: diff of changes, or "none: No changes.", or "error: ..."
 """

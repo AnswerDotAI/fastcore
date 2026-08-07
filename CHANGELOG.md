@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.4
+
+### New Features
+
+- nbio: extend `nb_frontmatter` with `cell_frontmatter`/`md_frontmatter` (H1 title synthesis, raw wins); frontmatter now raises on bad YAML ([#897](https://github.com/AnswerDotAI/fastcore/issues/897))
+
+
 ## 2.2.3
 
 ### New Features

@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 2.2.3
+
+### New Features
+
+- Support L in `to_xml` rendering; drop ujson fallback in loads/dumps and use stdlib json ([#896](https://github.com/AnswerDotAI/fastcore/issues/896))
+- Add metadata directives as XML attrs in cell2xml ([#859](https://github.com/AnswerDotAI/fastcore/issues/859))
+
+
 ## 2.2.2
 
 ### New Features

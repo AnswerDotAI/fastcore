@@ -11,16 +11,16 @@ Docs: https://fastcore.fast.ai/nbio.html.md"""
 # %% auto #0
 __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines',
            'cell_ast_replace', 'IMG_MIMES', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb',
-           'first_code_ln', 'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'find_id', 'cell_edit', 'view_cell',
-           'validate_cell', 'validate_nb', 'repair_cell', 'repair_nb', 'preferred_out', 'join_out', 'mk_stream',
-           'mk_result', 'mk_display', 'mk_error', 'concat_streams', 'preferred_msg_out', 'render_output',
+           'nb_frontmatter', 'first_code_ln', 'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'find_id', 'cell_edit',
+           'view_cell', 'validate_cell', 'validate_nb', 'repair_cell', 'repair_nb', 'preferred_out', 'join_out',
+           'mk_stream', 'mk_result', 'mk_display', 'mk_error', 'concat_streams', 'preferred_msg_out', 'render_output',
            'render_outputs', 'render_text', 'item2xml', 'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows',
            'summary_nb', 'Found', 'FoundCells', 'find_cells', 'deep_merge', 'update_cell', 'select_cells', 'exec_cell',
            'show_cell', 'msg2out', 'msgs2outs']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
-from .xtras import rtoken_hex,clean_cli_output,take_lines,str_diff,truncstr
+from .xtras import frontmatter,rtoken_hex,clean_cli_output,take_lines,str_diff,truncstr
 from .imports import *
 from .ansi import ansi2html
 from .meta import delegates,splice_sig
@@ -139,6 +139,13 @@ def new_nb(cells=None, meta=None, nbformat=4, nbformat_minor=5):
     "Returns an empty new notebook"
     cells = [o if isinstance(o,dict) else mk_cell(o) for o in cells or []]
     return dict2nb(cells=cells or [],metadata=meta or {},nbformat=nbformat,nbformat_minor=nbformat_minor)
+
+# %% ../nbs/13_nbio.ipynb #af62e5ef
+def nb_frontmatter(nb, strvals:bool=False):
+    "Frontmatter mapping from `nb`'s first cell (raw or markdown opening with `---`)"
+    c = first(nb.cells)
+    if c is None or c.cell_type not in ('raw','markdown'): return {}
+    return frontmatter(c.source, strvals=strvals)[0]
 
 # %% ../nbs/13_nbio.ipynb #c2ed0d5e
 def _dir_pre(lang=None): return fr"\s*{langs[lang]}\s*\|"
@@ -541,10 +548,23 @@ def render_outputs(outputs):
     return '\n'.join(render_output(o) for o in concat_streams(outputs))
 
 # %% ../nbs/13_nbio.ipynb #88b0018a
-def _render_text(out, html1st=False):
+def _tb_line(l, maxlen):
+    "One traceback line, capped at `maxlen`; `None` drops it (an over-long anchor line means nothing once cut). `File `/`Cell ` locations are exempt."
+    if len(l) <= maxlen: return l
+    if l.strip() and not (set(l) - set('~^ ')): return None
+    if l.lstrip().startswith(('File ', 'Cell ')): return l
+    return l[:maxlen] + '…'
+
+def _cap_tb(tb, maxlen):
+    "Cap over-long lines in `tb`'s chunks, stripping ANSI first (the cap can sever an escape sequence); the last chunk is the exception message and survives whole"
+    tb = [strip_ansi(c) for c in tb]
+    return ['\n'.join(l for l in (_tb_line(x, maxlen) for x in c.split('\n')) if l is not None) for c in tb[:-1]] + tb[-1:]
+
+def _render_text(out, html1st=False, tb_maxlen=None):
     typ = out['output_type']
+    if typ=='error' and tb_maxlen: out = {**out, 'traceback': _cap_tb(out.get('traceback', []), tb_maxlen)}
     mime,d = preferred_msg_out(out, html1st=html1st, include_imgs=False)
-    d = join_out(d)
+    d = strip_ansi(join_out(d))
     if not d: return None
     attrs = {}
     if typ == 'stream': typ = out.get('name')
@@ -552,10 +572,10 @@ def _render_text(out, html1st=False):
     body = f'\n{d}' if d.endswith('\n') else f'\n{d}\n'
     return d, to_xml(ft(typ, body, **attrs), do_escape=False, indent=False)
 
-def render_text(outputs, html1st=False):
-    "Render notebook outputs to concise text, using XML-ish tags when multiple outputs are present."
+def render_text(outputs, html1st=False, tb_maxlen=None):
+    "Render notebook outputs to concise ANSI-stripped text, using XML-ish tags when multiple outputs are present; `tb_maxlen` caps over-long error-traceback lines"
     if (not isinstance(outputs, (list,tuple))) or (outputs and not isinstance(outputs[0],dict)): return ''
-    items = [o for out in concat_streams(outputs) if (o := _render_text(out, html1st=html1st))]
+    items = [o for out in concat_streams(outputs) if (o := _render_text(out, html1st=html1st, tb_maxlen=tb_maxlen))]
     if not items: return ''
     return items[0][0] if len(items)==1 else '\n'.join(o[1] for o in items)
 

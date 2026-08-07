@@ -741,15 +741,17 @@ def asave_iter(g):
     return _
 
 # %% ../nbs/03_xtras.ipynb #d2757e2a
-def frontmatter(txt:str)->tuple:
+def frontmatter(txt:str, strvals:bool=False)->tuple:
     "Tuple of (dict, body) from frontmatter in `txt`; invalid/missing frontmatter returns ({}, txt)"
     import yaml
     if not txt.startswith('---\n'): return {},txt
-    fm,part,body = txt[4:].partition('\n---\n')
-    if not part: return {},txt
-    try: res = yaml.safe_load(fm)
-    except yaml.parser.ParserError: return {},txt
-    return (res,body) if isinstance(res,dict) else ({},txt)
+    end = min((i for i in (txt.find(f'\n{c}\n', 3) for c in ('---','...')) if i >= 0), default=-1)
+    if end < 0:
+        if not txt.endswith(('\n---','\n...')): return {},txt
+        end = len(txt) - 4
+    try: res = yaml.load(txt[4:end], Loader=yaml.BaseLoader if strvals else yaml.SafeLoader)
+    except yaml.YAMLError: return {},txt
+    return (res,txt[end+5:]) if isinstance(res,dict) else ({},txt)
 
 # %% ../nbs/03_xtras.ipynb #45eb5141
 def clean_cli_output(txt:str, strip:bool=True):

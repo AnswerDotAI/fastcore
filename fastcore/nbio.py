@@ -11,12 +11,12 @@ Docs: https://fastcore.fast.ai/nbio.html.md"""
 # %% auto #0
 __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines',
            'cell_ast_replace', 'IMG_MIMES', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb',
-           'nb_frontmatter', 'first_code_ln', 'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'find_id', 'cell_edit',
-           'view_cell', 'validate_cell', 'validate_nb', 'repair_cell', 'repair_nb', 'preferred_out', 'join_out',
-           'mk_stream', 'mk_result', 'mk_display', 'mk_error', 'concat_streams', 'preferred_msg_out', 'render_output',
-           'render_outputs', 'render_text', 'item2xml', 'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows',
-           'summary_nb', 'Found', 'FoundCells', 'find_cells', 'deep_merge', 'update_cell', 'select_cells', 'exec_cell',
-           'show_cell', 'msg2out', 'msgs2outs']
+           'cell_frontmatter', 'md_frontmatter', 'nb_frontmatter', 'first_code_ln', 'dir_tag', 'nb2dict', 'nb2str',
+           'write_nb', 'find_id', 'cell_edit', 'view_cell', 'validate_cell', 'validate_nb', 'repair_cell', 'repair_nb',
+           'preferred_out', 'join_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error', 'concat_streams',
+           'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'item2xml', 'cell2xml', 'cells2xml',
+           'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'Found', 'FoundCells', 'find_cells', 'deep_merge',
+           'update_cell', 'select_cells', 'exec_cell', 'show_cell', 'msg2out', 'msgs2outs']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -141,11 +141,33 @@ def new_nb(cells=None, meta=None, nbformat=4, nbformat_minor=5):
     return dict2nb(cells=cells or [],metadata=meta or {},nbformat=nbformat,nbformat_minor=nbformat_minor)
 
 # %% ../nbs/13_nbio.ipynb #af62e5ef
+def cell_frontmatter(s:str, strvals:bool=False):
+    "Frontmatter mapping from a cell source that is entirely a literal `---` block, else {}"
+    d,body = frontmatter(s.strip(), strvals=strvals)
+    return d if not body.strip() else {}
+
+def md_frontmatter(s:str):
+    "Frontmatter synthesized from an H1-formatted markdown cell: `# title`, `> description`, and `- key: value` lines"
+    import yaml
+    m = re.search(r'^#\s+(\S.*?)\s*$', s, flags=re.MULTILINE)
+    if not m: return {}
+    res = dict(title=m.group(1))
+    m = re.search(r'^>\s+(\S.*?)\s*$', s, flags=re.MULTILINE)
+    if m: res['description'] = m.group(1)
+    r = re.findall(r'^-\s+(\S.*:.*\S)\s*$', s, flags=re.MULTILINE)
+    if r:
+        try: res.update(yaml.safe_load('\n'.join(r)))
+        except yaml.YAMLError as e: warn(f'Failed to create YAML dict for:\n{r}\n\n{e}\n')
+    return res
+
 def nb_frontmatter(nb, strvals:bool=False):
-    "Frontmatter mapping from `nb`'s first cell (raw or markdown opening with `---`)"
-    c = first(nb.cells)
-    if c is None or c.cell_type not in ('raw','markdown'): return {}
-    return frontmatter(c.source, strvals=strvals)[0]
+    "Frontmatter from `nb`: its first raw cell plus first markdown cell (literal `---` block, or `# title` synthesis), raw keys winning"
+    raw = first(c for c in nb.cells if c.cell_type=='raw')
+    md  = first(c for c in nb.cells if c.cell_type=='markdown')
+    res = (cell_frontmatter(md.source, strvals=strvals) or md_frontmatter(md.source)) if md else {}
+    if raw: res.update(cell_frontmatter(raw.source, strvals=strvals))
+    return res
+
 
 # %% ../nbs/13_nbio.ipynb #c2ed0d5e
 def _dir_pre(lang=None): return fr"\s*{langs[lang]}\s*\|"

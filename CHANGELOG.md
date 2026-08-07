@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.2
+
+### New Features
+
+- Add `nb_frontmatter` and frontmatter strvals/closing-fence support; strip ANSI in `render_text` with `tb_maxlen` traceback line capping ([#895](https://github.com/AnswerDotAI/fastcore/issues/895))
+
+
 ## 2.2.1
 
 ### New Features

@@ -43,7 +43,7 @@ from .ansi import strip_ansi
 
 from importlib import import_module
 from functools import wraps
-import string,time,dataclasses,difflib
+import string,time,dataclasses,difflib,json
 from enum import Enum
 from contextlib import contextmanager,ExitStack
 from configparser import ConfigParser
@@ -250,8 +250,6 @@ def bunzip(fn):
 def loads(s, **kw):
     "Same as `json.loads`, but handles `None`"
     if not s: return {}
-    try: import ujson as json
-    except ModuleNotFoundError: import json
     return json.loads(s, **kw)
 
 # %% ../nbs/03_xtras.ipynb #131170f7
@@ -268,10 +266,7 @@ def loads_multi(s:str):
 
 # %% ../nbs/03_xtras.ipynb #ed688ac4
 def dumps(obj, **kw):
-    "Same as `json.dumps`, but uses `ujson` if available"
-    try: import ujson as json
-    except ModuleNotFoundError: import json
-    else: kw['escape_forward_slashes']=False
+    "Same as `json.dumps`"
     return json.dumps(obj, **kw)
 
 # %% ../nbs/03_xtras.ipynb #ac84300c

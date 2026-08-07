@@ -182,7 +182,7 @@ def _to_xml(elm, lvl=0, indent=True, do_escape=True):
     esc_fn = _escape if do_escape else _noescape
     if elm is None: return ''
     if hasattr(elm, '__ft__'): elm = elm.__ft__()
-    if isinstance(elm, tuple): return ''.join(_to_xml(o, lvl=lvl, indent=indent, do_escape=do_escape) for o in elm)
+    if isinstance(elm, (tuple, L)): return ''.join(_to_xml(o, lvl=lvl, indent=indent, do_escape=do_escape) for o in elm)
     if isinstance(elm, bytes): return elm.decode('utf-8')
     if not isinstance(elm, FT): return f'{esc_fn(elm)}'
 
@@ -204,7 +204,7 @@ def _to_xml(elm, lvl=0, indent=True, do_escape=True):
     if not cs:
         if is_void: return f'{sp}{stag_}{nl_end}'
         else: return f'{sp}{stag_}{cltag}{nl_end}'
-    if len(cs) == 1 and not isinstance(cs[0], (list, tuple, FT)) and not hasattr(cs[0], '__ft__'):
+    if len(cs) == 1 and not isinstance(cs[0], (list, tuple, L, FT)) and not hasattr(cs[0], '__ft__'):
         content = esc_fn(cs[0])
         return f'{sp}{stag_}{content}{cltag}{nl_end}'
 
@@ -217,12 +217,11 @@ def _to_xml(elm, lvl=0, indent=True, do_escape=True):
 def to_xml(*elms, lvl=0, indent=True, do_escape=True):
     "Convert `ft` element tree into an XML string"
     def _f(elm):
-        if isinstance(elm, (list,tuple,FT)) or hasattr(elm, '__ft__'):
+        if isinstance(elm, (list,tuple,L,FT)) or hasattr(elm, '__ft__'):
             return _to_xml(elm, lvl, indent, do_escape=do_escape)
         if isinstance(elm, bytes): return elm.decode('utf-8')
         return elm or ''
     return Safe('\n'.join(map(_f, elms)))
-
 
 # %% ../nbs/09_xml.ipynb #dd054392
 @patch

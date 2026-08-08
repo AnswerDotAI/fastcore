@@ -16,7 +16,7 @@ __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace',
            'preferred_out', 'join_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error', 'concat_streams',
            'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'item2xml', 'cell2xml', 'cells2xml',
            'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'Found', 'FoundCells', 'find_cells', 'deep_merge',
-           'update_cell', 'select_cells', 'exec_cell', 'show_cell', 'msg2out', 'msgs2outs']
+           'update_cell', 'select_cells', 'run_cell', 'msg2out', 'msgs2outs']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -866,44 +866,28 @@ def select_cells(
     if skip_noeval: sel = [o for o in sel if not _is_noeval(o)]
     return sel
 
-# %% ../nbs/13_nbio.ipynb #b30755db
-async def exec_cell(
-    shell, # An IPython `InteractiveShell` (or compatible: `transform_cell`, `compile`, `user_ns`, `events`)
-    src:str, # Cell source: magics, `!` commands, and top-level `await` all work
-): # The final bare expression's value (None if there is none, or a trailing `;` suppresses it)
-    "Run cell `src` in `shell` as a library call: the value and any exception go to the caller, and only the code's own output is shown"
-    __tracebackhide__ = True
-    xsrc = shell.transform_cell(src)
-    tree,cfname = ast.parse(xsrc),shell.compile.cache(xsrc)
-    expr = tree.body.pop().value if tree.body and isinstance(tree.body[-1], ast.Expr) else None
-    async def _go(node, mode):
-        __tracebackhide__ = "__ipython_bottom__"  # to the debugger: all frames above are host machinery
-        co = compile(ast.fix_missing_locations(node), cfname, mode, flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
-        r = eval(co, shell.user_global_ns, shell.user_ns)
-        return await r if co.co_flags & inspect.CO_COROUTINE else r
-    shell.events.trigger('pre_execute')
-    r = None
-    try:
-        if tree.body: await _go(tree, 'exec')
-        if expr is not None: r = await _go(ast.Expression(body=expr), 'eval')
-    finally: shell.events.trigger('post_execute')
-    if src.rstrip().endswith(';') and not src.lstrip().startswith('%%'): return
-    return r
-
-# %% ../nbs/13_nbio.ipynb #6b39aa5b
-async def show_cell(
-    shell, # An IPython `InteractiveShell` (or compatible), as `exec_cell`
-    src:str, # Cell source, as `exec_cell`
-    raise_exc:bool=True, # Raise a failing cell's exception? Else display its traceback as the outcome
+# %% ../nbs/13_nbio.ipynb #4c71f592
+async def run_cell(
+    shell, # An `InteractiveShell`-compatible object: `transform_cell`, `run_cell_async`, `events`
+    raw_cell:str, # Python/IPython source for one cell: magics, `!` commands, and top-level `await` all work
+    store_history:bool=False, # Store the cell in the shell's history? (enables native `;` suppression and execution counts)
+    silent:bool=False, # Suppress displayhook and `post_run_cell` event? (the result value stays unset)
+    shell_futures:bool=True, # Share `__future__` imports with the shell?
+    cell_id=None, # Optional cell id, passed through to `run_cell_async`
 ):
-    "Run cell `src` in `shell` and display its result, notebook-style"
-    from IPython.display import display
-    try: r = await exec_cell(shell, src)
+    "Run one cell on `shell`: transform, await `run_cell_async` on the calling loop, and fire the post events; returns the `ExecutionResult`"
+    preprocessing_exc_tuple = None
+    try: transformed_cell = shell.transform_cell(raw_cell)
     except Exception:
-        if raise_exc: raise
-        traceback.print_exc()
-        return
-    if r is not None: display(r)
+        transformed_cell = raw_cell
+        preprocessing_exc_tuple = sys.exc_info()
+    result = None
+    try: result = await shell.run_cell_async(raw_cell, store_history, silent, shell_futures=shell_futures,
+        transformed_cell=transformed_cell, preprocessing_exc_tuple=preprocessing_exc_tuple, cell_id=cell_id)
+    finally:
+        shell.events.trigger('post_execute')
+        if not silent: shell.events.trigger('post_run_cell', result)
+    return result
 
 # %% ../nbs/13_nbio.ipynb #ec976147
 def _msg_type(msg): return msg.get('msg_type') or msg['header']['msg_type']

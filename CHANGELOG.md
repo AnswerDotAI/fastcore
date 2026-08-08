@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.5
+
+### New Features
+
+- Replace `exec_cell`/`show_cell` with `run_cell` wrapping IPython `run_cell_async` ([#898](https://github.com/AnswerDotAI/fastcore/issues/898))
+
+
 ## 2.2.4
 
 ### New Features

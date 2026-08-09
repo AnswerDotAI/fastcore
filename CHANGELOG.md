@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 2.2.6
+
+### New Features
+
+- Add `parallel_async_gen` and `parallel_async_dict` for streaming async results ([#899](https://github.com/AnswerDotAI/fastcore/issues/899))
+- `render_text` gains `include_imgs=`, rendering image outputs as mime-tagged elements ([#863](https://github.com/AnswerDotAI/fastcore/pull/863)), thanks to [@ncoop57](https://github.com/ncoop57)
+
+
 ## 2.2.5
 
 ### New Features

@@ -8,7 +8,7 @@ Docs: https://fastcore.fast.ai/parallel.html.md"""
 
 # %% auto #0
 __all__ = ['threaded', 'startthread', 'startproc', 'parallelable', 'ThreadPoolExecutor', 'ProcessPoolExecutor', 'parallel',
-           'parallel_async', 'bg_task']
+           'parallel_async_gen', 'parallel_async_dict', 'parallel_async', 'bg_task']
 
 # %% ../nbs/03a_parallel.ipynb #569d18c6
 from .imports import *
@@ -19,7 +19,7 @@ from .xtras import *
 from functools import wraps
 
 import concurrent.futures,time
-from multiprocessing import Process,Queue,Manager,set_start_method,get_all_start_methods,get_context
+from multiprocessing import Process,Manager,set_start_method,get_context
 from threading import Thread,Lock
 try:
     if sys.platform == 'darwin' and IN_NOTEBOOK: set_start_method("fork")
@@ -127,7 +127,7 @@ class ProcessPoolExecutor(concurrent.futures.ProcessPoolExecutor):
 
 # %% ../nbs/03a_parallel.ipynb #529e1bb1
 def parallel(f, items, *args, n_workers=defaults.cpus, total=None, progress=None, pause=0,
-             method=None, threadpool=False, timeout=None, chunksize=1, return_exceptions=False, **kwargs):
+    method=None, threadpool=False, timeout=None, chunksize=1, return_exceptions=False, **kwargs):
     "Applies `func` in parallel to `items`, using `n_workers`"
     kwpool = {}
     if threadpool: pool = ThreadPoolExecutor
@@ -150,25 +150,40 @@ def _add_one(x, a=1):
     time.sleep(random.random()/80)
     return x+a
 
-# %% ../nbs/03a_parallel.ipynb #87a80e04
-async def parallel_async(f, items, *args, n_workers=16, pause=0,
-        timeout=None, chunksize=1, cancel_on_error=False, return_exceptions=False, **kwargs):
-    "Applies `f` to `items` in parallel using asyncio and a semaphore to limit concurrency."
+# %% ../nbs/03a_parallel.ipynb #9a6e2f26
+async def parallel_async_gen(f, items, *args, n_workers=16, pause=0,
+    timeout=None, return_exceptions=False, cancel_on_exit=True, **kwargs):
+    "Yield `(index,result)` pairs as `f` applied to each of `items` completes, in completion order"
     import asyncio
     semaphore = asyncio.Semaphore(n_workers)
     async def limited_task(i, item):
         if pause: await asyncio.sleep(i * pause)
         async with semaphore:
             coro = f(item, *args, **kwargs) if asyncio.iscoroutinefunction(f) else asyncio.to_thread(f, item, *args, **kwargs)
-            return await asyncio.wait_for(coro, timeout) if timeout else await coro
-    if cancel_on_error:
-        tasks = [asyncio.ensure_future(limited_task(i, item)) for i,item in enumerate(items)]
-        try: return await asyncio.gather(*tasks)
-        except BaseException:
+            try: return i, (await asyncio.wait_for(coro, timeout) if timeout else await coro)
+            except Exception as e:
+                if return_exceptions: return i, e
+                raise
+    tasks = [asyncio.ensure_future(limited_task(i, o)) for i,o in enumerate(items)]
+    try:
+        for t in asyncio.as_completed(tasks): yield await t
+    finally:
+        if cancel_on_exit:
             for t in tasks: t.cancel()
             await asyncio.gather(*tasks, return_exceptions=True)
-            raise
-    return await asyncio.gather(*[limited_task(i, item) for i,item in enumerate(items)], return_exceptions=return_exceptions)
+
+# %% ../nbs/03a_parallel.ipynb #7406c085
+@delegates(parallel_async_gen)
+async def parallel_async_dict(f, items, *args, **kwargs):
+    "Apply `f` to `items` in parallel, returning `{index: result}` in completion order"
+    return {i:r async for i,r in parallel_async_gen(f, items, *args, **kwargs)}
+
+# %% ../nbs/03a_parallel.ipynb #87a80e04
+@delegates(parallel_async_dict, but=['cancel_on_exit'])
+async def parallel_async(f, items, *args, cancel_on_error=False, **kwargs):
+    "Applies `f` to `items` in parallel using asyncio and a semaphore to limit concurrency."
+    res = await parallel_async_dict(f, items, *args, cancel_on_exit=cancel_on_error, **kwargs)
+    return L(res[i] for i in range(len(res)))
 
 # %% ../nbs/03a_parallel.ipynb #6748aa27
 def bg_task(coro):

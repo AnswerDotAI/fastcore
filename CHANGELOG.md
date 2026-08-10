@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.9
+
+### New Features
+
+- Add `id_words`, `to_camel`, `to_pascal`, `to_kebab`, `to_snake` to basics; refactor camel2words/camel2snake/snake2camel to share the splitter ([#902](https://github.com/AnswerDotAI/fastcore/issues/902))
+
+
 ## 2.2.8
 
 ### New Features

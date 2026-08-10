@@ -186,11 +186,20 @@ async def parallel_async(f, items, *args, cancel_on_error=False, **kwargs):
     return L(res[i] for i in range(len(res)))
 
 # %% ../nbs/03a_parallel.ipynb #6748aa27
-def bg_task(coro):
-    "Like `asyncio.create_task` but logs exceptions for fire-and-forget tasks"
+_bg_tasks = set()
+
+def bg_task(
+    coro, # Coroutine to schedule
+    on_err=None, # Called with the exception when the task fails; default prints the traceback
+):
+    "Like `asyncio.create_task`, but keeps the task alive and reports exceptions, for fire-and-forget tasks"
     import traceback,asyncio
     def _done(t):
-        if not t.cancelled() and (exc := t.exception()): traceback.print_exception(exc)
+        if not t.cancelled() and (exc := t.exception()):
+            if on_err: on_err(exc)
+            else: traceback.print_exception(exc)
     task = asyncio.create_task(coro)
+    _bg_tasks.add(task)
+    task.add_done_callback(_bg_tasks.discard)
     task.add_done_callback(_done)
     return task

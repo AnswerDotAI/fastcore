@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.8
+
+### New Features
+
+- Add `trunc_ctr` and TruncatedString to xtras for middle-truncating long strings with a humanized elision marker ([#901](https://github.com/AnswerDotAI/fastcore/issues/901))
+
+
 ## 2.2.7
 
 ### New Features

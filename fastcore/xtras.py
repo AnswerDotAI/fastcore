@@ -29,11 +29,11 @@ __all__ = ['UNSET', 'spark_chars', 'walk_join', 'walk', 'exttypes', 'globtastic'
            'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'strloader', 'frontmatter',
            'clean_cli_output', 'unqid', 'rtoken_hex', 'friendly_name', 'n_friendly_names', 'exec_eval',
            'get_source_link', 'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file',
-           'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'fenced',
-           'fenced_blocks', 'str_diff', 'utc2local', 'local2utc', 'trace', 'modified_env', 'ContextManagers',
-           'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src', 'nullable_dc', 'make_nullable',
-           'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple', 'CachedIter', 'flexicache',
-           'time_policy', 'mtime_policy', 'timed_cache']
+           'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'trunc_ctr',
+           'TruncatedString', 'fenced', 'fenced_blocks', 'str_diff', 'utc2local', 'local2utc', 'trace', 'modified_env',
+           'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src', 'nullable_dc',
+           'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple', 'CachedIter',
+           'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb #3401d507
 from .imports import *
@@ -982,6 +982,22 @@ def truncstr(s:str, maxlen:int, suf:str='…', space='', sizevar:str=None)->str:
     "Truncate `s` to length `maxlen`, adding suffix `suf` if truncated"
     if sizevar: suf = suf.format_map({sizevar: len(s)})
     return s[:maxlen-len(suf)]+suf if len(s)+len(space)>maxlen else s+space
+
+# %% ../nbs/03_xtras.ipynb #a67b3fca
+def trunc_ctr(s:str, mx:int=1000)->str:
+    "Truncate the middle of `s` so ~`mx` chars remain, marking the elision with its `humanize`d size"
+    if mx is None or len(s)<=mx: return s
+    h = mx//2
+    return f'{s[:h]}…[{humanize(len(s)-mx)} chars]…{s[len(s)-(mx-h):]}'
+
+# %% ../nbs/03_xtras.ipynb #8d120ca6
+class TruncatedString(str):
+    "A `str` whose repr shows contents verbatim, middle-truncated to ~`mx` chars"
+    def __new__(cls, s='', mx:int=1000):
+        res = super().__new__(cls, s)
+        res.mx = mx
+        return res
+    def __repr__(self): return trunc_ctr(self, self.mx)
 
 # %% ../nbs/03_xtras.ipynb #2f5e6b12
 def fenced(text:str, info:str='', ch:str='`')->str:

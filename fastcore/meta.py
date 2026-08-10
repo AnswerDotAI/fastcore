@@ -167,7 +167,7 @@ def delegates(
         s2 = _del_params(to_f, sig, but, sort_args)
         anno = {k:v for k,v in getattr(to_f, "__annotations__", {}).items()
             if k not in sig.parameters and k not in but}
-        from_f.__signature__ = sig_with_params(sig, remove=None if keep else 'kwargs', keep='kwargs' if keep else None, **s2)
+        from_f.__signature__ = sig_with_params(sig, remove=None if keep else 'kwargs', **s2)
         if not keep: from_f.__delwrap__ = to_f
         if hasattr(from_f, '__annotations__'): from_f.__annotations__.update(anno)
         if not from_f.__doc__ and to_f.__doc__: from_f.__doc__ = to_f.__doc__

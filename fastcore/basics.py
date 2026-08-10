@@ -1454,13 +1454,11 @@ def kindsort(ps):
     "Params sorted by `Parameter.kind`"
     return sorted(ps, key=lambda p: p.kind)
 
-def sig_with_params(sig, remove=None, keep=None, **updates):
-    "Copy of `sig` with `remove`d params dropped, `keep` params retained, and `updates` added, kind-sorted"
+def sig_with_params(sig, remove=None, **updates):
+    "Copy of `sig` with `remove`d params dropped and `updates` added, kind-sorted"
     sigd = dict(sig.parameters)
     for k in listify(remove): sigd.pop(k, None)
-    kept = {k: sigd.pop(k) for k in listify(keep) if k in sigd}
     sigd.update(updates)
-    sigd.update(kept)
     return sig.replace(parameters=kindsort(sigd.values()))
 
 # %% ../nbs/01_basics.ipynb #b5758ba3

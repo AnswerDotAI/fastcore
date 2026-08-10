@@ -44,20 +44,20 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'risinstance', 'ver2tuple', 'Inf', 'in_', 'ret_true', 'ret_false', 'stop', 'gen', 'chunked', 'otherwise',
            'custom_dir', 'adict', 'AttrDict', 'AttrDictDefault', 'NS', 'get_annotations_ex', 'eval_type', 'type_hints',
            'annotations', 'anno_ret', 'signature_ex', 'union2tuple', 'argnames', 'with_cast', 'store_attr', 'attrdict',
-           'properties', 'camel2words', 'camel2snake', 'snake2camel', 'humanize', 'class2attr', 'getcallable',
-           'getattrs', 'hasattrs', 'setattrs', 'try_attrs', 'DepProp', 'GetAttrBase', 'GetAttr', 'delegate_attr',
-           'ShowPrint', 'Int', 'Str', 'Float', 'partition', 'partition_dict', 'flatten', 'concat', 'strcat',
-           'detuplify', 'replicate', 'setify', 'merge', 'range_of', 'groupby', 'last_index', 'filter_dict',
-           'filter_keys', 'filter_values', 'cycle', 'zip_cycle', 'sorted_ex', 'not_', 'argwhere', 'filter_ex',
-           'renumerate', 'first', 'last', 'only', 'nested_attr', 'nested_setdefault', 'nested_callable', 'nested_idx',
-           'set_nested_idx', 'val2idx', 'uniqueify', 'loop_first_last', 'loop_first', 'loop_last', 'first_match',
-           'last_match', 'joins', 'fastuple', 'bind', 'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate',
-           'using_attr', 'negate', 'fail_clean', 'dstar', 'copy_func', 'patch_to', 'patch', 'extend_enum', 'compile_re',
-           'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum', 'Stateful', 'NotStr', 'PrettyString', 'even_mults',
-           'num_cpus', 'add_props', 'str2bool', 'str2int', 'str2float', 'str2list', 'str2date', 'str2dt', 'to_bool',
-           'to_int', 'to_float', 'to_list', 'to_date', 'typed', 'exec_new', 'exec_import', 'kindsort',
-           'sig_with_params', 'fdelegates', 'xdumps', 'revive_dates', 'lt', 'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub',
-           'mul', 'truediv', 'is_', 'is_not', 'mod']
+           'properties', 'id_words', 'to_camel', 'to_pascal', 'to_kebab', 'to_snake', 'camel2words', 'camel2snake',
+           'snake2camel', 'humanize', 'class2attr', 'getcallable', 'getattrs', 'hasattrs', 'setattrs', 'try_attrs',
+           'DepProp', 'GetAttrBase', 'GetAttr', 'delegate_attr', 'ShowPrint', 'Int', 'Str', 'Float', 'partition',
+           'partition_dict', 'flatten', 'concat', 'strcat', 'detuplify', 'replicate', 'setify', 'merge', 'range_of',
+           'groupby', 'last_index', 'filter_dict', 'filter_keys', 'filter_values', 'cycle', 'zip_cycle', 'sorted_ex',
+           'not_', 'argwhere', 'filter_ex', 'renumerate', 'first', 'last', 'only', 'nested_attr', 'nested_setdefault',
+           'nested_callable', 'nested_idx', 'set_nested_idx', 'val2idx', 'uniqueify', 'loop_first_last', 'loop_first',
+           'loop_last', 'first_match', 'last_match', 'joins', 'fastuple', 'bind', 'mapt', 'map_ex', 'compose', 'maps',
+           'partialler', 'instantiate', 'using_attr', 'negate', 'fail_clean', 'dstar', 'copy_func', 'patch_to', 'patch',
+           'extend_enum', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum', 'Stateful', 'NotStr',
+           'PrettyString', 'even_mults', 'num_cpus', 'add_props', 'str2bool', 'str2int', 'str2float', 'str2list',
+           'str2date', 'str2dt', 'to_bool', 'to_int', 'to_float', 'to_list', 'to_date', 'typed', 'exec_new',
+           'exec_import', 'kindsort', 'sig_with_params', 'fdelegates', 'xdumps', 'revive_dates', 'lt', 'gt', 'le', 'ge',
+           'eq', 'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
 
 # %% ../nbs/01_basics.ipynb #0e91ed82
 from .imports import *
@@ -516,26 +516,46 @@ def properties(cls, *ps):
     "Change attrs in `cls` with names in `ps` to properties"
     for p in ps: setattr(cls,p,property(getattr(cls,p)))
 
-# %% ../nbs/01_basics.ipynb #d02e464d
-_c2w_re = re.compile(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))')
-_camel_re1 = re.compile('(.)([A-Z][a-z]+)')
-_camel_re2 = re.compile('([a-z0-9])([A-Z])')
+# %% ../nbs/01_basics.ipynb #ff5313ae
+def id_words(s:str, splits:str='-_ :c')->list:
+    "Split identifier `s` into words: punctuation chars in `splits` are separators (runs kept as empty words, so they survive a round trip), 'c' splits case boundaries"
+    seps = ''.join(c for c in splits if not c.isalnum())
+    parts = re.split(f'[{re.escape(seps)}]', s) if seps else [s]
+    if 'c' in splits: parts = [w for p in parts for w in re.split(r'(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])', p)]
+    return parts
+
+# %% ../nbs/01_basics.ipynb #8918dc5c
+def to_camel(s:str, splits:str='-_ :c')->str:
+    "camelCase form of `s`; acronym words after the first keep their casing"
+    ws = id_words(s, splits)
+    return ws[0].lower() + ''.join(w if w.isupper() else w.title() for w in ws[1:]) if ws else s
+
+def to_pascal(s:str, splits:str='-_ :c')->str:
+    "PascalCase form of `s`; every word Title-cased (acronyms flatten)"
+    return ''.join(w.title() for w in id_words(s, splits))
+
+def to_kebab(s:str, splits:str='-_ :c')->str:
+    "kebab-case form of `s`"
+    return '-'.join(w.lower() for w in id_words(s, splits))
+
+def to_snake(s:str, splits:str='-_ :c')->str:
+    "snake_case form of `s`"
+    return '_'.join(w.lower() for w in id_words(s, splits))
 
 # %% ../nbs/01_basics.ipynb #dd737e81
 def camel2words(s, space=' '):
     "Convert CamelCase to 'spaced words'"
-    return _c2w_re.sub(rf'{space}\1', s)
+    return space.join(id_words(s, 'c'))
 
 # %% ../nbs/01_basics.ipynb #a588a317
 def camel2snake(name):
     "Convert CamelCase to snake_case"
-    s1   = _camel_re1.sub(r'\1_\2', name)
-    return _camel_re2.sub(r'\1_\2', s1).lower()
+    return to_snake(name, 'c')
 
 # %% ../nbs/01_basics.ipynb #bbd632b4
 def snake2camel(s):
     "Convert snake_case to CamelCase"
-    return ''.join(s.title().split('_'))
+    return to_pascal(s, '_')
 
 # %% ../nbs/01_basics.ipynb #9f4a540a
 def humanize(x):

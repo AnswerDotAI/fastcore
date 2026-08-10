@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.7
+
+### New Features
+
+- Add notebook-level `eval` directives, `strvals` booleans, and `kindsort`; remove `skip_noeval` ([#900](https://github.com/AnswerDotAI/fastcore/pull/900)), thanks to [@jph00](https://github.com/jph00)
+
+
 ## 2.2.6
 
 ### New Features

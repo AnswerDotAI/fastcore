@@ -16,7 +16,7 @@ __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace',
            'preferred_out', 'join_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error', 'concat_streams',
            'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'item2xml', 'cell2xml', 'cells2xml',
            'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'Found', 'FoundCells', 'find_cells', 'deep_merge',
-           'update_cell', 'select_cells', 'run_cell', 'msg2out', 'msgs2outs']
+           'update_cell', 'fm_default_eval', 'does_cell_eval', 'select_cells', 'run_cell', 'msg2out', 'msgs2outs']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -146,7 +146,7 @@ def cell_frontmatter(s:str, strvals:bool=False):
     d,body = frontmatter(s.strip(), strvals=strvals)
     return d if not body.strip() else {}
 
-def md_frontmatter(s:str):
+def md_frontmatter(s:str, strvals:bool=False):
     "Frontmatter synthesized from an H1-formatted markdown cell: `# title`, `> description`, and `- key: value` lines"
     import yaml
     m = re.search(r'^#\s+(\S.*?)\s*$', s, flags=re.MULTILINE)
@@ -156,15 +156,16 @@ def md_frontmatter(s:str):
     if m: res['description'] = m.group(1)
     r = re.findall(r'^-\s+(\S.*:.*\S)\s*$', s, flags=re.MULTILINE)
     if r:
-        try: res.update(yaml.safe_load('\n'.join(r)))
+        try: res.update(frontmatter('---\n' + '\n'.join(r) + '\n---\n', strvals=strvals)[0])
         except yaml.YAMLError as e: warn(f'Failed to create YAML dict for:\n{r}\n\n{e}\n')
     return res
 
 def nb_frontmatter(nb, strvals:bool=False):
-    "Frontmatter from `nb`: its first raw cell plus first markdown cell (literal `---` block, or `# title` synthesis), raw keys winning"
+    "Frontmatter from `nb`, merged lowest-to-highest from its `metadata.nbdev` mapping (values verbatim), first markdown cell (literal `---` block, or `# title` synthesis), and first raw cell anywhere"
     raw = first(c for c in nb.cells if c.cell_type=='raw')
     md  = first(c for c in nb.cells if c.cell_type=='markdown')
-    res = (cell_frontmatter(md.source, strvals=strvals) or md_frontmatter(md.source)) if md else {}
+    res = dict((getattr(nb, 'metadata', None) or {}).get('nbdev') or {})
+    if md: res.update(cell_frontmatter(md.source, strvals=strvals) or md_frontmatter(md.source, strvals=strvals))
     if raw: res.update(cell_frontmatter(raw.source, strvals=strvals))
     return res
 
@@ -840,8 +841,21 @@ def update_cell(
 
 # %% ../nbs/13_nbio.ipynb #4db01b15
 def _is_exported(cell): return cell.has_directive('export') or cell.has_directive('exports')
-def _is_noeval(cell):
-    return 'nbdev_export'+'(' in cell.source or (cell.directive('eval') or '').lower()=='false'
+
+def fm_default_eval(fm, default_eval:bool=True):
+    "Participation default for cells without their own `eval` directive: the notebook-level `eval` directive in frontmatter mapping `fm` if given, else `default_eval`"
+    v = fm.get('eval')
+    if v in (True,'true','True'): return True
+    if v in (False,'false','False'): return False
+    return default_eval
+
+def does_cell_eval(cell, default:bool):
+    "Does `cell` participate in a non-interactive run? Decided by its `eval` directive, or `default` when the directive is absent or unrecognized"
+    if 'nbdev_export'+'(' in cell.source: return False
+    v = cell.directive('eval')
+    if v in ('','true','True'): return True  # '' covers bare `#| eval` and `eval: true`, which parse identically
+    if v in ('false','False'): return False
+    return default
 
 def select_cells(
     nb, # A notebook read with `read_nb`
@@ -850,20 +864,25 @@ def select_cells(
     below:bool=False, # Include each matched cell and all cells below it?
     all:bool=False, # Include all code cells (ignores `msgids`)?
     exported:bool=False, # Only cells with `#| export` or `#| exports`?
-    skip_noeval:bool=False # Skip `#| eval: false` and `nbdev_export` cells (like `nbdev-test`)?
+    default_eval:bool=True, # Participation default when neither the cell nor the notebook has an `eval` directive
+    ignore_eval:bool=False # Skip `eval` filtering entirely: every selected cell runs
 ):
-    "Select code cells from `nb` by cell id or unique prefix, in the order given"
+    "Select code cells from `nb` by cell id or unique prefix, in the order given; cells named in `msgids` always run, others follow the `eval` cascade"
     cells = [o for o in nb.cells if o.cell_type=='code']
+    anchors = set()
     def _one(msgid):
         idxs = [i for i,o in enumerate(cells) if str(o.id).startswith(msgid)]
         if not idxs: raise ValueError(f'No code cell id starting with {msgid!r}')
         if len(idxs)>1: raise ValueError(f'Multiple code cell ids start with {msgid!r}: {", ".join(str(cells[i].id) for i in idxs)}')
         idx = idxs[0]
+        anchors.add(cells[idx].id)
         return cells[:idx+1] if above else cells[idx:] if below else [cells[idx]]
     if not all and not msgids: raise ValueError('`msgids` required unless `all=True`')
     sel = cells if all else [c for m in msgids for c in _one(m)]
     if exported: sel = [o for o in sel if _is_exported(o)]
-    if skip_noeval: sel = [o for o in sel if not _is_noeval(o)]
+    if not ignore_eval:
+        dflt = fm_default_eval(nb_frontmatter(nb), default_eval)
+        sel = [o for o in sel if o.id in anchors or does_cell_eval(o, dflt)]
     return sel
 
 # %% ../nbs/13_nbio.ipynb #4c71f592

@@ -55,9 +55,9 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'using_attr', 'negate', 'fail_clean', 'dstar', 'copy_func', 'patch_to', 'patch', 'extend_enum', 'compile_re',
            'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum', 'Stateful', 'NotStr', 'PrettyString', 'even_mults',
            'num_cpus', 'add_props', 'str2bool', 'str2int', 'str2float', 'str2list', 'str2date', 'str2dt', 'to_bool',
-           'to_int', 'to_float', 'to_list', 'to_date', 'typed', 'exec_new', 'exec_import', 'sig_with_params',
-           'fdelegates', 'xdumps', 'revive_dates', 'lt', 'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub', 'mul', 'truediv',
-           'is_', 'is_not', 'mod']
+           'to_int', 'to_float', 'to_list', 'to_date', 'typed', 'exec_new', 'exec_import', 'kindsort',
+           'sig_with_params', 'fdelegates', 'xdumps', 'revive_dates', 'lt', 'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub',
+           'mul', 'truediv', 'is_', 'is_not', 'mod']
 
 # %% ../nbs/01_basics.ipynb #0e91ed82
 from .imports import *
@@ -1430,13 +1430,18 @@ def exec_import(mod, sym):
     return exec_new(f'from {mod} import {sym}')
 
 # %% ../nbs/01_basics.ipynb #bf300cb0
+def kindsort(ps):
+    "Params sorted by `Parameter.kind`"
+    return sorted(ps, key=lambda p: p.kind)
+
 def sig_with_params(sig, remove=None, keep=None, **updates):
+    "Copy of `sig` with `remove`d params dropped, `keep` params retained, and `updates` added, kind-sorted"
     sigd = dict(sig.parameters)
     for k in listify(remove): sigd.pop(k, None)
     kept = {k: sigd.pop(k) for k in listify(keep) if k in sigd}
     sigd.update(updates)
-    sigd.update(kept)  # re-add at end
-    return sig.replace(parameters=sigd.values())
+    sigd.update(kept)
+    return sig.replace(parameters=kindsort(sigd.values()))
 
 # %% ../nbs/01_basics.ipynb #b5758ba3
 def fdelegates(to):

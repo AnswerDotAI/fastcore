@@ -108,11 +108,10 @@ def use_kwargs_dict(keep=False, **kwargs):
     def _f(f):
         sig = inspect.signature(f)
         sigd = dict(sig.parameters)
-        k = sigd.pop('kwargs')
+        if not keep: sigd.pop('kwargs')
         s2 = {n:_mk_param(n,d) for n,d in kwargs.items() if n not in sigd}
         sigd.update(s2)
-        if keep: sigd['kwargs'] = k
-        f.__signature__ = sig.replace(parameters=sigd.values())
+        f.__signature__ = sig.replace(parameters=kindsort(sigd.values()))
         return f
     return _f
 
@@ -122,11 +121,10 @@ def use_kwargs(names, keep=False):
     def _f(f):
         sig = inspect.signature(f)
         sigd = dict(sig.parameters)
-        k = sigd.pop('kwargs')
+        if not keep: sigd.pop('kwargs')
         s2 = {n:_mk_param(n) for n in names if n not in sigd}
         sigd.update(s2)
-        if keep: sigd['kwargs'] = k
-        f.__signature__ = sig.replace(parameters=sigd.values())
+        f.__signature__ = sig.replace(parameters=kindsort(sigd.values()))
         return f
     return _f
 
@@ -245,7 +243,7 @@ def splice_sig(wrapper, fn, *skips):
     split = next((i for i, p in enumerate(w_ps) if p.kind==Parameter.VAR_POSITIONAL), len(w_ps))
     pre = w_ps[:split]
     post = [p for p in w_ps[split+1:] if p.kind != Parameter.VAR_KEYWORD]
-    sig = signature(wrapper).replace(parameters=[*pre, *f_ps, *post])
+    sig = signature(wrapper).replace(parameters=kindsort([*pre, *f_ps, *post]))
     wrapper = wraps(fn)(wrapper)
     wrapper.__signature__ = sig  # after `wraps`, which would clobber it if `fn` has its own `__signature__`
     return wrapper

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.10
+
+### New Features
+
+- Add nbio.`diff_cells` for id-aligned block diffs of cell sequences; harden `bg_task` with strong refs and `on_err` callback ([#903](https://github.com/AnswerDotAI/fastcore/issues/903))
+
+
 ## 2.2.9
 
 ### New Features

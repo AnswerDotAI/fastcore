@@ -12,10 +12,10 @@ Docs: https://fastcore.fast.ai/nbio.html.md"""
 
 # %% auto #0
 __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines',
-           'cell_ast_replace', 'CellEdit', 'IMG_MIMES', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell', 'new_nb',
-           'cell_frontmatter', 'md_frontmatter', 'nb_frontmatter', 'first_code_ln', 'dir_tag', 'nb2dict', 'nb2str',
-           'write_nb', 'find_id', 'cell_edit', 'view_cell', 'diff_cells', 'validate_cell', 'validate_nb', 'repair_cell',
-           'repair_nb', 'preferred_out', 'join_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error',
+           'cell_ast_replace', 'CellEdit', 'IMG_MIMES', 'MAXLEN', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell',
+           'new_nb', 'cell_frontmatter', 'md_frontmatter', 'nb_frontmatter', 'first_code_ln', 'dir_tag', 'nb2dict',
+           'nb2str', 'write_nb', 'find_id', 'cell_edit', 'view_cell', 'diff_cells', 'validate_cell', 'validate_nb',
+           'repair_cell', 'repair_nb', 'preferred_out', 'join_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error',
            'concat_streams', 'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'item2xml',
            'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'Found', 'FoundCells',
            'find_cells', 'deep_merge', 'update_cell', 'fm_default_eval', 'does_cell_eval', 'select_cells', 'run_cell',
@@ -739,10 +739,13 @@ def view_cell(self:Notebook, id, nums=True, incl_out=False, trunc_out=True):
         res += f"\n<out>\n{truncstr(o, 512) if trunc_out else o}\n</out>"
     return res
 
+# %% ../nbs/13_nbio.ipynb #4bf3dc2e
+MAXLEN = 180 # Most characters shown per displayed line
+
 # %% ../nbs/13_nbio.ipynb #804670bc
 class CellRow:
     "Snapshot of one cell, shown as `id:t[directives]:source` (t: c=code m=markdown r=raw); a context row from a find shows `-` in place of its final `:`"
-    def __init__(self, c, maxlen=120, kind='match'):
+    def __init__(self, c, maxlen=MAXLEN, kind='match'):
         self.id,self.cell_type,self.source,self.maxlen,self.kind = c.id,c.cell_type,c.source,maxlen,kind
         self.meta = copy.deepcopy(dict(c.get('metadata',{})))
     def __repr__(self):
@@ -756,13 +759,13 @@ class CellRows(list):
 
 # %% ../nbs/13_nbio.ipynb #62d7f8d1
 @patch
-def summary(self:Notebook, maxlen=120):
+def summary(self:Notebook, maxlen=MAXLEN):
     "One `CellRow` line per cell"
     return CellRows(CellRow(c, maxlen) for c in self.cells)
 
 def summary_nb(
     path, # Notebook file to read
-    maxlen:int=120, # Maximum source characters per line
+    maxlen:int=MAXLEN, # Maximum source characters per line
 ):
     "One snapshot line per cell of the notebook at `path`"
     return Notebook.open(path).summary(maxlen)

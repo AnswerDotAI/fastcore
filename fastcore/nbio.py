@@ -749,7 +749,7 @@ class CellRow:
         self.id,self.cell_type,self.source,self.maxlen,self.kind = c.id,c.cell_type,c.source,maxlen,kind
         self.meta = copy.deepcopy(dict(c.get('metadata',{})))
     def __repr__(self):
-        src = self.source.replace('\n', '\\n')
+        src = re.sub(r'\n(?:\s*\n)*', '¶', self.source)
         if len(src)>self.maxlen: src = src[:self.maxlen]+'…'
         sep = ':' if self.kind=='match' else '-'
         return f"{self.id}:{self.cell_type[0]}{dir_tag(self.meta)}{sep}{src}"

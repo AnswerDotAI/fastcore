@@ -6,6 +6,8 @@
 
 Each editing function works on one carrier: text (a str in memory), a file (a path on disk), a cell (one cell's source in an .ipynb file, addressed by `path, cell_id`), or a notebook (the parsed .ipynb; `Notebook` and `NbCell` are its held-object forms). These are the representation layer: an .ipynb is a file of cells, whatever produced it. The dialog layer above adds the msg and dlg carriers: a Solveit dialog is an .ipynb whose cells are messages (notes, runnable code, prompt/reply pairs), and `aidialog.dlgskill` and `dialoghelper` provide the message tools, following the conventions here with their own nouns. The word picks the layer: cell tools answer representation questions ("why does Jupyter reject this file?"), msg tools answer content questions ("what does this message say?").
 
+The section layer sits above both. `open_doc` (in exhash) parses a file, URL, or text into a `Section` tree, with sections taken from Markdown headings, tree-sitter definitions in code, or md-heading cells in a notebook. A section points at a span of lines in a file, or a run of cells in a notebook. To change what a section contains, edit those lines or cells with the file and cell tools.
+
 ## Naming
 
 Two name shapes cover the toolkit, and the pivot is the verb's direct object:
@@ -34,15 +36,15 @@ Every operation has two shapes with one contract each. The function is a transac
 
 ## Addresses
 
-Edits say where with line numbers or lnhash addresses. Take addresses from the read you were already doing instead of with a second look: views accept `nums=True` or `lnhashs=True`, and searches return addresses directly (`rg(lnhashs=True)`). Prefer lnhash addresses whenever `exhash` is installed: they are verified against current content at edit time, so a stale address fails loudly instead of editing nearby text, which is exactly what makes taking addresses early safe. Plain line numbers are unverified and shift as edits apply, so re-view after each edit and apply multi-edits bottom-to-top. `exhash.skill` owns the address format and the verified editor.
+Edits say where with line numbers, lnhash addresses, or section tokens. Take addresses from the read you were already doing instead of with a second look: views accept `nums=True` or `lnhashs=True`, and searches return addresses directly (`rg(lnhashs=True)`). Prefer lnhash addresses whenever `exhash` is installed: they are verified against current content at edit time, so a stale address fails loudly instead of editing nearby text, which is exactly what makes taking addresses early safe. Plain line numbers are unverified and shift as edits apply, so re-view after each edit and apply multi-edits bottom-to-top. `exhash.skill` owns the address format and the verified editor. A section token is the address an outline listing shows: in `1.6.|12|a3f2|,45|b1c3|`, `1.6.` is the section number and the rest is the lnhash addresses of the section's first and last lines. `d.at('1.6.|12|a3f2|')` returns that section, with the hash checked. `file_exhash(path, ('12|a3f2|,45|b1c3|', 'c', new_text))` replaces its lines.
 
-When you don't yet know where to edit, locate with a summary first: `rgapi`'s `rg(summary=True)` and `nbrg`, and aidialog's `summary_dlg`, each show one row per natural unit of their medium (block, cell, message), carrying the unit's address. For prose, config, and other paragraph-shaped text, blocks are usually the right unit for reading too: one summary row shows the whole matched paragraph with its boundary addresses, where a line-mode hit shows a fragment that then needs a context view. Summaries locate, views read, addresses edit, diffs confirm.
+When you don't yet know where to edit, locate with a summary first: `rgapi`'s `rg(summary=True)` and `nbrg`, aidialog's `summary_dlg`, and exhash's `open_doc` outlines each show one row per natural unit of their medium (block, cell, message, section), carrying the unit's address. For prose, config, and other paragraph-shaped text, blocks are usually the right unit for reading too: one summary row shows the whole matched paragraph with its boundary addresses, where a line-mode hit shows a fragment that then needs a context view. Summaries locate, views read, addresses edit, diffs confirm. An outline row carries the section's boundary pair. A section-sized edit takes its range address straight from the row.
 
 ## What's where
 
 - `fastcore.tools`: text primitives, file tools, and `line_hash`/`lnhash`/`lnhash_at` for creating addresses without exhash installed.
 - `fastcore.nbio`: notebook read/write/validate/repair, cell construction, cell editors, and the `Notebook`/`NbCell` session objects with their snapshot queries (`find_cells`, `summary_nb`).
-- `exhash.skill`: hash-verified editing for files and cells; prefer it for edits where installed.
+- `exhash.skill`: hash-verified editing for files and cells, plus `open_doc` section outlines for Markdown, code, and notebooks; prefer it for edits where installed.
 - `rgapi.skill`: `rg`/`fd`/`ls`/`nbrg` search with lnhash output, and `rgstr` to search text already in hand.
 - `remold`: structural search and rewrite for Python source (declarative ast-grep rules, LibCST matcher transforms, symbol queries); the engine behind `ast_replace`.
 - `aidialog.dlgskill`, `dialoghelper`: the dialog layer, including its own theory of dialogs and projections.

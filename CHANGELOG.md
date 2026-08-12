@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.12
+
+### New Features
+
+- Rewrite `signature_ex` to preserve explicit Parameter.empty defaults via a sentinel ([#908](https://github.com/AnswerDotAI/fastcore/issues/908))
+
+
 ## 2.2.11
 
 ### New Features

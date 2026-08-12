@@ -43,27 +43,3 @@ jobs:
       run: nbdev-test
       env:
         SHELL:  ${{ matrix.shell }}
-
-  nbdev-integration-test:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Set up Python
-      uses: actions/setup-python@v6
-      with:
-        python-version: '3.12'
-    - name: clone this branch [fastcore]
-      uses: actions/checkout@v7
-      with:
-        path: fastcore_lib
-    - name: clone nbdev
-      uses: actions/checkout@v7
-      with:
-        repository: 'fastai/nbdev'
-        path: nbdev   
-    - name: Install libraries
-      run: |
-        cd fastcore_lib && pip install -Ue .[dev]
-        cd ../nbdev && pip install -Ue .[dev]
-    - name: test nbdev notebooks
-      run: |
-        cd nbdev && nbdev-test

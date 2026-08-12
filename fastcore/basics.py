@@ -62,6 +62,7 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
 # %% ../nbs/01_basics.ipynb #0e91ed82
 from .imports import *
 import builtins,types,typing,json
+from inspect import signature,Parameter
 from functools import cmp_to_key,wraps
 from copy import copy
 from datetime import date,datetime,time
@@ -432,23 +433,25 @@ def anno_ret(func):
     return annotations(func).get('return', None) if func else None
 
 # %% ../nbs/01_basics.ipynb #c286869c
-def _ispy3_10(): return sys.version_info.major >=3 and sys.version_info.minor >=10
+class _SentinelEmpty:
+    "How `signature_ex` reports a default explicitly declared as `Parameter.empty`"
+    def __repr__(self): return 'Parameter.empty'
+
+_sentinel_empty = _SentinelEmpty()
 
 def signature_ex(obj, eval_str:bool=False):
-    "Backport of `inspect.signature(..., eval_str=True` to <py310"
-    from inspect import Signature, Parameter, signature
-
-    def _eval_param(ann, k, v):
-        if k not in ann: return v
-        return Parameter(v.name, v.kind, annotation=ann[k], default=v.default)
-
-    if not eval_str: return signature(obj)
-    # if _ispy3_10(): return signature(obj, eval_str=eval_str)
-    sig = signature(obj)
-    if sig is None: return None
-    ann = type_hints(obj)
-    params = [_eval_param(ann,k,v) for k,v in sig.parameters.items()]
-    return Signature(params, return_annotation=sig.return_annotation)
+    "Like `inspect.signature`, but a declared `Parameter.empty` default is kept as a default"
+    sig = signature(obj, eval_str=eval_str)
+    dflts = getattr(obj, '__defaults__', None) or ()
+    kwds = getattr(obj, '__kwdefaults__', None) or {}
+    if not any(v is Parameter.empty for v in (*dflts, *kwds.values())): return sig
+    ps = dict(sig.parameters)
+    pos = [k for k,v in ps.items() if v.kind in (Parameter.POSITIONAL_ONLY, Parameter.POSITIONAL_OR_KEYWORD)]
+    for k,d in zip(pos[len(pos)-len(dflts):], dflts):
+        if d is Parameter.empty: ps[k] = ps[k].replace(default=_sentinel_empty)
+    for k,d in kwds.items():
+        if d is Parameter.empty: ps[k] = ps[k].replace(default=_sentinel_empty)
+    return sig.replace(parameters=list(ps.values()))
 
 # %% ../nbs/01_basics.ipynb #6d55bfb5
 def union2tuple(t):

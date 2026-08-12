@@ -6,7 +6,7 @@
 
 Each editing function works on one carrier: text (a str in memory), a file (a path on disk), a cell (one cell's source in an .ipynb file, addressed by `path, cell_id`), or a notebook (the parsed .ipynb; `Notebook` and `NbCell` are its held-object forms). These are the representation layer: an .ipynb is a file of cells, whatever produced it. The dialog layer above adds the msg and dlg carriers: a Solveit dialog is an .ipynb whose cells are messages (notes, runnable code, prompt/reply pairs), and `aidialog.dlgskill` and `dialoghelper` provide the message tools, following the conventions here with their own nouns. The word picks the layer: cell tools answer representation questions ("why does Jupyter reject this file?"), msg tools answer content questions ("what does this message say?").
 
-The section layer sits above both. `open_doc` (in exhash) parses a file, URL, or text into a `Section` tree, with sections taken from Markdown headings, tree-sitter definitions in code, or md-heading cells in a notebook. A section points at a span of lines in a file, or a run of cells in a notebook. To change what a section contains, edit those lines or cells with the file and cell tools.
+The section layer sits above both. `open_doc` (in exhash) parses a file (`fname=`, or a `Path` as `src`), URL (an `https?://` str), or text (any other str) into a `Section` tree, with sections taken from Markdown headings, tree-sitter definitions in code, or md-heading cells in a notebook. A section points at a span of lines in a file, or a run of cells in a notebook. To change what a section contains, edit those lines or cells with the file and cell tools.
 
 ## Naming
 

@@ -2,6 +2,16 @@
 
 <!-- do not remove -->
 
+## 2.2.11
+
+### New Features
+
+- Add `free_port`: returns an OS-picked free TCP port on a given host ([#907](https://github.com/AnswerDotAI/fastcore/issues/907))
+- Document `open_doc` section layer in editskill; use pilcrow for newlines in CellRow repr ([#906](https://github.com/AnswerDotAI/fastcore/issues/906))
+- Add MAXLEN constant (180) for cell display truncation, replacing hardcoded 120 defaults ([#905](https://github.com/AnswerDotAI/fastcore/issues/905))
+- Simplify `sig_with_params` by removing keep param ([#904](https://github.com/AnswerDotAI/fastcore/issues/904))
+
+
 ## 2.2.10
 
 ### New Features

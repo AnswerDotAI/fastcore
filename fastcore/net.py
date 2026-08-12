@@ -10,7 +10,7 @@ Docs: https://fastcore.fast.ai/net.html.md"""
 __all__ = ['url_default_headers', 'ExceptionsHTTP', 'urlquote', 'urlwrap', 'HTTP4xxClientError', 'HTTP5xxServerError',
            'urlopener', 'urlopen', 'urlread', 'urljson', 'urlclean', 'urlretrieve', 'urldest', 'urlsave', 'urlvalid',
            'start_server', 'start_client', 'tobytes', 'http_response', 'recv_once', 'waitfor', 'waitfor_async',
-           'is_port_free', 'wait_port_free', 'wait_port_free_async', 'HTTP400BadRequestError',
+           'is_port_free', 'free_port', 'wait_port_free', 'wait_port_free_async', 'HTTP400BadRequestError',
            'HTTP401UnauthorizedError', 'HTTP402PaymentRequiredError', 'HTTP403ForbiddenError', 'HTTP404NotFoundError',
            'HTTP405MethodNotAllowedError', 'HTTP406NotAcceptableError', 'HTTP407ProxyAuthRequiredError',
            'HTTP408RequestTimeoutError', 'HTTP409ConflictError', 'HTTP410GoneError', 'HTTP411LengthRequiredError',
@@ -270,6 +270,13 @@ def is_port_free(port, host='localhost'):
         return True
     except OSError: return False
     finally: sock.close()
+
+# %% ../nbs/03b_net.ipynb #781cd5cb
+def free_port(host='localhost'):
+    "A free TCP port on `host`, picked by the OS"
+    with socket.socket() as s:
+        s.bind((host,0))
+        return s.getsockname()[1]
 
 # %% ../nbs/03b_net.ipynb #e0a7369a
 def wait_port_free(port, host='localhost', max_wait=20):

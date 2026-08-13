@@ -271,6 +271,7 @@ def _escape_markdown(s):
 # %% ../nbs/04_docments.ipynb #ced78f56
 def _maybe_nm(o):
     if (o == inspect._empty): return ''
+    if typing.get_origin(o) is not None: return inspect.formatannotation(o).replace(' ','')
     else: return o.__name__ if hasattr(o, '__name__') else str(o)
 
 # %% ../nbs/04_docments.ipynb #fe6d83f1

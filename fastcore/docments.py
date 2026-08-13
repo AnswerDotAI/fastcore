@@ -187,7 +187,7 @@ def docments(s, full=False, eval_str=False, returns=True, args_kwargs=False):
     nps = parse_docstring(s)
     docs = {}
     while s:
-        p = _param_locs(s, returns=returns, args_kwargs=args_kwargs) or {}
+        p = _param_locs(s, returns=returns, args_kwargs=args_kwargs or full) or {}
         c = {o.start[0]:_clean_comment(o.string) for o in _tokens(s) if o.type==COMMENT}
         for k,v in p.items():
             if v not in docs: docs[v] = _get_comment(k, v, c, p)

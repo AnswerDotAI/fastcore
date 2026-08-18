@@ -101,7 +101,7 @@ Docs: https://fastcore.fast.ai/script.html.md"""
 __all__ = ['store_true', 'store_false', 'bool_arg', 'anno_parser', 'args_from_prog', 'set_ctx', 'call_parse', 'is_cli']
 
 # %% ../nbs/06_script.ipynb #8a36db98
-import inspect,argparse,shutil,types,asyncio
+import inspect,argparse,shutil,types,asyncio,importlib.metadata
 
 from functools import wraps,partial
 from .imports import *
@@ -179,10 +179,21 @@ def _union_type(t):
     if not _is_union(t): return None
     return _union_parser(get_args(t))
 
+# %% ../nbs/06_script.ipynb #347edc5a
+def _pkg_version(func):
+    "`name version` of the top-level package defining `func`, or None if it has no version"
+    pkg = func.__module__.split('.')[0]
+    if pkg=='__main__': return None
+    ver = getattr(sys.modules.get(pkg), '__version__', None)
+    if ver is None:
+        try: ver = importlib.metadata.version(pkg)
+        except importlib.metadata.PackageNotFoundError: return None
+    return f'{pkg} {ver}'
+
 # %% ../nbs/06_script.ipynb #5e5bea67
 def anno_parser(func, prog:str=None, pos:list=None):
     "Look at params (with type/docments/`Annotated` annotations) in func and return an `ArgumentParser`"
-    p = argparse.ArgumentParser(description=func.__doc__, prog=prog, formatter_class=_HelpFormatter)
+    p = argparse.ArgumentParser(description=func.__doc__, prog=prog, formatter_class=_HelpFormatter, epilog=_pkg_version(func))
     for k,v in docments(func, full=True, returns=False, eval_str=True).items():
         anno,meta = ann_parts(v.anno)
         extra = next((o for o in meta if isinstance(o,dict)), {})

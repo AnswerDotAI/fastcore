@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.13
+
+### New Features
+
+- Add package name and version as epilog to `anno_parser` help output ([#915](https://github.com/AnswerDotAI/fastcore/issues/915))
+
+
 ## 2.2.12
 
 ### New Features

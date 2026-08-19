@@ -37,7 +37,7 @@ test_eq(x.unique(), [1,2,3,4,5])
 
 Modules:
 
-- `fastcore.aio`: Bridging async and sync code: `run_sync`, `iter_sync`, `ctx_sync`, `athreaded`, `maybe_await`, and `then`
+- `fastcore.aio`: Bridging async and sync code: `run_sync`, `iter_sync`, `ctx_sync`, `athreaded`, `maybe_await`, and `then`, plus `Debounce` for coalescing bursts of calls
 - `fastcore.apisurface`: Turn operation metadata into documented, introspectable callables: real signatures, informative docstrings, and browsable grouped namespaces
 - `fastcore.basics`: Basic functionality used in the fastai library
 - `fastcore.docments`: Document parameters using comments.

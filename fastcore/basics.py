@@ -1272,7 +1272,9 @@ class StrEnum(str,ImportEnum):
 # %% ../nbs/01_basics.ipynb #a62b8ccd
 def str_enum(name, *vals):
     "Simplified creation of `StrEnum` types"
-    return StrEnum(name, {o:o for o in vals})
+    module = sys._getframe(1).f_globals.get('__name__', '__main__')
+    return StrEnum(name, {o:o for o in vals}, module=module, qualname=name)
+
 
 # %% ../nbs/01_basics.ipynb #f4022ca2
 class ValEnum(str,ImportEnum):

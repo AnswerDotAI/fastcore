@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 2.2.14
+
+### New Features
+
+- Add Debounce to fastcore.aio for coalescing bursts of calls, and skip cells tagged skip-execution in `does_cell_eval` ([#918](https://github.com/AnswerDotAI/fastcore/issues/918))
+- Make `str_enum` set `__module__` and `__qualname__` from caller frame so generated enums are picklable ([#917](https://github.com/AnswerDotAI/fastcore/issues/917))
+
+
 ## 2.2.13
 
 ### New Features

@@ -876,7 +876,8 @@ def fm_default_eval(fm, default_eval:bool=True):
     return default_eval
 
 def does_cell_eval(cell, default:bool):
-    "Does `cell` participate in a non-interactive run? Decided by its `eval` directive, or `default` when the directive is absent or unrecognized"
+    "Does `cell` participate in a non-interactive run? Decided by its `eval` directive, or `default` when the directive is absent or unrecognized; a cell tagged `skip-execution` (nbclient's skip tag) never participates"
+    if 'skip-execution' in getattr(cell, 'metadata', {}).get('tags', []): return False
     if 'nbdev_export'+'(' in cell.source: return False
     v = cell.directive('eval')
     if v in ('','true','True'): return True  # '' covers bare `#| eval` and `eval: true`, which parse identically

@@ -1,4 +1,4 @@
-"""Bridging async and sync code: `run_sync`, `iter_sync`, `ctx_sync`, `athreaded`, `maybe_await`, and `then`
+"""Bridging async and sync code: `run_sync`, `iter_sync`, `ctx_sync`, `athreaded`, `maybe_await`, and `then`, plus `Debounce` for coalescing bursts of calls
 
 ## Calling async code from sync code
 
@@ -16,7 +16,7 @@ Docs: https://fastcore.fast.ai/aio.html.md"""
 
 # %% auto #0
 __all__ = ['run_sync', 'iter_sync', 'ctx_sync', 'athreaded', 'maybe_await', 'then', 'acache', 'CachedAwaitable', 'reawaitable',
-           'is_async_callable', 'to_aiter', 'maybe_aiter', 'mapa', 'noopa', 'enable_async_magics',
+           'is_async_callable', 'to_aiter', 'maybe_aiter', 'mapa', 'noopa', 'Debounce', 'enable_async_magics',
            'disable_async_magics']
 
 # %% ../nbs/03c_aio.ipynb #7e2193be
@@ -159,6 +159,55 @@ async def mapa(f, items):
 async def noopa(x=None, *args, **kwargs):
     "Do nothing (async)"
     return x
+
+# %% ../nbs/03c_aio.ipynb #5eaf5cd7
+class Debounce:
+    "Coalesce a burst of calls into one run of `f`, `wait` secs after calls stop (or `max_wait` secs after they start)"
+    def __init__(self, f, wait, max_wait=None, on_error=None):
+        store_attr()
+        self._task,self._pending,self._loop = None,False,None
+        try: self._loop = asyncio.get_running_loop()
+        except RuntimeError: pass
+
+    def __call__(self):
+        try: loop = asyncio.get_running_loop()
+        except RuntimeError:
+            if self._loop is None: raise RuntimeError('Debounce must first be called from an async event loop') from None
+            return self._loop.call_soon_threadsafe(self)
+        if self._loop is None: self._loop = loop
+        elif loop is not self._loop: return self._loop.call_soon_threadsafe(self)
+
+        self._deadline = loop.time()+self.wait
+        self._pending = True
+        if not (self._task and not self._task.done()):
+            self._cap = loop.time()+self.max_wait if self.max_wait else float('inf')
+            self._task = loop.create_task(self._run())
+
+    async def _fire(self):
+        self._pending = False
+        await maybe_await(self.f())
+
+    async def _run(self):
+        while True:
+            delay = min(self._deadline,self._cap) - self._loop.time()
+            if delay>0: await asyncio.sleep(delay); continue
+            try: await self._fire()
+            except Exception as e:
+                if self.on_error is None: raise
+                self.on_error(e)
+            if not self._pending: return
+            if self.max_wait: self._cap = self._loop.time()+self.max_wait
+
+    def cancel(self):
+        "Discard any pending fire (aborting one in flight)"
+        if self._task and not self._task.done(): self._task.cancel()
+        self._task,self._pending = None,False
+
+    async def flush(self):
+        "Run any pending fire now instead of waiting; exceptions propagate to the caller"
+        p = self._pending
+        self.cancel()
+        if p: await self._fire()
 
 # %% ../nbs/03c_aio.ipynb #58511536
 import re

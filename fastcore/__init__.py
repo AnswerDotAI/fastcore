@@ -55,4 +55,4 @@ Modules:
 - `fastcore.xml`: Concise generation of XML.
 - `fastcore.xtras`: Utility functions used in the fastai library"""
 
-__version__ = "2.2.14"
+__version__ = "2.2.15"

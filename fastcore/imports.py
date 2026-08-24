@@ -86,7 +86,7 @@ def in_colab():
 def in_jupyter():
     "Check if the code is running in a jupyter notebook"
     if not in_ipython(): return False
-    return 'InteractiveShell' in ipython_shell().__class__.__name__
+    return any('InteractiveShell' in c.__name__ for c in type(ipython_shell()).__mro__)
 
 def in_notebook():
     "Check if the code is running in a jupyter notebook"

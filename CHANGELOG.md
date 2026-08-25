@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.15
+
+### New Features
+
+- Show annotation-based metavars in CLI help instead of upper-cased option names, and quote empty string defaults ([#920](https://github.com/AnswerDotAI/fastcore/issues/920))
+
+
 ## 2.2.14
 
 ### New Features

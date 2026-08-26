@@ -51,7 +51,7 @@ The first element of `Annotated` is the parameter's type, and the first string i
 
 ## Short flags
 
-A capital letter in a parameter name declares a short flag: the capitalized letter becomes the short spelling and the lowercased name the long one, so `Resume:int=None` gets both `-r` and `--resume`. The capital can be any letter (`sUggest:str=None` gives `-u/--suggest`), only the first capital counts, and names without capitals get a long flag only. Since the flags are lowercased, the parameter's actual name keeps its capital -- so a Python caller writes `main(Resume=3)`, which usefully advertises that it's invoking a CLI entry point. Positional (default-less) parameters have no flags, so capitals there are left alone.
+A capital letter in a parameter name declares a short flag: the capitalized letter becomes the short spelling and the lowercased name the long one, so `Resume:int=None` gets both `-r` and `--resume`. The capital can be any letter (`sUggest:str=None` gives `-u/--suggest`), only the first capital counts, and names without capitals get a long flag only. Underscores in optional parameter names appear as hyphens (`cache_dir` becomes `--cache-dir`), while the Python argument keeps its underscore. Since the flags are lowercased, the parameter's actual name keeps its capital -- so a Python caller writes `main(Resume=3)`, which usefully advertises that it's invoking a CLI entry point. Positional (default-less) parameters have no flags, so capitals there are left alone.
 
 ## Positional params
 
@@ -141,7 +141,7 @@ def _arg_kw(k, anno, doc, default, extra, mv=None):
         else: action,d = 'store_true',False
     if action=='version':
         if 'version' not in extra and d is not inspect.Parameter.empty: extra['version'] = d
-        return f'--{k}', {'help':doc or '', **extra}
+        return f'--{k.replace("_", "-")}', {'help':doc or '', **extra}
     kw = {}
     if action and 'action' not in extra: kw['action'] = action
     if anno is not None:
@@ -154,6 +154,7 @@ def _arg_kw(k, anno, doc, default, extra, mv=None):
     kw['help'] = (doc or '') + (f" (default: {dshow})" if 'default' in kw else '')
     if negated: kw['dest'] = k
     name = f'no-{k}' if negated else k
+    if opt: name = name.replace('_', '-')
     short = first(c for c in k if c.isupper()) if opt else None
     if short is None: return f"{'--' if opt else ''}{name}", {**kw, **extra}
     kw['dest'] = k  # flags are lowercased, so argparse's derived dest would drop the capital

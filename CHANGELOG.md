@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 2.2.16
+
+### New Features
+
+- Render underscores as hyphens in CLI option names ([#921](https://github.com/AnswerDotAI/fastcore/pull/921)), thanks to [@jph00](https://github.com/jph00)
+- Add Debounce, debounced, and throttled to fastcore.aio ([#856](https://github.com/AnswerDotAI/fastcore/pull/856)), thanks to [@ncoop57](https://github.com/ncoop57)
+
+
 ## 2.2.15
 
 ### New Features

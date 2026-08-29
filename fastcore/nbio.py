@@ -12,14 +12,14 @@ Docs: https://fastcore.fast.ai/nbio.html.md"""
 
 # %% auto #0
 __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines',
-           'cell_ast_replace', 'CellEdit', 'IMG_MIMES', 'MAXLEN', 'nb_lang', 'NbCell', 'dict2nb', 'read_nb', 'mk_cell',
-           'new_nb', 'cell_frontmatter', 'md_frontmatter', 'nb_frontmatter', 'first_code_ln', 'dir_tag', 'nb2dict',
-           'nb2str', 'write_nb', 'find_id', 'cell_edit', 'view_cell', 'diff_cells', 'validate_cell', 'validate_nb',
-           'repair_cell', 'repair_nb', 'preferred_out', 'join_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error',
-           'concat_streams', 'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'item2xml',
-           'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'Found', 'FoundCells',
-           'find_cells', 'deep_merge', 'update_cell', 'fm_default_eval', 'does_cell_eval', 'select_cells', 'run_cell',
-           'msg2out', 'msgs2outs']
+           'cell_ast_replace', 'CellEdit', 'IMG_MIMES', 'MAXLEN', 'jupyter_json_default', 'nb_lang', 'NbCell',
+           'dict2nb', 'read_nb', 'mk_cell', 'new_nb', 'cell_frontmatter', 'md_frontmatter', 'nb_frontmatter',
+           'first_code_ln', 'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'find_id', 'cell_edit', 'view_cell',
+           'diff_cells', 'validate_cell', 'validate_nb', 'repair_cell', 'repair_nb', 'preferred_out', 'join_out',
+           'mk_stream', 'mk_result', 'mk_display', 'mk_error', 'concat_streams', 'preferred_msg_out', 'render_output',
+           'render_outputs', 'render_text', 'item2xml', 'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows',
+           'summary_nb', 'Found', 'FoundCells', 'find_cells', 'deep_merge', 'update_cell', 'fm_default_eval',
+           'does_cell_eval', 'select_cells', 'run_cell', 'msg2out', 'msgs2outs']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -29,11 +29,28 @@ from .ansi import ansi2html
 from .meta import delegates,splice_sig
 from .tools import insert_line,str_replace,strs_replace,replace_lines,del_lines,ast_replace,lnhash
 
-import ast,copy,functools,inspect,traceback
+import ast,copy,functools,inspect,numbers,traceback
+from binascii import b2a_base64
 from collections import defaultdict,namedtuple
+from collections.abc import Iterable
+from datetime import date,datetime,timezone
 from pprint import pformat,pprint
 from json import loads,dumps
 from difflib import SequenceMatcher
+
+
+# %% ../nbs/13_nbio.ipynb #6a881fc0
+def jupyter_json_default(obj):
+    "JSON serializer fallback matching Jupyter Python object handling."
+    if isinstance(obj, datetime):
+        if obj.tzinfo is None: obj = obj.replace(tzinfo=timezone.utc)
+        return obj.isoformat().replace("+00:00", "Z")
+    if isinstance(obj, date): return obj.isoformat()
+    if isinstance(obj, bytes): return b2a_base64(obj, newline=False).decode("ascii")
+    if isinstance(obj, Iterable): return list(obj)
+    if isinstance(obj, numbers.Integral): return int(obj)
+    if isinstance(obj, numbers.Real): return float(obj)
+    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
 # %% ../nbs/13_nbio.ipynb #9d2e7add
 def _read_json(self, encoding=None, errors=None):

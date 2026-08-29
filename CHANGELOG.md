@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 2.2.17
+
+### New Features
+
+- Add `jupyter_json_default` fallback so nbio JSON encoding handles datetimes, dates, bytes, iterables, and numeric types ([#924](https://github.com/AnswerDotAI/fastcore/issues/924))
+
+### Bugs Squashed
+
+- Update CLI flags for fastcore.script hyphenation ([#922](https://github.com/AnswerDotAI/fastcore/pull/922)), thanks to [@jph00](https://github.com/jph00)
+
+
 ## 2.2.16
 
 ### New Features

@@ -43,7 +43,7 @@ When you don't yet know where to edit, locate with a summary first: `rgapi`'s `r
 ## What's where
 
 - `fastcore.tools`: text primitives, file tools, and `line_hash`/`lnhash`/`lnhash_at` for creating addresses without exhash installed.
-- `fastcore.nbio`: notebook read/write/validate/repair, cell construction, cell editors, and the `Notebook`/`NbCell` session objects with their snapshot queries (`find_cells`, `summary_nb`).
+- `fastcore.nbio`: notebook read/write/validate/repair, cell construction, cell editors, and the `Notebook`/`NbCell` session objects with their snapshot queries (`find_cells`, `summary_nb`), plus `nb.remove`/`del_cells` for taking cells out.
 - `exhash.skill`: hash-verified editing for files and cells, plus `open_doc` section outlines for Markdown, code, and notebooks; prefer it for edits where installed.
 - `rgapi.skill`: `rg`/`fd`/`ls`/`nbrg` search with lnhash output, and `rgstr` to search text already in hand.
 - `remold`: structural search and rewrite for Python source (declarative ast-grep rules, LibCST matcher transforms, symbol queries); the engine behind `ast_replace`.
@@ -56,12 +56,12 @@ from fastcore.tools import (insert_line, str_replace, strs_replace, replace_line
     file_insert_line, file_str_replace, file_strs_replace, file_replace_lines, file_del_lines, file_ast_replace,
     view_file, create_file, line_hash, lnhash, lnhash_at)
 from fastcore.nbio import (read_nb, write_nb, new_nb, mk_cell, validate_nb, validate_cell, repair_nb, repair_cell,
-    view_cell, cell_insert_line, cell_str_replace, cell_strs_replace, cell_replace_lines, cell_del_lines, cell_ast_replace, Notebook, NbCell, find_cells, summary_nb)
+    view_cell, cell_insert_line, cell_str_replace, cell_strs_replace, cell_replace_lines, cell_del_lines, cell_ast_replace, Notebook, NbCell, find_cells, summary_nb, del_cells)
 
 __all__ = ['insert_line', 'str_replace', 'strs_replace', 'replace_lines', 'del_lines', 'ast_replace',
     'file_insert_line', 'file_str_replace', 'file_strs_replace', 'file_replace_lines', 'file_del_lines', 'file_ast_replace',
     'view_file', 'create_file', 'line_hash', 'lnhash', 'lnhash_at',
     'read_nb', 'write_nb', 'new_nb', 'mk_cell', 'validate_nb', 'validate_cell', 'repair_nb', 'repair_cell',
-    'view_cell', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines', 'cell_ast_replace', 'Notebook', 'NbCell', 'find_cells', 'summary_nb']
+    'view_cell', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace', 'cell_replace_lines', 'cell_del_lines', 'cell_ast_replace', 'Notebook', 'NbCell', 'find_cells', 'summary_nb', 'del_cells']
 
 __pyskill_params__ = {'replace_params': ('start_line', 'end_line', 'n_matches', 're_filter', 'invert_filter', 'use_regex')}

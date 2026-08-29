@@ -18,8 +18,8 @@ __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace',
            'repair_cell', 'repair_nb', 'preferred_out', 'join_out', 'mk_stream', 'mk_result', 'mk_display', 'mk_error',
            'concat_streams', 'preferred_msg_out', 'render_output', 'render_outputs', 'render_text', 'item2xml',
            'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows', 'summary_nb', 'Found', 'FoundCells',
-           'find_cells', 'deep_merge', 'update_cell', 'fm_default_eval', 'does_cell_eval', 'select_cells', 'run_cell',
-           'msg2out', 'msgs2outs']
+           'find_cells', 'del_cells', 'deep_merge', 'update_cell', 'fm_default_eval', 'does_cell_eval', 'select_cells',
+           'run_cell', 'msg2out', 'msgs2outs']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -715,12 +715,19 @@ def md(self:Notebook, source, idx=None, after=None, before=None, **kwargs):
     "Add a new cell with `source` at `idx` (default: end), or `after`/`before` a cell id"
     return self.add(source, cell_type='markdown', idx=idx, after=after, before=before, **kwargs)
 
+# %% ../nbs/13_nbio.ipynb #dac137e1
+@patch
+def remove(self:Notebook, *ids):
+    "Remove cells by id (exact or unique prefix), index, or held cell, returning them"
+    cells = [k if isinstance(k, dict) else self[k] for k in ids]
+    for c in cells: self.cells.remove(c)
+    return cells
+
 # %% ../nbs/13_nbio.ipynb #63ba4a93
 @patch
 def move(self:Notebook, src_ids, after=None, before=None):
     "Move cells with `src_ids` after/before a cell id, or to end"
-    cells = [self[k] for k in listify(src_ids)]
-    for c in cells: self.cells.remove(c)
+    cells = self.remove(*listify(src_ids))
     if after: idx = next((i+1 for i,c in enumerate(self.cells) if c.id==after), None)
     elif before: idx = next((i for i,c in enumerate(self.cells) if c.id==before), None)
     else: idx = len(self.cells)
@@ -824,6 +831,17 @@ def find_cells(
     "Snapshot `FoundCells` for matching cells in the notebook at `path`"
     fc = Notebook.open(path).find_cells(pat, cell_type, ids=ids, context=context)
     return FoundCells([CellRow(c) for c in fc], matched=fc.matched)
+
+# %% ../nbs/13_nbio.ipynb #2a645b36
+def del_cells(
+    path, # Notebook file to modify
+    *ids, # Cell ids (exact or unique prefix) or indexes
+):
+    "Delete cells from the notebook at `path`, returning `CellRow` snapshots of the removed cells"
+    nb = Notebook.open(path)
+    res = nb.remove(*ids)
+    nb.save()
+    return CellRows(CellRow(c) for c in res)
 
 # %% ../nbs/13_nbio.ipynb #202a29f1
 def deep_merge(

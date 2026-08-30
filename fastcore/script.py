@@ -55,7 +55,7 @@ A capital letter in a parameter name declares a short flag: the capitalized lett
 
 ## Positional params
 
-Parameters without a default are positional, and the rest are flags. Pass `pos` to `call_parse` (or to `anno_parser`) to keep named parameters positional even when they have a default, in which case they are optional on the command line and take the default when omitted. Command line order follows the signature, not the order of the names in `pos`. Naming a bool parameter in `pos` raises, since a flag takes no value.
+Parameters without a default are positional, and the rest are flags. A `*args` parameter is a variadic positional, taking zero or more values, and since Python makes any params after it keyword-only, they are flags. A `**kwargs` parameter is skipped: a CLI run passes nothing for it. Pass `pos` to `call_parse` (or to `anno_parser`) to keep named parameters positional even when they have a default, in which case they are optional on the command line and take the default when omitted. Command line order follows the signature, not the order of the names in `pos`. Naming a bool parameter in `pos` raises, since a flag takes no value.
 
 ## Param types
 
@@ -213,9 +213,13 @@ def anno_parser(func, prog:str=None, pos:list=None):
     "Look at params (with type/docments/`Annotated` annotations) in func and return an `ArgumentParser`"
     p = argparse.ArgumentParser(description=func.__doc__, prog=prog, formatter_class=_HelpFormatter, epilog=_pkg_version(func))
     for k,v in docments(func, full=True, returns=False, eval_str=True).items():
+        if v.kind is inspect.Parameter.VAR_KEYWORD: continue
         anno,meta = ann_parts(v.anno)
         extra = next((o for o in meta if isinstance(o,dict)), {})
-        if pos and k in pos:
+        if v.kind is inspect.Parameter.VAR_POSITIONAL:
+            if anno in (bool,store_true,store_false): raise ValueError(f"variadic param {k!r} can't be a bool: a flag takes no value")
+            extra = merge({'opt':False, 'nargs':'*'}, extra)
+        elif pos and k in pos:
             if anno in (bool,store_true,store_false): raise ValueError(f"positional param {k!r} can't be a bool: a flag takes no value")
             extra = merge({'opt':False}, {'nargs':'?'} if v.default is not inspect.Parameter.empty else {}, extra)
         mv = anno2str(anno)
@@ -260,6 +264,15 @@ def _is_script_run(frame):
     if g.get('__name__')!='__main__' or not g.get('__file__'): return False
     return Path(g['__file__']).resolve()==Path(frame.f_code.co_filename).resolve()
 
+# %% ../nbs/06_script.ipynb #d9a3f93c
+def _pos_split(func, args):
+    "Pop values for params up to a `*args` param from `args` in signature order, to pass positionally"
+    ks = []
+    for k,v in inspect.signature(func).parameters.items():
+        if v.kind is inspect.Parameter.VAR_POSITIONAL: return [args.pop(o) for o in ks]+list(args.pop(k)), args
+        ks.append(k)
+    return [],args
+
 # %% ../nbs/06_script.ipynb #dee5e259
 _cli_func = ContextVar('_cli_func', default=None)
 
@@ -273,7 +286,8 @@ def _run_cli(func, nested, pos=None):
         args = args.__dict__
         xtra = otherwise(args.pop('xtra', ''), eq(1), p.prog)
         tfunc = trace(func) if args.pop('pdb', False) else func
-        res = tfunc(**merge(args, args_from_prog(func, xtra)))
+        pargs,args = _pos_split(func, merge(args, args_from_prog(func, xtra)))
+        res = tfunc(*pargs, **args)
         return asyncio.run(res) if inspect.isawaitable(res) else res
 
 def call_parse(func=None, nested=False, pos:list=None):

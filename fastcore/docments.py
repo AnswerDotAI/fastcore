@@ -431,7 +431,7 @@ def _docstring(sym):
 
 def _unwrap_sym(sym):
     if not hasattr(sym, '__signature__'): sym = getattr(sym, '__wrapped__', sym)
-    return getattr(sym, 'fget', None) or getattr(sym, 'fset', None) or sym
+    return (sym.fget or sym.fset or sym) if isinstance(sym, property) else sym
 
 def can_render(sym):
     "Check if `sym` has a renderable signature"

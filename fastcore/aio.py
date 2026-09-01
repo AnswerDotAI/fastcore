@@ -16,8 +16,8 @@ Docs: https://fastcore.fast.ai/aio.html.md"""
 
 # %% auto #0
 __all__ = ['run_sync', 'iter_sync', 'ctx_sync', 'athreaded', 'maybe_await', 'then', 'acache', 'CachedAwaitable', 'reawaitable',
-           'is_async_callable', 'to_aiter', 'maybe_aiter', 'mapa', 'noopa', 'Debounce', 'enable_async_magics',
-           'disable_async_magics']
+           'is_async_callable', 'to_aiter', 'maybe_aiter', 'mapa', 'noopa', 'wait_until', 'Debounce',
+           'enable_async_magics', 'disable_async_magics']
 
 # %% ../nbs/03c_aio.ipynb #7e2193be
 import asyncio,contextvars,threading
@@ -159,6 +159,20 @@ async def mapa(f, items):
 async def noopa(x=None, *args, **kwargs):
     "Do nothing (async)"
     return x
+
+# %% ../nbs/03c_aio.ipynb #959bd288
+async def wait_until(
+    probe, # Sync or async callable; falsy result means keep waiting
+    what:str=None, # Named in the `TimeoutError`; `probe`'s name if None
+    timeout:float=10, # Seconds to wait before raising
+    sleep:float=0.2, # Seconds between probes
+):
+    "Call `probe` until truthy, returning its first truthy result"
+    deadline = asyncio.get_running_loop().time() + timeout
+    while asyncio.get_running_loop().time() < deadline:
+        if (r := await maybe_await(probe())): return r
+        await asyncio.sleep(sleep)
+    raise TimeoutError(f'Timed out waiting for {what or getattr(probe, "__name__", probe)}')
 
 # %% ../nbs/03c_aio.ipynb #5eaf5cd7
 class Debounce:

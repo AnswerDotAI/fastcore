@@ -4,6 +4,10 @@
 
 ## 2.2.19
 
+### Bugs Squashed
+
+- Fix docments property unwrapping to use isinstance check, avoiding false positives from permissive `__getattr__` implementations ([#927](https://github.com/AnswerDotAI/fastcore/issues/927))
+
 
 ## 2.2.18
 

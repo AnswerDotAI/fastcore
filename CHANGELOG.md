@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 2.2.18
+
+### New Features
+
+- Add `wait_until` to fastcore.aio: polls a sync or async probe until truthy, with configurable timeout and sleep interval ([#926](https://github.com/AnswerDotAI/fastcore/issues/926))
+- Support variadic positional (`*args`) params in ``call_parse``, and skip `**kwargs` ([#925](https://github.com/AnswerDotAI/fastcore/pull/925)), thanks to [@jph00](https://github.com/jph00)
+
+
 ## 2.2.17
 
 ### New Features

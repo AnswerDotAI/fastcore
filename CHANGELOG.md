@@ -2,6 +2,17 @@
 
 <!-- do not remove -->
 
+## 2.2.20
+
+### New Features
+
+- Add `CliError`, a command error that exits cleanly under a CLI run ([#928](https://github.com/AnswerDotAI/fastcore/pull/928)), thanks to [@jph00](https://github.com/jph00)
+
+### Bugs Squashed
+
+- Fix in_jupyter() detection for IPython shell subclasses ([#919](https://github.com/AnswerDotAI/fastcore/pull/919)), thanks to [@ncoop57](https://github.com/ncoop57)
+
+
 ## 2.2.19
 
 ### Bugs Squashed

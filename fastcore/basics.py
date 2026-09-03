@@ -175,8 +175,7 @@ def get_class(nm, *fld_names, sup=None, doc=None, funcs=None, anno=None, **flds)
         for k,v in kwargs.items(): setattr(self,k,v)
 
     attrs['_fields'] = [*fld_names,*flds.keys()]
-    def _eq(self,b):
-        return all([getattr(self,k)==getattr(b,k) for k in self._fields])
+    def _eq(self,b): return all([getattr(self,k)==getattr(b,k) for k in self._fields])
 
     if not sup: attrs['__repr__'] = basic_repr(attrs['_fields'])
     attrs['__init__'] = _init
@@ -216,8 +215,7 @@ def exec_local(code, var_name):
 
 # %% ../nbs/01_basics.ipynb #20506f20
 def _risinstance(types, obj):
-    if any(isinstance(t,str) for t in types):
-        return any(t.__name__ in types for t in type(obj).__mro__)
+    if any(isinstance(t,str) for t in types): return any(t.__name__ in types for t in type(obj).__mro__)
     return isinstance(obj, types)
 
 def risinstance(types, obj=None):
@@ -227,8 +225,7 @@ def risinstance(types, obj=None):
     return _risinstance(types, obj)
 
 # %% ../nbs/01_basics.ipynb #62ef5af9
-def ver2tuple(v:str)->tuple:
-    return tuple(int(o or 0) for o in re.search(r'(\d+)(?:\.(\d+))?(?:\.(\d+))?', v).groups())
+def ver2tuple(v:str)->tuple: return tuple(int(o or 0) for o in re.search(r'(\d+)(?:\.(\d+))?(?:\.(\d+))?', v).groups())
 
 # %% ../nbs/01_basics.ipynb #b25890ec
 class _InfMeta(type):
@@ -403,9 +400,8 @@ def eval_type(t, glb, loc):
     return t
 
 # %% ../nbs/01_basics.ipynb #7e8c9e8a
-_allowed_types = (types.FunctionType, types.BuiltinFunctionType, types.MethodType, 
-                  types.ModuleType, types.WrapperDescriptorType, types.MethodWrapperType,
-                  types.MethodDescriptorType)
+_allowed_types = (types.FunctionType, types.BuiltinFunctionType, types.MethodType, types.ModuleType, types.WrapperDescriptorType,
+    types.MethodWrapperType, types.MethodDescriptorType)
 
 def _eval_type(t, glb, loc):
     res = eval_type(t, glb, loc)
@@ -455,8 +451,7 @@ def signature_ex(obj, eval_str:bool=False):
 
 # %% ../nbs/01_basics.ipynb #6d55bfb5
 def union2tuple(t):
-    if (getattr(t, '__origin__', None) is Union
-        or (UnionType and isinstance(t, UnionType))): return t.__args__
+    if (getattr(t, '__origin__', None) is Union or (UnionType and isinstance(t, UnionType))): return t.__args__
     return t
 
 # %% ../nbs/01_basics.ipynb #c14e9987
@@ -867,8 +862,7 @@ def nested_attr(o, attr, default=None):
         for a in attr.split("."): 
             if hasattr(o,a): o = getattr(o, a)
             else: o = o[a]
-    except (AttributeError, KeyError,IndexError, TypeError, ValueError):
-        return default
+    except (AttributeError, KeyError,IndexError, TypeError, ValueError): return default
     return o
 
 # %% ../nbs/01_basics.ipynb #340ed8c8
@@ -1048,9 +1042,7 @@ def mapt(func, *iterables):
 # %% ../nbs/01_basics.ipynb #b01eba34
 def map_ex(iterable, f, *args, gen=False, **kwargs):
     "Like `map`, but use `bind`, and supports `str` and indexing"
-    g = (bind(f,*args,**kwargs) if callable(f)
-         else f.format if isinstance(f,str)
-         else f.__getitem__)
+    g = (bind(f, *args, **kwargs) if callable(f) else f.format if isinstance(f, str) else f.__getitem__)
     res = map(g, iterable)
     if gen: return res
     return list(res)
@@ -1107,8 +1099,7 @@ def negate(f):
 # %% ../nbs/01_basics.ipynb #24c5ee83
 def fail_clean(*excs):
     "Re-raise `excs` (default: `Exception`) without internal traceback frames"
-    if excs and not (isinstance(excs[0],type) and issubclass(excs[0],BaseException)):
-        return fail_clean()(excs[0])
+    if excs and not (isinstance(excs[0],type) and issubclass(excs[0],BaseException)): return fail_clean()(excs[0])
     excs = excs or (Exception,)
     def _deco(f):
         @wraps(f)
@@ -1292,9 +1283,7 @@ class Stateful:
         self._init_state()
         super().__init__(*args,**kwargs) # required for mixin usage
 
-    def __getstate__(self):
-        return {k:v for k,v in self.__dict__.items()
-                if k not in self._stateattrs+('_state',)}
+    def __getstate__(self): return {k: v for k, v in self.__dict__.items() if k not in self._stateattrs + ('_state',)}
 
     def __setstate__(self, state):
         self.__dict__.update(state)
@@ -1476,7 +1465,7 @@ def fdelegates(to):
         sig = signature(f)
         sigd = dict(sig.parameters)
         new_params = {k:v.replace(kind=Parameter.KEYWORD_ONLY) for k,v in signature(to).parameters.items()
-                      if v.default != Parameter.empty and k not in sigd}
+            if v.default != Parameter.empty and k not in sigd}
         f.__signature__ = sig_with_params(sig, remove=['kwargs'], **new_params)
         return f
     return _f

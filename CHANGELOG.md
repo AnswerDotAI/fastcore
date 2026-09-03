@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.21
+
+### New Features
+
+- `store_attr` no longer records `__stored_args__`; add `init_args` ([#929](https://github.com/AnswerDotAI/fastcore/pull/929)), thanks to [@jph00](https://github.com/jph00)
+
+
 ## 2.2.20
 
 ### New Features

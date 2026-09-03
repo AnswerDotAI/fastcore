@@ -43,21 +43,21 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'true', 'NullType', 'tonull', 'get_class', 'mk_class', 'wrap_class', 'ignore_exceptions', 'exec_local',
            'risinstance', 'ver2tuple', 'Inf', 'in_', 'ret_true', 'ret_false', 'stop', 'gen', 'chunked', 'otherwise',
            'custom_dir', 'adict', 'AttrDict', 'AttrDictDefault', 'NS', 'get_annotations_ex', 'eval_type', 'type_hints',
-           'annotations', 'anno_ret', 'signature_ex', 'union2tuple', 'argnames', 'with_cast', 'store_attr', 'attrdict',
-           'properties', 'id_words', 'to_camel', 'to_pascal', 'to_kebab', 'to_snake', 'camel2words', 'camel2snake',
-           'snake2camel', 'humanize', 'class2attr', 'getcallable', 'getattrs', 'hasattrs', 'setattrs', 'try_attrs',
-           'DepProp', 'GetAttrBase', 'GetAttr', 'delegate_attr', 'ShowPrint', 'Int', 'Str', 'Float', 'partition',
-           'partition_dict', 'flatten', 'concat', 'strcat', 'detuplify', 'replicate', 'setify', 'merge', 'range_of',
-           'groupby', 'last_index', 'filter_dict', 'filter_keys', 'filter_values', 'cycle', 'zip_cycle', 'sorted_ex',
-           'not_', 'argwhere', 'filter_ex', 'renumerate', 'first', 'last', 'only', 'nested_attr', 'nested_setdefault',
-           'nested_callable', 'nested_idx', 'set_nested_idx', 'val2idx', 'uniqueify', 'loop_first_last', 'loop_first',
-           'loop_last', 'first_match', 'last_match', 'joins', 'fastuple', 'bind', 'mapt', 'map_ex', 'compose', 'maps',
-           'partialler', 'instantiate', 'using_attr', 'negate', 'fail_clean', 'dstar', 'copy_func', 'patch_to', 'patch',
-           'extend_enum', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum', 'ValEnum', 'Stateful', 'NotStr',
-           'PrettyString', 'even_mults', 'num_cpus', 'add_props', 'str2bool', 'str2int', 'str2float', 'str2list',
-           'str2date', 'str2dt', 'to_bool', 'to_int', 'to_float', 'to_list', 'to_date', 'typed', 'exec_new',
-           'exec_import', 'kindsort', 'sig_with_params', 'fdelegates', 'xdumps', 'revive_dates', 'lt', 'gt', 'le', 'ge',
-           'eq', 'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
+           'annotations', 'anno_ret', 'signature_ex', 'union2tuple', 'argnames', 'with_cast', 'store_attr', 'init_args',
+           'attrdict', 'properties', 'id_words', 'to_camel', 'to_pascal', 'to_kebab', 'to_snake', 'camel2words',
+           'camel2snake', 'snake2camel', 'humanize', 'class2attr', 'getcallable', 'getattrs', 'hasattrs', 'setattrs',
+           'try_attrs', 'DepProp', 'GetAttrBase', 'GetAttr', 'delegate_attr', 'ShowPrint', 'Int', 'Str', 'Float',
+           'partition', 'partition_dict', 'flatten', 'concat', 'strcat', 'detuplify', 'replicate', 'setify', 'merge',
+           'range_of', 'groupby', 'last_index', 'filter_dict', 'filter_keys', 'filter_values', 'cycle', 'zip_cycle',
+           'sorted_ex', 'not_', 'argwhere', 'filter_ex', 'renumerate', 'first', 'last', 'only', 'nested_attr',
+           'nested_setdefault', 'nested_callable', 'nested_idx', 'set_nested_idx', 'val2idx', 'uniqueify',
+           'loop_first_last', 'loop_first', 'loop_last', 'first_match', 'last_match', 'joins', 'fastuple', 'bind',
+           'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'negate', 'fail_clean',
+           'dstar', 'copy_func', 'patch_to', 'patch', 'extend_enum', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum',
+           'ValEnum', 'Stateful', 'NotStr', 'PrettyString', 'even_mults', 'num_cpus', 'add_props', 'str2bool',
+           'str2int', 'str2float', 'str2list', 'str2date', 'str2dt', 'to_bool', 'to_int', 'to_float', 'to_list',
+           'to_date', 'typed', 'exec_new', 'exec_import', 'kindsort', 'sig_with_params', 'fdelegates', 'xdumps',
+           'revive_dates', 'lt', 'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
 
 # %% ../nbs/01_basics.ipynb #0e91ed82
 from .imports import *
@@ -485,21 +485,18 @@ def with_cast(f):
 
 # %% ../nbs/01_basics.ipynb #5cd34c5e
 def _store_attr(self, anno, **attrs):
-    stored = getattr(self, '__stored_args__', None)
     for n,v in attrs.items():
         if n in anno: v = anno[n](v)
         setattr(self, n, v)
-        if stored is not None: stored[n] = v
+
 
 # %% ../nbs/01_basics.ipynb #59d6f1be
-def store_attr(names=None, self=None, but='', cast=False, store_args=None, **attrs):
+def store_attr(names=None, self=None, but='', cast=False, **attrs):
     "Store params named in comma-separated `names` from calling context into attrs in `self`"
     fr = sys._getframe(1)
     args = argnames(fr, True)
     if self: args = ('self', *args)
     else: self = fr.f_locals[args[0]]
-    if store_args is None: store_args = not hasattr(self,'__slots__')
-    if store_args and not hasattr(self, '__stored_args__'): self.__stored_args__ = {}
     anno = annotations(self) if cast else {}
     if names and isinstance(names,str): names = re.split(', *', names)
     ns = names if names is not None else getattr(self, '__slots__', args[1:])
@@ -508,6 +505,12 @@ def store_attr(names=None, self=None, but='', cast=False, store_args=None, **att
     if isinstance(but,str): but = re.split(', *', but)
     attrs = {k:v for k,v in attrs.items() if k not in but}
     return _store_attr(self, anno, **attrs)
+
+# %% ../nbs/01_basics.ipynb #50b2c270
+def init_args(o):
+    "The `__init__` parameters of `o` that it holds as attributes, with their current values"
+    ps = inspect.signature(type(o).__init__).parameters
+    return {p:getattr(o,p) for p in ps if hasattr(o,p)}
 
 # %% ../nbs/01_basics.ipynb #2648105d
 def attrdict(o, *ks, default=None):

@@ -28,7 +28,7 @@ import re,ast,inspect
 from tokenize import tokenize,COMMENT
 from ast import parse,FunctionDef,AsyncFunctionDef,AnnAssign
 from io import BytesIO
-from textwrap import dedent
+from textwrap import dedent,indent
 from types import SimpleNamespace
 from inspect import getsource,isfunction,ismethod,isclass,signature,Parameter,Signature
 from dataclasses import dataclass, is_dataclass
@@ -490,6 +490,6 @@ class MarkdownRenderer(ShowDocRenderer):
 
     def __repr__(self):
         doc = str(self.dm)
-        if self.docs: doc += f'"""{self.docs}"""'
+        if self.docs: doc += '\n' + indent(f'"""{self.docs}"""', '    ')
         return doc
     __str__=__repr__

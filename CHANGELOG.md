@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.22
+
+### Bugs Squashed
+
+- fix `init_args` ([#931](https://github.com/AnswerDotAI/fastcore/issues/931))
+
+
 ## 2.2.21
 
 ### New Features

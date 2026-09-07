@@ -48,8 +48,8 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'camel2snake', 'snake2camel', 'humanize', 'class2attr', 'getcallable', 'getattrs', 'hasattrs', 'setattrs',
            'try_attrs', 'DepProp', 'GetAttrBase', 'GetAttr', 'delegate_attr', 'ShowPrint', 'Int', 'Str', 'Float',
            'partition', 'partition_dict', 'flatten', 'concat', 'strcat', 'detuplify', 'replicate', 'setify', 'merge',
-           'range_of', 'groupby', 'last_index', 'filter_dict', 'filter_keys', 'filter_values', 'cycle', 'zip_cycle',
-           'sorted_ex', 'not_', 'argwhere', 'filter_ex', 'renumerate', 'first', 'last', 'only', 'nested_attr',
+           'groupby', 'last_index', 'filter_dict', 'filter_keys', 'filter_values', 'cycle', 'zip_cycle', 'sorted_ex',
+           'not_', 'argwhere', 'filter_ex', 'range_of', 'renumerate', 'first', 'last', 'only', 'nested_attr',
            'nested_setdefault', 'nested_callable', 'nested_idx', 'set_nested_idx', 'val2idx', 'uniqueify',
            'loop_first_last', 'loop_first', 'loop_last', 'first_match', 'last_match', 'joins', 'fastuple', 'bind',
            'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'negate', 'fail_clean',
@@ -61,7 +61,7 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
 
 # %% ../nbs/01_basics.ipynb #0e91ed82
 from .imports import *
-import builtins,types,typing,json
+import builtins,types,typing,json,inspect
 from inspect import signature,Parameter
 from functools import cmp_to_key,wraps
 from copy import copy
@@ -285,7 +285,7 @@ def stop(e=StopIteration):
 
 # %% ../nbs/01_basics.ipynb #dfb654dc
 def gen(func, seq, cond=ret_true):
-    "Like `(func(o) for o in seq if cond(func(o)))` but handles `StopIteration`"
+    "Map `func` over `seq`, stopping at the first result that fails `cond`; handles `StopIteration`"
     return itertools.takewhile(cond, map(func,seq))
 
 # %% ../nbs/01_basics.ipynb #a0bb26d6
@@ -451,6 +451,7 @@ def signature_ex(obj, eval_str:bool=False):
 
 # %% ../nbs/01_basics.ipynb #6d55bfb5
 def union2tuple(t):
+    "The member types of a `Union` or `X|Y` annotation, otherwise `t` unchanged"
     if (getattr(t, '__origin__', None) is Union or (UnionType and isinstance(t, UnionType))): return t.__args__
     return t
 
@@ -504,8 +505,8 @@ def store_attr(names=None, self=None, but='', cast=False, **attrs):
 # %% ../nbs/01_basics.ipynb #50b2c270
 def init_args(o):
     "The `__init__` parameters of `o` that it holds as attributes, with their current values"
-    ps = inspect.signature(type(o).__init__).parameters
-    return {p:getattr(o,p) for p in ps if hasattr(o,p)}
+    ps,d = inspect.signature(type(o).__init__).parameters,vars(o)
+    return {p:d[p] for p in ps if p in d}
 
 # %% ../nbs/01_basics.ipynb #2648105d
 def attrdict(o, *ks, default=None):
@@ -539,7 +540,7 @@ def to_kebab(s:str, splits:str='-_ :c')->str:
     "kebab-case form of `s`"
     return '-'.join(w.lower() for w in id_words(s, splits))
 
-def to_snake(s:str, splits:str='-_ :c')->str:
+def to_snake(s:str, splits:str='-_ :c')->str:  # chkstyle: ignore
     "snake_case form of `s`"
     return '_'.join(w.lower() for w in id_words(s, splits))
 
@@ -588,6 +589,7 @@ def hasattrs(o,attrs):
 
 # %% ../nbs/01_basics.ipynb #b8eee2ab
 def setattrs(dest, flds, src):
+    "Set fields `flds` on `dest` from `src`, a dict or an object"
     f = dict.get if isinstance(src, dict) else getattr
     flds = re.split(r",\s*", flds)
     for fld in flds: setattr(dest, fld, f(src, fld))
@@ -698,7 +700,9 @@ def partition_dict(d, f):
 def flatten(o):
     "Concatenate all collections and items as a generator"
     for item in o:
-        if isinstance(item, str): yield item; continue
+        if isinstance(item, str):
+            yield item
+            continue
         try: yield from flatten(item)
         except TypeError: yield item
 
@@ -731,11 +735,6 @@ def setify(o):
 def merge(*ds):
     "Merge all dictionaries in `ds`"
     return {k:v for d in ds if d is not None for k,v in d.items()}
-
-# %% ../nbs/01_basics.ipynb #891e17ba
-def range_of(x):
-    "All indices of collection `x` (i.e. `list(range(len(x)))`)"
-    return list(range(len(x)))
 
 # %% ../nbs/01_basics.ipynb #2f747b3f
 def _conv_key(k):
@@ -947,12 +946,12 @@ def loop_last(values):
 
 # %% ../nbs/01_basics.ipynb #6a52e00b
 def first_match(lst, f, default=None):
-    "First element of `lst` matching predicate `f`, or `default` if none"
+    "Index of the first element of `lst` matching predicate `f`, or `default` if none"
     return next((i for i,o in enumerate(lst) if f(o)), default)
 
 # %% ../nbs/01_basics.ipynb #5715537b
 def last_match(lst, f, default=None):
-    "Last element of `lst` matching predicate `f`, or `default` if none"
+    "Index of the last element of `lst` matching predicate `f`, or `default` if none"
     return next((i for i in range(len(lst)-1, -1, -1) if f(lst[i])), default)
 
 # %% ../nbs/01_basics.ipynb #bd711f0d
@@ -1390,7 +1389,7 @@ def str2dt(s:str)->datetime:
 def to_bool(arg): return str2bool(arg) if isinstance(arg, str) else bool(arg)
 def to_int(arg): return str2int(arg) if isinstance(arg, str) else int(arg)
 def to_float(arg): return str2float(arg) if isinstance(arg, str) else float(arg) 
-def to_list(arg): return str2list(arg) if isinstance(arg,str) else listify(arg)
+def to_list(arg): return str2list(arg) if isinstance(arg,str) else listify(arg)  # chkstyle: ignore
 def to_date(arg):
     if isinstance(arg, str): return str2date(arg)
     raise _typeerr('arg', arg, 'date')

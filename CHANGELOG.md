@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.23
+
+### New Features
+
+- Docments from Annotated metadata and NumPy docstrings, callable truncstr suffixes, shared preview rows ([#934](https://github.com/AnswerDotAI/fastcore/pull/934)), thanks to [@jph00](https://github.com/jph00)
+
+
 ## 2.2.22
 
 ### Bugs Squashed

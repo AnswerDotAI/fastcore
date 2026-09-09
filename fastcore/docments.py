@@ -29,23 +29,27 @@ from tokenize import tokenize,COMMENT
 from ast import parse,FunctionDef,AsyncFunctionDef,AnnAssign
 from io import BytesIO
 from textwrap import dedent
-from types import SimpleNamespace
-from inspect import getsource,isfunction,ismethod,isclass,signature,Parameter,Signature
-from dataclasses import dataclass, is_dataclass
+from inspect import getsource,isfunction,ismethod,isclass,signature,Parameter
+from dataclasses import is_dataclass
 from .utils import *
-from .meta import delegates
 from . import docscrape
-from textwrap import fill
 from inspect import isclass,getdoc,signature
 
 # %% ../nbs/04_docments.ipynb #53e21187
+def _callable_instance(sym): return callable(sym) and not (inspect.isroutine(sym) or isclass(sym))
+
 def docstring(sym):
-    "Get docstring for `sym` for functions ad classes"
+    "Get documentation from an object, its constructor, or its callable implementation"
     if isinstance(sym, str): return sym
+    if isinstance(sym, partial): return docstring(sym.func)
+    if _callable_instance(sym):
+        own = inspect.getattr_static(sym, '__doc__', None)
+        if own is not getattr(type(sym), '__doc__', None): return getdoc(sym) or ''
+        return getdoc(sym.__call__) or getdoc(sym) or ''
     res = getdoc(sym)
-    if not res and isclass(sym): res = getdoc(sym.__init__)
-    if not res and callable(sym) and not isclass(sym): res = getdoc(sym.__call__)
-    return res or ""
+    if not getattr(sym, '__doc__', None) and res == object.__init__.__doc__: res = None
+    if not res and isclass(sym) and sym.__init__ is not object.__init__: res = docstring(sym.__init__)
+    return res or ''
 
 # %% ../nbs/04_docments.ipynb #1e0cf854
 def parse_docstring(sym):
@@ -57,16 +61,44 @@ def isdataclass(s):
     "Check if `s` is a dataclass but not a dataclass' instance"
     return is_dataclass(s) and isclass(s)
 
-# %% ../nbs/04_docments.ipynb #6549c4b2
 def get_dataclass_source(s):
     "Get source code for dataclass `s`"
     return getsource(s) if not getattr(s, "__module__") == '__main__' else ""
 
-# %% ../nbs/04_docments.ipynb #cac59989
 def get_source(s):
-    "Get source code for string, function object or dataclass `s`"
+    "Get source for a function, callable implementation, dataclass, or source string"
     if isinstance(s,str): return s
+    s = inspect.unwrap(s)
+    if isinstance(s, partial): s = s.func
+    if _callable_instance(s): s = s.__call__
     return getsource(s) if isfunction(s) or ismethod(s) else get_dataclass_source(s) if isdataclass(s) else None
+
+# %% ../nbs/04_docments.ipynb #40e3f274
+def _get_property_name(p):
+    "Get the name of property `p`"
+    if hasattr(p, 'fget'): return p.fget.func.__qualname__ if hasattr(p.fget, 'func') else p.fget.__qualname__
+    else: return next(iter(re.findall(r'\'(.*)\'', str(p)))).split('.')[-1]
+
+def get_name(obj):
+    "Get the name of `obj`"
+    if isinstance(obj, partial):
+        nm = get_name(obj.func)
+        args = [repr(a) for a in obj.args] + [f'{k}={repr(v)}' for k,v in obj.keywords.items()]
+        return f"{nm}[partial: {', '.join(args)}]"
+    if hasattr(obj, '__name__'):       return obj.__name__
+    elif getattr(obj, '_name', False): return obj._name
+    elif hasattr(obj,'__origin__'):    return str(obj.__origin__).split('.')[-1]
+    elif type(obj)==property:          return _get_property_name(obj)
+    elif callable(obj):                return type(obj).__name__
+    else:                              return str(obj).split('.')[-1]
+
+
+# %% ../nbs/04_docments.ipynb #5e273f22
+def qual_name(obj):
+    "Get the qualified name of `obj`"
+    if hasattr(obj,'__qualname__'): return obj.__qualname__
+    if ismethod(obj):       return f"{get_name(obj.__self__)}.{get_name(obj)}"
+    return get_name(obj)
 
 # %% ../nbs/04_docments.ipynb #91c0d15f
 def _parses(s):
@@ -87,13 +119,14 @@ def _clean_comment(s):
     res = _clean_re.findall(s)
     return res[0] if res else None
 
+# %% ../nbs/04_docments.ipynb #448097bb
 def _param_locs(s, returns=True, args_kwargs=False):
     "`dict` of parameter line numbers to names"
     body = _parses(s).body
     if len(body)==1:
         defn = body[0]
         if isinstance(defn, (FunctionDef, AsyncFunctionDef)):
-            res = {arg.lineno:arg.arg for arg in defn.args.args}
+            res = {arg.lineno:arg.arg for arg in [*defn.args.posonlyargs, *defn.args.args]}
             # Add *args if present
             if defn.args.vararg: res[defn.args.vararg.lineno] = defn.args.vararg.arg
             # Add keyword-only args
@@ -127,49 +160,6 @@ def _get_full(p, docs, eval_str=False):
         elif eval_str: anno = None
     return AttrDict(docment=docs.get(p.name), anno=anno, default=p.default, kind=p.kind)
 
-# %% ../nbs/04_docments.ipynb #1b4d817c
-def _merge_doc(dm, npdoc):
-    if not npdoc: return dm
-    if not isinstance(dm, dict): return dm or '\n'.join(npdoc.desc)
-    # if not dm.anno or dm.anno==empty: dm.anno = npdoc.type
-    if not dm.docment: dm.docment = '\n'.join(npdoc.desc)
-    return dm
-
-def _merge_docs(dms, npdocs):
-    npparams = npdocs['Parameters']
-    params = {nm:_merge_doc(dm,npparams.get(nm,None)) for nm,dm in dms.items()}
-    if 'return' in dms: params['return'] = _merge_doc(dms['return'], npdocs['Returns'])
-    return params
-
-# %% ../nbs/04_docments.ipynb #40e3f274
-def _get_property_name(p):
-    "Get the name of property `p`"
-    if hasattr(p, 'fget'):
-        return p.fget.func.__qualname__ if hasattr(p.fget, 'func') else p.fget.__qualname__
-    else: return next(iter(re.findall(r'\'(.*)\'', str(p)))).split('.')[-1]
-
-# %% ../nbs/04_docments.ipynb #da0465e3
-def get_name(obj):
-    "Get the name of `obj`"
-    if isinstance(obj, partial):
-        nm = get_name(obj.func)
-        args = [repr(a) for a in obj.args] + [f'{k}={repr(v)}' for k,v in obj.keywords.items()]
-        return f"{nm}[partial: {', '.join(args)}]"
-    if hasattr(obj, '__name__'):       return obj.__name__
-    elif getattr(obj, '_name', False): return obj._name
-    elif hasattr(obj,'__origin__'):    return str(obj.__origin__).split('.')[-1]
-    elif type(obj)==property:          return _get_property_name(obj)
-    elif callable(obj):                return type(obj).__name__
-    else:                              return str(obj).split('.')[-1]
-
-
-# %% ../nbs/04_docments.ipynb #5e273f22
-def qual_name(obj):
-    "Get the qualified name of `obj`"
-    if hasattr(obj,'__qualname__'): return obj.__qualname__
-    if ismethod(obj):       return f"{get_name(obj.__self__)}.{get_name(fn)}"
-    return get_name(obj)
-
 # %% ../nbs/04_docments.ipynb #2e865627
 def ann_parts(anno):
     "The underlying type and metadata tuple of an `Annotated`, else `(anno, ())`"
@@ -178,9 +168,16 @@ def ann_parts(anno):
     t = None if args[0] is type(None) else args[0]
     return t, args[1:]
 
+# %% ../nbs/04_docments.ipynb #1b4d817c
+def _merge_docs(dms, npdocs):
+    for nm,dm in dms.items():
+        npdoc = npdocs['Returns'] if nm=='return' else npdocs['Parameters'].get(nm)
+        if npdoc and not dm.docment: dm.docment = '\n'.join(npdoc.desc)
+    return dms
+
 # %% ../nbs/04_docments.ipynb #9b62ab20
 def docments(s, full=False, eval_str=False, returns=True, args_kwargs=False):
-    "Get docments for `s`"
+    "Get parameter and return documentation from comments, `Annotated` metadata, and NumPy docstrings"
     if isclass(s) and not is_dataclass(s): s = s.__init__
     try: sig = signature_ex(s, eval_str=eval_str)
     except (ValueError, TypeError): return AttrDict()
@@ -192,18 +189,13 @@ def docments(s, full=False, eval_str=False, returns=True, args_kwargs=False):
         for k,v in p.items():
             if v not in docs: docs[v] = _get_comment(k, v, c, p)
         s = getattr(s, '__delwrap__', None)
-    
-    res = {k:_get_full(v, docs, eval_str=eval_str) if full else docs.get(k) for k,v in sig.parameters.items()}
-    if returns:
-        if full: res['return'] = AttrDict(docment=docs.get('return'), anno=sig.return_annotation, default=empty)
-        else: res['return'] = docs.get('return')
-    for k,p in sig.parameters.items():
-        if (res[k].docment if full else res[k]) is None:
-            am = first(o for o in ann_parts(p.annotation)[1] if isinstance(o,str))
-            if am is None: continue
-            if full: res[k].docment = am
-            else: res[k] = am
-    return AttrDict(_merge_docs(res, nps))
+
+    res = {k:_get_full(v, docs, eval_str=eval_str) for k,v in sig.parameters.items()}
+    if returns: res['return'] = AttrDict(docment=docs.get('return'), anno=sig.return_annotation, default=empty)
+    for dm in res.values():
+        if dm.docment is None: dm.docment = first(o for o in ann_parts(dm.anno)[1] if isinstance(o,str))
+    res = _merge_docs(res, nps)
+    return AttrDict(res if full else {k:v.docment for k,v in res.items()})
 
 # %% ../nbs/04_docments.ipynb #40cdbeb2
 def sig_source(obj):
@@ -221,7 +213,7 @@ def _get_params(node):
     if node.args.kwarg: params.append(f"**{node.args.kwarg.arg}")
     return ", ".join(params)
 
-# %% ../nbs/04_docments.ipynb #180b4c2d
+# %% ../nbs/04_docments.ipynb #5dc1b730
 class _DocstringExtractor(ast.NodeVisitor):
     def __init__(self): self.docstrings,self.cls,self.cls_init = {},None,None
 
@@ -252,7 +244,7 @@ class _DocstringExtractor(ast.NodeVisitor):
         if module_doc: self.docstrings['_module'] = (module_doc, "")
         self.generic_visit(node)
 
-# %% ../nbs/04_docments.ipynb #b1d612e9
+# %% ../nbs/04_docments.ipynb #ac56083a
 def extract_docstrings(code):
     "Create a dict from function/class/method names to tuples of docstrings and param lists"
     extractor = _DocstringExtractor()
@@ -260,21 +252,19 @@ def extract_docstrings(code):
     return extractor.docstrings
 
 # %% ../nbs/04_docments.ipynb #e4e1b815
-def _non_empty_keys(d:dict): return L([k for k,v in d.items() if v != inspect._empty])
 def _bold(s): return f'**{s}**' if s.strip() else s
+
+def _maybe_nm(o):
+    if (o == inspect._empty): return ''
+    else: return o.__name__ if hasattr(o, '__name__') else str(o)
 
 # %% ../nbs/04_docments.ipynb #ac070254
 def _escape_markdown(s):
     for c in '|^': s = re.sub(rf'\\?\{c}', rf'\{c}', s)
     return s.replace('\n', '<br>')
 
-# %% ../nbs/04_docments.ipynb #ced78f56
-def _maybe_nm(o):
-    if (o == inspect._empty): return ''
-    else: return o.__name__ if hasattr(o, '__name__') else str(o)
-
 # %% ../nbs/04_docments.ipynb #fe6d83f1
-def _list2row(l:list): return '| '+' | '.join([_maybe_nm(o) for o in l]) + ' |'
+def _list2row(l:list): return '| '+' | '.join(_escape_markdown(_maybe_nm(o)) for o in l) + ' |'
 
 # %% ../nbs/04_docments.ipynb #44ac2e4f
 class _DocmentBase:
@@ -285,49 +275,42 @@ class _DocmentBase:
     @property
     def has_docment(self): return any(v.get('docment') for v in self.dm.values())
 
-# %% ../nbs/04_docments.ipynb #b45f731d
+# %% ../nbs/04_docments.ipynb #f7c36bf3
 class DocmentTbl(_DocmentBase):
-    _map = {'anno':'Type', 'default':'Default', 'docment':'Details'}
+    _map = dict(anno='Type', default='Default', docment='Details')
 
     def __init__(self, obj, verbose=True, returns=True):
         "Compute the docment table string"
         super().__init__(obj)
         self.verbose = verbose
         self.returns = False if isdataclass(obj) else returns
-        try: self.params = L(signature(obj, eval_str=True).parameters.keys())
-        except (ValueError,TypeError): self.params=[]
+        self.params = L(k for k in self.dm if k!='return')
         for d in self.dm.values(): d['docment'] = ifnone(d['docment'], inspect._empty)
 
     @property
     def _columns(self):
-        "Compute the set of fields that have at least one non-empty value so we don't show tables empty columns"
-        cols = set(flatten(L(self.dm.values()).filter().map(_non_empty_keys)))
+        "Fields with at least one non-empty value"
         candidates = self._map if self.verbose else {'docment': 'Details'}
-        return {k:v for k,v in candidates.items() if k in cols}
+        return {k:v for k,v in candidates.items() if any(d[k] != empty for d in self.dm.values())}
 
     @property
-    def has_docment(self): return 'docment' in self._columns and self._row_list
+    def has_docment(self): return 'docment' in self._columns and bool(self.params)
 
     @property
-    def has_return(self): return self.returns and bool(_non_empty_keys(self.dm.get('return', {})))
-
-    def _row(self, nm, props): return [nm] + [props[c] for c in self._columns]
-
-    @property
-    def _row_list(self):
-        ordered_params = [(p, self.dm[p]) for p in self.params if p != 'self' and p in self.dm]
-        return L([self._row(nm, props) for nm,props in ordered_params])
-
-    @property
-    def _hdr_list(self): return ['  '] + [_bold(l) for l in L(self._columns.values())]
+    def has_return(self): return self.returns and any(v != empty for v in self.dm.get('return', {}).values())
 
     @property
     def hdr_str(self):
-        md = _list2row(self._hdr_list)
-        return md + '\n' + _list2row(['-' * len(l) for l in self._hdr_list])
+        hdr = ['  '] + [_bold(v) for v in self._columns.values()]
+        return _list2row(hdr) + '\n' + _list2row(['---'] * len(hdr))
 
     @property
-    def params_str(self): return '\n'.join(self._row_list.map(_list2row))
+    def params_str(self):
+        cols,rows = self._columns,[]
+        for nm in self.params:
+            row = [nm] + [self.dm[nm][c] for c in cols]
+            rows.append(_list2row(row))
+        return '\n'.join(rows)
 
     @property
     def return_str(self): return _list2row(['**Returns**']+[_bold(_maybe_nm(self.dm['return'][c])) for c in self._columns])
@@ -342,6 +325,7 @@ class DocmentTbl(_DocmentBase):
     __str__ = _repr_markdown_
     __repr__ = basic_repr()
 
+
 # %% ../nbs/04_docments.ipynb #5af61ab1
 class DocmentList(_DocmentBase):
     def _fmt(self, nm, p):
@@ -353,12 +337,6 @@ class DocmentList(_DocmentBase):
     def _repr_markdown_(self): return '\n'.join(self._fmt(k,v) for k,v in self.dm.items())
     __repr__=__str__=_repr_markdown_
 
-# %% ../nbs/04_docments.ipynb #6355b569
-def _clean_text_sig(obj):
-    if not (sig := getattr(obj, '__text_signature__', None)): return None
-    sig = re.sub(r'\$\w+,?\s*', '', sig)
-    return get_name(obj) + sig.replace('<unrepresentable>', '...')
-
 # %% ../nbs/04_docments.ipynb #cfcc46bf
 def _fmt_sig(name, params, ret_str, maxline, prefix='def'):
     "Format function signature with params and docment comments"
@@ -369,7 +347,9 @@ def _fmt_sig(name, params, ret_str, maxline, prefix='def'):
             lines.append(', '.join(curr) + ',')
             curr = []
         curr.append(fmt)
-        if doc: lines.append(', '.join(curr) + ',' + comment); curr = []
+        if doc:
+            lines.append(', '.join(curr) + ',' + comment)
+            curr = []
     if curr: lines.append(', '.join(curr))
     pstr = '\n    '.join(lines)
     if not pstr: return f"{prefix} {name}({ret_str}"
@@ -381,6 +361,11 @@ def _fmt_default(o):
     return o.__name__ if hasattr(o, '__name__') else repr(o)
 
 # %% ../nbs/04_docments.ipynb #7f5e5282
+def _type_str(anno):
+    anno = ann_parts(anno)[0]
+    return inspect.formatannotation(anno).removeprefix('typing.').strip("'")
+
+# %% ../nbs/04_docments.ipynb #4c78c84f
 class DocmentText(_DocmentBase):
     def __init__(self, obj, maxline=110, docstring=True):
         super().__init__(obj)
@@ -389,35 +374,58 @@ class DocmentText(_DocmentBase):
     def _fmt_param(self, nm, p):
         anno,default,kind = p.get('anno',empty), p.get('default',empty), p.get('kind')
         pre = '*' if kind==Parameter.VAR_POSITIONAL else '**' if kind==Parameter.VAR_KEYWORD else ''
-        return pre + nm + (f':{_maybe_nm(anno)}' if anno != empty else '') + (f'={_fmt_default(default)}' if default != empty else '')
-    
-    @property
-    def _ret_str(self):
-        ret = self.dm.get('return', {})
-        anno = f"->{_maybe_nm(ret.get('anno',empty))}" if ret.get('anno',empty) != empty else ''
-        doc = f" # {ret['docment']}" if ret.get('docment') else ''
-        return f"){anno}:{doc}"
-    
-    @property
-    def params(self): return [(self._fmt_param(k,v), v.get('docment','')) for k,v in self.dm.items() if k != 'return']
+        anno = f':{_type_str(anno)}' if anno != empty else ''
+        default = f'={_fmt_default(default)}' if default != empty else ''
+        return pre + nm + anno + default
 
-    def __str__(self):
-        o = self.obj
-        if not callable(o):
-            doc = docstring(o)
-            docstr = f'\n    "{doc}"' if self.docstring and doc else ''
-            return f"{type(o).__name__} instance: {truncstr(repr(o), 80)}{docstr}"
-        is_inst = callable(o) and not (isfunction(o) or isclass(o) or inspect.isbuiltin(o) or ismethod(o))
-        prefix = 'async def' if inspect.iscoroutinefunction(o) else 'def'
-        nm = get_name(o) if hasattr(o, '__name__') else f'{type(o).__name__}.__call__' if is_inst else get_name(o)
-        if (sig := _clean_text_sig(o)) and not self.params: sig_str = f"{prefix} {sig}"
-        else: sig_str = _fmt_sig(nm, self.params, self._ret_str, self.maxline, prefix=prefix)
-        doc = getattr(o.__call__, '__doc__', None) if is_inst else o.__doc__
-        docstr = f'    "{doc}"' if self.docstring and doc else ''
-        return f"{sig_str}\n{docstr}" if docstr else sig_str
-    
-    __repr__ = __str__
     def _repr_markdown_(self): return f"```python\n{self}\n```"
+
+# %% ../nbs/04_docments.ipynb #ae2624ea
+@patch(as_prop=True)
+def params(self:DocmentText):
+    res,prev,star = [],None,False
+    for k,v in self.dm.items():
+        if k=='return': continue
+        kind = v.get('kind')
+        if prev==Parameter.POSITIONAL_ONLY and kind!=prev: res.append(('/', None))
+        if kind==Parameter.KEYWORD_ONLY and not star:
+            res.append(('*', None))
+            star = True
+        if kind==Parameter.VAR_POSITIONAL: star = True
+        res.append((self._fmt_param(k,v), v.get('docment','')))
+        prev = kind
+    if prev==Parameter.POSITIONAL_ONLY: res.append(('/', None))
+    return res
+
+# %% ../nbs/04_docments.ipynb #35564516
+def _clean_text_sig(obj):
+    if not (sig := getattr(obj, '__text_signature__', None)): return None
+    sig = re.sub(r'\$\w+,?\s*', '', sig)
+    return get_name(obj) + sig.replace('<unrepresentable>', '...')
+
+@patch(as_prop=True)
+def _ret_str(self:DocmentText):
+    ret = self.dm.get('return', {})
+    anno = f"->{_type_str(ret['anno'])}" if ret.get('anno',empty) != empty else ''
+    doc = f" # {ret['docment']}" if ret.get('docment') else ''
+    return f"){anno}:{doc}"
+
+# %% ../nbs/04_docments.ipynb #2309edc7
+@patch
+def __str__(self:DocmentText):
+    o = self.obj
+    doc = docstring(o)
+    docstr = f'\n    "{doc}"' if self.docstring and doc else ''
+    if not callable(o): return f"{type(o).__name__} instance: {truncstr(repr(o), 80)}{docstr}"
+    is_inst = _callable_instance(o)
+    async_ = inspect.iscoroutinefunction(o) or (is_inst and inspect.iscoroutinefunction(o.__call__))
+    prefix = 'async def' if async_ else 'def'
+    nm = f'{type(o).__name__}.__call__' if is_inst and not hasattr(o, '__name__') else get_name(o)
+    if (sig := _clean_text_sig(o)) and not self.params: sig_str = f"{prefix} {sig}"
+    else: sig_str = _fmt_sig(nm, self.params, self._ret_str, self.maxline, prefix=prefix)
+    return sig_str + docstr
+
+DocmentText.__repr__ = DocmentText.__str__
 
 # %% ../nbs/04_docments.ipynb #d44a7fe3
 def sig2str(func, maxline=110):
@@ -425,10 +433,20 @@ def sig2str(func, maxline=110):
     return DocmentText(func, maxline=maxline, docstring=False)
 
 # %% ../nbs/04_docments.ipynb #07287425
-def _docstring(sym):
-    npdoc = parse_docstring(sym)
-    return '\n\n'.join([npdoc['Summary'], npdoc['Extended']]).strip()
+def _docstring(sym, dm):
+    doc = docstring(sym)
+    parts = re.split(r'(?m)^([\w ][\w ]*)\n[-=]{3,}[ \t]*\n', doc)
+    res = [parts[0]]
+    for title,body in zip(parts[1::2], parts[2::2]):
+        headers = [s for s in body.splitlines() if s and not s[0].isspace()]
+        if title=='Parameters' and headers:
+            params = [s.partition(':') for s in headers]
+            if all(sep and _type_str(dm.get(n.strip(), {}).get('anno', empty))==t.strip() for n,sep,t in params): continue
+        if title=='Returns' and len(headers)==1 and headers[0].strip()==_type_str(dm.get('return', {}).get('anno', empty)): continue
+        res.append(f'{title}\n{"-"*len(title)}\n{body}')
+    return '\n\n'.join(s.strip() for s in res if s.strip())
 
+# %% ../nbs/04_docments.ipynb #21ebcfcb
 def _unwrap_sym(sym):
     if not hasattr(sym, '__signature__'): sym = getattr(sym, '__wrapped__', sym)
     return (sym.fget or sym.fset or sym) if isinstance(sym, property) else sym
@@ -436,7 +454,9 @@ def _unwrap_sym(sym):
 def can_render(sym):
     "Check if `sym` has a renderable signature"
     sym = _unwrap_sym(sym)
-    try: signature(sym, eval_str=True); return True
+    try:
+        signature(sym, eval_str=True)
+        return True
     except (ValueError, TypeError): return False
 
 # %% ../nbs/04_docments.ipynb #9de89cb6
@@ -453,34 +473,21 @@ class ShowDocRenderer:
         self.isfunc = inspect.isfunction(sym)
         try: self.sig = signature(sym, eval_str=True)
         except (ValueError,TypeError): self.sig = None
-        self.docs = _docstring(sym)
         try: self.dm = DocmentText(sym, maxline=maxline, docstring=False)
         except Exception as e:
             warnings.warn(f'docments unavailable for {self.nm}: {type(e).__name__}: {e}')
             self.dm = f'{self.nm}{self.sig or "(...)"}'
+        self.docs = _docstring(sym, self.dm.dm if isinstance(self.dm, DocmentText) else {})
         self.fn = _fullname(sym)
 
     __repr__ = basic_repr()
-
-# %% ../nbs/04_docments.ipynb #e569d885
-def _f_name(o): return f'<function {o.__name__}>' if isinstance(o, FunctionType) else None
-def _fmt_anno(o): return inspect.formatannotation(o).strip("'").replace(' ','')
-
-def _show_param(param):
-    "Like `Parameter.__str__` except removes: quotes in annos, spaces, ids in reprs"
-    kind,res,anno,default = param.kind,param._name,param._annotation,param._default
-    kind = '*' if kind==inspect._VAR_POSITIONAL else '**' if kind==inspect._VAR_KEYWORD else ''
-    res = kind+res
-    if anno is not inspect._empty: res += f':{_f_name(anno) or _fmt_anno(anno)}'
-    if default is not inspect._empty: res += f'={_f_name(default) or repr(default)}'
-    return res
 
 # %% ../nbs/04_docments.ipynb #59797eb7
 def _ital_first(s:str):
     "Surround first line with * for markdown italics, preserving leading spaces"
     return re.sub(r'^(\s*)(.+)', r'\1*\2*', s, count=1)
 
-# %% ../nbs/04_docments.ipynb #9184b175
+# %% ../nbs/04_docments.ipynb #c2aa24dd
 class MarkdownRenderer(ShowDocRenderer):
     "Markdown renderer for `show_doc`"
     def _repr_markdown_(self):

@@ -296,7 +296,7 @@ def untar_dir(fname, dest, rename=False, overwrite=False, uid=-1, gid=-1):
         if uid>-1 or gid>-1:
             os.chown(dest, uid, gid)
             if dest.is_dir():
-                for p in dest.rglob('*'): os.chown(p, uid, gid)
+                for p in dest.rglob('*'): os.chown(p, uid, gid, follow_symlinks=False)
         return dest
 
 # %% ../nbs/03_xtras.ipynb #ab91ee87
@@ -978,10 +978,15 @@ def partial_format(s:str, **kwargs):
     return res,list(fmt.missing),fmt.xtra
 
 # %% ../nbs/03_xtras.ipynb #becf7a2d
-def truncstr(s:str, maxlen:int, suf:str='…', space='', sizevar:str=None)->str:
-    "Truncate `s` to length `maxlen`, adding suffix `suf` if truncated"
+def truncstr(s:str, maxlen:int, suf='…', space='', sizevar:str=None)->str:
+    "Truncate `s` to length `maxlen`, adding suffix `suf` if truncated; a callable `suf` gets the number of characters cut"
+    if len(s)+len(space)<=maxlen: return s+space
     if sizevar: suf = suf.format_map({sizevar: len(s)})
-    return s[:maxlen-len(suf)]+suf if len(s)+len(space)>maxlen else s+space
+    if callable(suf):
+        f,n = suf,0
+        for _ in range(3): n = len(s)-maxlen+len(f(n))  # the count's digits change the suffix length: iterate to a fixed point
+        suf = f(n)
+    return s[:maxlen-len(suf)]+suf
 
 # %% ../nbs/03_xtras.ipynb #a67b3fca
 def trunc_ctr(s:str, mx:int=1000)->str:

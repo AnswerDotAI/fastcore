@@ -23,7 +23,7 @@ Here are some tips on using fastcore:
 - **Advanced file operations**: Use the extended `Path` class, which adds methods like `ls()`, `read_json()`, and others to [`pathlib.Path`](https://docs.python.org/3/library/pathlib.html#pathlib.Path).
 - **Flexible data structures**: Convert between dictionaries and attribute-access objects using [`dict2obj`](https://fastcore.fast.ai/xtras.html#dict2obj) and [`obj2dict`](https://fastcore.fast.ai/xtras.html#obj2dict) for more intuitive data handling.
 - **Functional programming paradigms**: Use tools like [`compose`](https://fastcore.fast.ai/basics.html#compose), [`maps`](https://fastcore.fast.ai/basics.html#maps), and [`filter_ex`](https://fastcore.fast.ai/basics.html#filter_ex) to write more functional-style Python code.
-- **Documentation**: Use [`docments`](https://fastcore.fast.ai/docments.html#docments) where possible to document parameters of functions and methods.
+- **Documentation**: Document parameters and return values with [`docments`](https://fastcore.fast.ai/docments.html#docments), using source comments or `Annotated` metadata for generated APIs. [`MarkdownRenderer`](https://fastcore.fast.ai/docments.html#markdownrenderer) shows the effective signature and retains usage sections such as Notes, Raises, and Examples.
 - **Time-aware caching**: Apply the [`timed_cache`](https://fastcore.fast.ai/xtras.html#timed_cache) decorator to add time-based expiration to the standard `lru_cache` functionality.
 - **Simplified CLI creation**: Use `fastcore.script` to easily transform Python functions into command-line interfaces.
 

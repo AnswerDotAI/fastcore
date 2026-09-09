@@ -14,7 +14,7 @@ Here are some tips on using fastcore:
 - **Advanced file operations**: Use the extended `Path` class, which adds methods like `ls()`, `read_json()`, and others to `pathlib.Path`.
 - **Flexible data structures**: Convert between dictionaries and attribute-access objects using `dict2obj` and `obj2dict` for more intuitive data handling.
 - **Functional programming paradigms**: Use tools like `compose`, `maps`, and `filter_ex` to write more functional-style Python code.
-- **Documentation**: Use `docments` where possible to document parameters of functions and methods.
+- **Documentation**: Document parameters and return values with `docments`, using source comments or `Annotated` metadata for generated APIs. `MarkdownRenderer` shows the effective signature and retains usage sections such as Notes, Raises, and Examples.
 - **Time-aware caching**: Apply the `timed_cache` decorator to add time-based expiration to the standard `lru_cache` functionality.
 - **Simplified CLI creation**: Use `fastcore.script` to easily transform Python functions into command-line interfaces.
 

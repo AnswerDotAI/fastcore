@@ -12,12 +12,13 @@ Docs: https://fastcore.fast.ai/apisurface.html.md"""
 __all__ = ['snake', 'sanitize_param_name', 'sanitized_params', 'mk_sig', 'mk_doc', 'OpGroup', 'mk_groups', 'full_docs']
 
 # %% ../nbs/05a_apisurface.ipynb #b2797a42
-import keyword
+import keyword,inspect
 from inspect import Parameter, Signature
 from urllib.parse import urlparse, urljoin
 from .imports import *
 from .basics import *
 from .xtras import UNSET
+from .docments import ann_parts
 
 # %% ../nbs/05a_apisurface.ipynb #475598fa
 _pat_non_alnum = re.compile(r"[^a-zA-Z0-9]+")
@@ -31,13 +32,6 @@ def snake(s: str):
 
 # %% ../nbs/05a_apisurface.ipynb #3e19a6d0
 def sanitize_param_name(p): return snake(re.sub(r'\W', '_', p).strip('_'))
-
-# %% ../nbs/05a_apisurface.ipynb #f44a2c97
-def _mk_param(name, required, anno=None, default=None):
-    "Create a function signature parameter."
-    anno = Parameter.empty if anno is None else anno
-    if default is None: default = Parameter.empty if required else UNSET
-    return Parameter(name, kind=Parameter.POSITIONAL_OR_KEYWORD, default=default, annotation=anno)
 
 # %% ../nbs/05a_apisurface.ipynb #c10b6dcc
 def sanitized_params(ps):
@@ -55,21 +49,28 @@ def sanitized_params(ps):
         res[p] = name
     return res
 
-# %% ../nbs/05a_apisurface.ipynb #32fca522
+# %% ../nbs/05a_apisurface.ipynb #f44a2c97
+def _mk_param(name, required, anno=None, default=Parameter.empty):
+    "Create a function signature parameter."
+    anno = Parameter.empty if anno is None else anno
+    if default is Parameter.empty: default = Parameter.empty if required else UNSET
+    return Parameter(name, kind=Parameter.POSITIONAL_OR_KEYWORD, default=default, annotation=anno)
+
 def _sort_key(o):
     if o.default is Parameter.empty: return 0
     if o.default is UNSET: return 1
     return 2
 
-# %% ../nbs/05a_apisurface.ipynb #4f63ac5e
 def mk_sig(op, sparams=None, defaults=None):
-    "An `inspect.Signature` for operation record `op`; `defaults` values make their params optional."
+    "An operation signature with parameter descriptions in `Annotated`; `defaults` makes those params optional"
     if sparams is None: sparams = sanitized_params(op.params)
     defaults = defaults or {}
     params = []
     for pname, sname in sparams.items():
-        default = defaults.get(pname, op.param_defaults.get(pname))
-        params.append(_mk_param(sname, pname in op.required_params, op.param_types.get(pname), default))
+        default = defaults.get(pname, op.param_defaults.get(pname, Parameter.empty))
+        anno = op.param_types.get(pname)
+        if doc := op.param_docs.get(pname): anno = typing.Annotated[anno or typing.Any, doc]
+        params.append(_mk_param(sname, pname in op.required_params, anno, default))
     return Signature(sorted(params, key=_sort_key))
 
 # %% ../nbs/05a_apisurface.ipynb #940536d9
@@ -80,14 +81,6 @@ def _op_summary(op):
     p = urlparse(op.docs_url)
     base = f"{p.scheme}://{p.netloc}"
     return re.sub(r"\]\((/[^)]+)\)", lambda m: f"]({urljoin(base, m[1].strip())})", s)
-
-# %% ../nbs/05a_apisurface.ipynb #08067b8a
-def _op_line(op, sig):
-    head = f"{'.'.join(snake(g) for g in listify(op.group))}.{op.name}"
-    if op.docs_url: head = f"[{head}]({op.docs_url})" 
-    s = f"({', '.join(sig.parameters)})"
-    summ = _op_summary(op)
-    return f"{head}{s}: *{summ}*"
 
 # %% ../nbs/05a_apisurface.ipynb #ed62e194
 def mk_doc(op, sig, sparams):
@@ -102,10 +95,18 @@ def mk_doc(op, sig, sparams):
         for nm,p in sig.parameters.items():
             orig = rsparams.get(nm, nm)
             r = f"default: {p.default!r}" if p.default not in (Parameter.empty, UNSET) else "required" if orig in req else "optional"
-            ann = '' if p.annotation is Parameter.empty else p.annotation.__name__
+            ann = '' if p.annotation is Parameter.empty else inspect.formatannotation(ann_parts(p.annotation)[0]).removeprefix('typing.')
             desc = (op.param_docs or {}).get(orig, "")
             lines.append(f"- {nm} ({ann}, {r}){': ' + desc if desc else ''}")
     return "\n".join(lines)
+
+# %% ../nbs/05a_apisurface.ipynb #08067b8a
+def _op_line(op, sig):
+    head = f"{'.'.join(snake(g) for g in listify(op.group))}.{op.name}"
+    if op.docs_url: head = f"[{head}]({op.docs_url})"
+    s = f"({', '.join(sig.parameters)})"
+    summ = _op_summary(op)
+    return f"{head}{s}: *{summ}*"
 
 # %% ../nbs/05a_apisurface.ipynb #e4d35409
 class OpGroup:
@@ -123,9 +124,8 @@ class OpGroup:
     def __dir__(self): return object.__dir__(self)
     def __allow__(self): return self.ops + list(self.subgroups.values())
 
-    def _repr_markdown_(self): return self.__doc__
+    def _repr_markdown_(self): return self.__doc__ + '\n\nOverview only. Read `doc(group.operation)` for parameter details and `doc(group.subgroup)` to descend.'
     __repr__ = _repr_markdown_
-
 
 # %% ../nbs/05a_apisurface.ipynb #62b12f6b
 def mk_groups(ops):
@@ -152,6 +152,6 @@ def _group_docs(name, g, lvl=2):
     return "\n\n".join(res)
 
 def full_docs(groups):
-    "Complete markdown API reference for a `mk_groups` tree: every group and operation."
+    "Markdown overview of every group and operation in a `mk_groups` tree."
     return "\n\n".join(_group_docs(nm, g) for nm,g in sorted(groups.items()))
 

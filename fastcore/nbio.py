@@ -17,9 +17,9 @@ __all__ = ['langs', 'cell_insert_line', 'cell_str_replace', 'cell_strs_replace',
            'first_code_ln', 'dir_tag', 'nb2dict', 'nb2str', 'write_nb', 'find_id', 'cell_edit', 'view_cell',
            'diff_cells', 'validate_cell', 'validate_nb', 'repair_cell', 'repair_nb', 'preferred_out', 'join_out',
            'mk_stream', 'mk_result', 'mk_display', 'mk_error', 'concat_streams', 'preferred_msg_out', 'render_output',
-           'render_outputs', 'render_text', 'item2xml', 'cell2xml', 'cells2xml', 'Notebook', 'CellRow', 'CellRows',
-           'summary_nb', 'Found', 'FoundCells', 'find_cells', 'deep_merge', 'update_cell', 'fm_default_eval',
-           'does_cell_eval', 'select_cells', 'run_cell', 'msg2out', 'msgs2outs']
+           'render_outputs', 'render_text', 'item2xml', 'cell2xml', 'cells2xml', 'Notebook', 'prev_line', 'CellRow',
+           'CellRows', 'summary_nb', 'Found', 'FoundCells', 'find_cells', 'deep_merge', 'update_cell',
+           'fm_default_eval', 'does_cell_eval', 'select_cells', 'run_cell', 'msg2out', 'msgs2outs']
 
 # %% ../nbs/13_nbio.ipynb #954ca1aa
 from .basics import *
@@ -447,7 +447,7 @@ def validate_cell(cell, idx=None):
     ct = cell.get('cell_type')
     if ct not in ('code','markdown','raw'): raise ValueError(f"{where}: unknown cell_type {ct!r}")
     if not _is_text(cell.get('source', '')): raise ValueError(f"{where}: source must be str or list of str")
-    if not isinstance(cell.get('metadata', {}), dict): raise ValueError(f"{where}: metadata must be a dict")
+    if not isinstance(cell.get('metadata'), dict): raise ValueError(f"{where}: metadata must be a dict")
     if ct=='code':
         if not isinstance(cell.get('outputs'), list): raise ValueError(f"{where}: code cell requires an outputs list")
         if 'execution_count' not in cell: raise ValueError(f"{where}: code cell requires execution_count")
@@ -472,9 +472,9 @@ def repair_cell(cell, idx=None):
     if not _is_text(src):
         cell['source'] = ''.join(map(str, listify(src)))
         res.append(f"{where}: coerced source to text")
-    if not isinstance(cell.get('metadata', {}), dict):
+    if not isinstance(cell.get('metadata'), dict):
         cell['metadata'] = {}
-        res.append(f"{where}: reset non-dict metadata")
+        res.append(f"{where}: set metadata")
     if cell.get('cell_type')=='code':
         if not isinstance(cell.get('outputs'), list):
             cell['outputs'] = []
@@ -759,6 +759,14 @@ def view_cell(self:Notebook, id, nums=True, incl_out=False, trunc_out=True):
 # %% ../nbs/13_nbio.ipynb #4bf3dc2e
 MAXLEN = 180 # Most characters shown per displayed line
 
+# %% ../nbs/13_nbio.ipynb #80541be8
+def prev_line(txt, maxlen=MAXLEN, pre='', sep=''):
+    "One-line preview `pre`+`sep`+`txt` capped at `maxlen`, blank-line runs shown as `¶`; a cut line carries `txt`'s size before `sep` and ends with the count of characters missing"
+    n = len(txt)
+    txt = re.sub(r'\n(?:\s*\n)*', '¶', txt)
+    if len(pre)+len(sep)+len(txt)<=maxlen: return pre+sep+txt
+    return truncstr(f'{pre}[{humanize(n)}]{sep}{txt}', maxlen, suf=lambda n: f'…[{humanize(n)}]')
+
 # %% ../nbs/13_nbio.ipynb #804670bc
 class CellRow:
     "Snapshot of one cell, shown as `id:t[directives]:source` (t: c=code m=markdown r=raw); a context row from a find shows `-` in place of its final `:`"
@@ -766,10 +774,8 @@ class CellRow:
         self.id,self.cell_type,self.source,self.maxlen,self.kind = c.id,c.cell_type,c.source,maxlen,kind
         self.meta = copy.deepcopy(dict(c.get('metadata',{})))
     def __repr__(self):
-        src = re.sub(r'\n(?:\s*\n)*', '¶', self.source)
-        if len(src)>self.maxlen: src = src[:self.maxlen]+'…'
         sep = ':' if self.kind=='match' else '-'
-        return f"{self.id}:{self.cell_type[0]}{dir_tag(self.meta)}{sep}{src}"
+        return prev_line(self.source, self.maxlen, f"{self.id}:{self.cell_type[0]}{dir_tag(self.meta)}", sep)
 
 class CellRows(list):
     def __repr__(self): return '\n'.join(repr(o) for o in self)

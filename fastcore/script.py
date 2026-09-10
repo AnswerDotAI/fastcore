@@ -69,6 +69,8 @@ Union types such as `int|str` try each type in turn, and `enum` types such as th
 
 The decorated function is always the CLI entry point, and only the entry point gets `sys.argv`: argv is parsed when the function's file is run directly (`python foo.py`, `python -m foo`, or `%run foo.py`), or when it's called with no arguments from the top-level body of a directly-run file (which is how console script wrappers invoke it). Every other call is a plain Python call that ignores argv, whether from a notebook, the REPL, another function, or another `call_parse` function.
 
+CLI calls return only `int` values (including `bool`) for console script exit codes; other return values are discarded. Plain Python calls preserve the return value. To report an error message, raise `CliError` rather than returning a string.
+
 Use the `nested` keyword argument to create nested parsers, where earlier parsers consume only their known args from `sys.argv` before later parsers are used. This is useful to create one command line application that executes another. For example:
 
 ```sh
@@ -301,7 +303,8 @@ def _run_cli(func, nested, pos=None):
         pargs,args = _pos_split(func, merge(args, args_from_prog(func, xtra)))
         try:
             res = tfunc(*pargs, **args)
-            return asyncio.run(res) if inspect.isawaitable(res) else res
+            if inspect.isawaitable(res): res = asyncio.run(res)
+            return res if isinstance(res, int) else None
         except CliError as e: raise SystemExit(str(e))
 
 def call_parse(func=None, nested=False, pos:list=None):

@@ -326,22 +326,17 @@ def rsync_multi(ip, files, user='ubuntu', persist='5m'):
     for src,dst in files: shell(f'rsync -az -e "ssh -S {sock}" {src} {user}@{ip}:{dst}')
 
 # %% ../nbs/03_xtras.ipynb #dda52646
-def run(cmd, *rest, same_in_win=False, ignore_ex=False, as_bytes=False, stderr=True):
+def run(cmd, *rest, same_in_win=False, ignore_ex=False, as_bytes=False, stderr=True, inp=None):
     "Pass `cmd` (splitting with `shlex` if string) to `subprocess.run`; return `stdout`; raise `IOError` if fails"
-    # Even the command is same on Windows, we have to add `cmd /c `"
     import subprocess
-    if rest:
-        if sys.platform == 'win32' and same_in_win:
-            cmd = ('cmd', '/c', cmd, *rest)
-        else:
-            cmd = (cmd,)+rest
+    if rest: cmd = ('cmd', '/c', cmd, *rest) if sys.platform == 'win32' and same_in_win else (cmd,)+rest
     elif isinstance(cmd, str):
-        if sys.platform == 'win32' and same_in_win: cmd = 'cmd /c ' + cmd
         import shlex
+        if sys.platform == 'win32' and same_in_win: cmd = 'cmd /c ' + cmd
         cmd = shlex.split(cmd)
-    elif isinstance(cmd, list):
-        if sys.platform == 'win32' and same_in_win: cmd = ['cmd', '/c'] + cmd
-    res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    elif isinstance(cmd, list) and sys.platform == 'win32' and same_in_win: cmd = ['cmd', '/c'] + cmd
+    if isinstance(inp, str): inp = inp.encode()
+    res = subprocess.run(cmd, input=inp, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout = res.stdout
     if stderr and res.stderr: stdout += b' ;; ' + res.stderr
     if not as_bytes: stdout = stdout.decode().strip()

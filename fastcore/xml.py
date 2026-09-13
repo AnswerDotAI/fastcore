@@ -289,6 +289,7 @@ _xml_start = (r'A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037
 _xml_local = re.compile(fr'[{_xml_start}][{_xml_start}\-.0-9\u00b7\u0300-\u036f\u203f-\u2040]*')
 _xml_illegal = re.compile(r'[^\x09\x0a\x0d\x20-\ud7ff\ue000-\ufffd\U00010000-\U0010ffff]')
 
+# %% ../nbs/09_xml.ipynb #b1031eff
 def _xml_name(name):
     parts = name.split(':')
     if len(parts)>2 or any(not _xml_local.fullmatch(p) for p in parts): raise ValueError(f'Invalid XML name: {name!r}')
@@ -305,7 +306,6 @@ def _xml_flatten(children):
         if isinstance(child, (list, tuple, L, Iterator)): yield from _xml_flatten(child)
         elif child is not None: yield child
 
-
 def _xml_qualify(name, prefix): return name if ':' in name or not prefix else f'{prefix}:{name}'
 
 def _xml_keyword(name):
@@ -313,7 +313,6 @@ def _xml_keyword(name):
     if not sep: local = prefix
     if local.endswith('_') and iskeyword(local[:-1]): local = local[:-1]
     return f'{prefix}:{local}' if sep else local
-
 
 # %% ../nbs/09_xml.ipynb #4abe3b40
 class XML:
@@ -360,8 +359,6 @@ def bytes(self:XML):
 
 @patch
 def _repr_markdown_(self:XML): return f'```xml\n{self}\n```'
-
-
 
 # %% ../nbs/09_xml.ipynb #335a7366
 class E:

@@ -2,6 +2,15 @@
 
 <!-- do not remove -->
 
+## 2.2.24
+
+### New Features
+
+- Add namespace-aware XML construction to fastcore.xml with E factories and XML expressions that preserve case and namespace bindings ([#937](https://github.com/AnswerDotAI/fastcore/issues/937))
+- Add inp parameter to run() for passing stdin to subprocess ([#936](https://github.com/AnswerDotAI/fastcore/issues/936))
+- Return only int values from CLI calls for exit codes ([#935](https://github.com/AnswerDotAI/fastcore/issues/935))
+
+
 ## 2.2.23
 
 ### New Features

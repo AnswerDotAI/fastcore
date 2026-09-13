@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.25
+
+### New Features
+
+- Add `XML.__call__` to append children to an existing expression and return it ([#938](https://github.com/AnswerDotAI/fastcore/issues/938))
+
+
 ## 2.2.24
 
 ### New Features

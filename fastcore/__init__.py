@@ -52,7 +52,7 @@ Modules:
 - `fastcore.test`: Helper functions to quickly write tests in notebooks
 - `fastcore.tools`: Text and file editing primitives shared by the fastai editing tools
 - `fastcore.xdg`: XDG Base Directory Specification helpers.
-- `fastcore.xml`: Concise generation of XML.
+- `fastcore.xml`: Concise HTML generation and namespace-aware XML construction.
 - `fastcore.xtras`: Utility functions used in the fastai library"""
 
 __version__ = "2.2.24"

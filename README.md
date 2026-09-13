@@ -53,6 +53,7 @@ To install fastcore run: `conda install fastcore -c fastai` (if you use Anaconda
 - `fastcore.test`: Simple testing functions
 - `fastcore.foundation`: Mixins, delegation, composition, and more
 - `fastcore.xtras`: Utility functions to help with functional-style programming, parallel processing, and more
+- `fastcore.xml`: HTML with [`ft`](https://fastcore.fast.ai/xml.html#ft), and case-preserving, namespace-aware XML with [`E`](https://fastcore.fast.ai/xml.html#e) factories
 
 To get started, we recommend you read through [the fastcore tour](https://fastcore.fast.ai/tour.html).
 

@@ -319,7 +319,13 @@ class XML:
     "A detached XML expression with fixed namespace bindings."
     def __init__(self, tag, children, attrs, ns):
         self.tag,self.attrs,self.ns = tag,attrs,ns
-        self.children = tuple(self._child(c) for c in _xml_flatten(children))
+        self.children = ()
+        self(*children)
+
+    def __call__(self, *children):
+        "Append children and return this expression."
+        self.children += tuple(self._child(c) for c in _xml_flatten(children))
+        return self
 
     def _child(self, child):
         if isinstance(child, XML): return child

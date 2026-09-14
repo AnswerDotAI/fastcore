@@ -8,7 +8,7 @@ test_eq(to_xml(t), '<div hx-get="/get">\n  <p class="a">hi</p>\n</div>\n')
 test_eq(to_xml(Div(id='x')('child')), '<div id="x">child</div>\n')
 ```
 
-`E(prefix='', attr_ns=None, ns=None)` creates a namespace-bound XML factory. `e = E('w', attr_ns='w', ns={'w': uri})` supports expressions such as `e.tcW(type='dxa', w=2400)`. Tags and attributes preserve case. `prefix__name` selects an attribute namespace; `attrs_` accepts literal names. Expressions compose with text and ordered collections, retain their namespace bindings, and serialize as UTF-8 with `.bytes()`. XML text is escaped and booleans become `true`/`false`. The existing `ft` and `to_xml` APIs keep their HTML behavior.
+`E(prefix='', attr_ns=None, ns=None)` creates a namespace-bound XML factory. `e = E('w', attr_ns='w', ns={'w': uri})` supports expressions such as `e.tcW(type='dxa', w=2400)`. Tags and attributes preserve case. `prefix__name` selects an attribute namespace; `attrs_` accepts literal names. Expressions compose with text and ordered collections, retain their namespace bindings, and serialize as UTF-8 with `.bytes()`. XML text is escaped and booleans become `true`/`false`; subclasses override `attr_value` for vocabularies with other rules. The existing `ft` and `to_xml` APIs keep their HTML behavior.
 
 Docs: https://fastcore.fast.ai/xml.html.md"""
 
@@ -341,7 +341,7 @@ def _render(self:XML, inherited, output):
         if inherited.get(prefix) != uri:
             name = f'xmlns:{prefix}' if prefix else 'xmlns'
             output.append(f' {name}={quoteattr(uri)}')
-    for name, value in self.attrs: output.append(f' {name}={quoteattr(value)}')
+    for name, value in self.attrs.items(): output.append(f' {name}={quoteattr(value)}')
     if not self.children:
         output.append('/>')
         return
@@ -353,22 +353,29 @@ def _render(self:XML, inherited, output):
     output.append(f'</{self.tag}>')
 
 @patch
-def __str__(self:XML):
+def render(self:XML, inherited=None):
+    "Serialize, declaring the bindings not already in scope: `inherited` maps the prefixes bound where the markup will be inserted, `{}` declares every binding, and `None` renders a standalone document"
     output = []
-    self._render({'xml': _xml_uri}, output)
+    self._render({'xml': _xml_uri, **({'': ''} if inherited is None else inherited)}, output)
     return ''.join(output)
+
+@patch
+def __str__(self:XML): return self.render()
 
 @patch
 def bytes(self:XML):
     "Serialize as UTF-8, without formatting whitespace."
-    return str(self).encode('utf-8')
+    return self.render().encode('utf-8')
 
 @patch
 def _repr_markdown_(self:XML): return f'```xml\n{self}\n```'
 
+@patch
+def __repr__(self:XML): return str(self)
+
 # %% ../nbs/09_xml.ipynb #335a7366
 class E:
-    "Create a namespace-bound XML factory."
+    "Create a namespace-bound XML factory: `e.tag(...)` and `e('tag', ...)` build detached expressions"
     _node_cls = XML
 
     def __init__(
@@ -395,12 +402,17 @@ class E:
         if name.startswith('_'): raise AttributeError(name)
         if name.endswith('_') and iskeyword(name[:-1]): name = name[:-1]
         return partial(self, name)
+    def attr_value(self, tag, name, value):
+        "Serialize attribute `value` of `name` on `tag`; override to apply vocabulary rules such as `on`/`off`"
+        return _xml_value(value)
+
 
     def __call__(self, name, /, *children, attrs_=None, **attrs):
+        "Build `name` (qualified by `prefix` unless it already has one) with `children` and `attrs`; call this directly for a tag that is not a Python identifier, such as `e('custom-name')`"
         tag = _xml_qualify(name, self._prefix)
         pairs = [(_xml_qualify(_xml_keyword(k), self._attr_ns), v) for k,v in attrs.items()]
         pairs += list((attrs_ or {}).items())
-        ns,seen,values = dict(self._ns),set(),[]
+        ns,seen,values = dict(self._ns),set(),{}
         prefix, _ = _xml_name(tag)
         if prefix: ns[prefix] = self._namespace(prefix)
         for key, value in pairs:
@@ -410,6 +422,6 @@ class E:
             expanded = (ns[prefix] if prefix else '', local)
             if expanded in seen: raise ValueError(f'Duplicate XML attribute: {key!r}')
             seen.add(expanded)
-            values.append((key, _xml_value(value)))
-        return self._node_cls(tag, children, tuple(values), ns)
+            values[key] = self.attr_value(tag, key, value)
+        return self._node_cls(tag, children, values, ns)
 

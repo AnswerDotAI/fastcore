@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.26
+
+### New Features
+
+- Add XML.render for namespace-aware serialization, dict-based attrs, and overridable `E.attr_value` for vocabulary-specific values ([#939](https://github.com/AnswerDotAI/fastcore/issues/939))
+
+
 ## 2.2.25
 
 ### New Features

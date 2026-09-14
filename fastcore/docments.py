@@ -1,6 +1,6 @@
 """Document parameters using comments.
 
-A *docment* documents a parameter with a trailing comment on its line in the signature, right next to the name, type, and default it describes; `docments(f)` retrieves them programmatically, so tools (docs tables, CLIs like `fastcore.script`, ...) can use them. This replaces repeating parameter names in a specially-formatted docstring, which has to be kept in sync with the signature by hand:
+A docment is a comment beside a parameter in a function signature. It keeps the parameter's description next to its name, type and default. `docments(f)` reads these comments for documentation tools and CLIs such as `fastcore.script`:
 
 ```python
 def add(
@@ -12,7 +12,7 @@ def add(
 test_eq(docments(add), {'a': 'The first operand', 'b': 'The second operand', 'return': 'The sum'})
 ```
 
-Comment lines *above* a param also work when one line isn't enough; `typing.Annotated` string metadata is an alternative to comments; numpy-style docstring sections are merged in when present; and `docments(f, full=True)` returns each param's default, type, and docment together.
+For longer descriptions, put comment lines above the parameter. `docments` also reads `typing.Annotated` string metadata and NumPy-style docstrings. Pass `full=True` to retrieve each parameter's default, type and docment together.
 
 Docs: https://fastcore.fast.ai/docments.html.md"""
 

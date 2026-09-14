@@ -1,8 +1,10 @@
 """The `L` class and helpers for it
 
-`add_docs` (or the `docs` class decorator) attaches docstrings to a class and its methods from one dict kept separate from the code, so one-line methods stay one line; it also raises if any public method is left undocumented. `coll_repr` renders long list-likes as a length-prefixed preview like `(#2000) [0, 1, ...]`, and `flatmap(f, xs)` is a named `[y for x in xs for y in f(x)]`: a map where each input may produce zero, one, or many outputs.
+`add_docs` attaches docstrings to a class and its methods from a dictionary. `docs` is its decorator form. Both check that every public method has documentation.
 
-`L` is a drop-in replacement for a python `list`. Inspired by [NumPy](http://www.numpy.org/), it supports advanced indexing — an int, slice, collection of ints, or boolean mask — and its methods (`map`, `filter`, `sorted`, `unique`, `itemgot`, `attrgot`, and many more) return a new `L`, encouraging simple expressive chains:
+`coll_repr` shows a collection's length and a preview of its items. `flatmap(f, xs)` applies `f` to each item and concatenates the results.
+
+`L` extends Python's list operations with indexing inspired by [NumPy](http://www.numpy.org/). You can index with an integer, slice, collection of integers or boolean mask. Methods such as `map`, `filter`, `sorted`, `unique`, `itemgot` and `attrgot` return an `L`:
 
 ```python
 t = L(1,2,3)
@@ -12,9 +14,13 @@ test_eq(t[[False,True,False,True]], [2,4])
 test_eq(t.map(lambda o:o*2), [2,4,6,8])
 ```
 
-Most `L` methods are also *curryable*: called on the class instead of an instance, they return a partial awaiting an iterable, so `L(lines).map(L.map(int))` converts each nested list. The curryable methods are `map`, `filter`, `groupby`, `argwhere`, `argfirst`, `first`, `last`, `sorted`, `reduce`, `partition`, `takewhile`, `dropwhile`, and `accumulate`. The `star` adapter wraps a function to unpack its *last* argument as individual args, so it works uniformly across these methods (`map` passes each item last; `reduce` passes `(acc, item)`, so only the item is unpacked); `rstar` unpacks in reversed order.
+Call `L.map(int)` on the class to get a function that converts an iterable's items to integers. This curried form works with `map`, `filter`, `groupby`, `argwhere`, `argfirst`, `first`, `last`, `sorted`, `reduce`, `partition`, `takewhile`, `dropwhile` and `accumulate`.
 
-`L` also wraps the `itertools` verbs as methods: `cycle`, `takewhile`, `dropwhile`, `accumulate`, `pairwise`, `batched`, `compress`, `permutations`, `combinations`, plus `partition` (split into two `L`s by a predicate) and recursive `flatten` (strings kept atomic).
+`star(f)` unpacks the last argument before calling `f`. In `map`, that argument is the item. In `reduce`, it is the item after the accumulator. `rstar` reverses the unpacked arguments.
+
+`L` has methods for `itertools` operations including `cycle`, `takewhile`, `dropwhile`, `accumulate`, `pairwise`, `batched`, `compress`, `permutations` and `combinations`.
+
+`partition` returns two collections according to a predicate. `flatten` recursively flattens nested iterables, leaving strings intact.
 
 Docs: https://fastcore.fast.ai/foundation.html.md"""
 

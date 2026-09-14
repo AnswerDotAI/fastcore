@@ -761,11 +761,9 @@ MAXLEN = 180 # Most characters shown per displayed line
 
 # %% ../nbs/13_nbio.ipynb #80541be8
 def prev_line(txt, maxlen=MAXLEN, pre='', sep=''):
-    "One-line preview `pre`+`sep`+`txt` capped at `maxlen`, blank-line runs shown as `¶`; a cut line carries `txt`'s size before `sep` and ends with the count of characters missing"
-    n = len(txt)
+    "One-line preview capped at `maxlen`, with blank-line runs shown as `¶` and a trailing count of omitted characters"
     txt = re.sub(r'\n(?:\s*\n)*', '¶', txt)
-    if len(pre)+len(sep)+len(txt)<=maxlen: return pre+sep+txt
-    return truncstr(f'{pre}[{humanize(n)}]{sep}{txt}', maxlen, suf=lambda n: f'…[{humanize(n)}]')
+    return truncstr(f'{pre}{sep}{txt}', maxlen, suf=lambda n: f'…[{humanize(n)}]')
 
 # %% ../nbs/13_nbio.ipynb #804670bc
 class CellRow:

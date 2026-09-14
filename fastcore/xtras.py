@@ -1,10 +1,18 @@
 """Utility functions used in the fastai library
 
-Utilities (other than extensions to `Pathlib.Path`) for dealing with IO: `maybe_open` accepts a path or an already-open file, only closing what it opened; `run` passes a command line to `subprocess.run` and returns its `stdout`, raising `IOError` on failure; `atomic_save` writes via a temp file and renames, so readers never see a partial write; `untar_dir` extracts an archive the way you'd want (a lone top-level item lands directly in `dest`); and `globtastic` is a recursive glob with file/folder include and exclude filters.
+IO utilities include:
 
-`Config` wraps a `ConfigParser` ini file with a single `DEFAULT` section: keys read as attributes, items, or `.get` with a default; `create=` writes initial contents if the file is missing; `types=` coerces values on read, resolving `Path` values relative to the config file's directory; and `Config.find(name)` searches a directory and its parents for the file.
+- `maybe_open`: accept a path or an open file, closing only files it opens.
+- `run`: run a command and return stdout; raise `IOError` on failure.
+- `atomic_save`: write a temporary file, then rename it over the destination.
+- `untar_dir`: extract an archive, creating a containing directory when needed.
+- `globtastic`: recursively find files with include and exclude filters.
 
-`dict2obj` converts a (possibly nested) dict, or list of dicts, to attribute access: dicts become `AttrDict` and lists become `L`, so `d.b.c` replaces `d['b']['c']`; `obj2dict` reverses it:
+`Config` reads and writes an ini file with one `DEFAULT` section. Access keys as attributes, items, or with `.get(key, default)`. Use `create=` to supply initial contents for a missing file.
+
+`types=` converts values on read. `Path` values resolve relative to the config file's directory. `Config.find(name)` searches a directory and its parents for the file.
+
+`dict2obj` converts nested dicts to `AttrDict` and lists to `L`, allowing attribute access such as `d.b.c`. `obj2dict` reverses the conversion:
 
 ```python
 d = dict2obj({'a':1, 'b':{'c':2, 'd':[3,4]}})
@@ -12,9 +20,22 @@ test_eq(d.b.c, 2)
 test_eq(d.b.d[1], 4)
 ```
 
-The following methods are added to the standard python library [Pathlib.Path](https://docs.python.org/3/library/pathlib.html#basic-use): `ls()` (dir contents as an `L`, with optional `file_type` MIME-prefix and `file_exts` filters); `read_json`/`write_json`, and `read_jsonl` which is safe for JSON Lines (only `\n` ends a record, unlike `splitlines`); `readlines`, `mk_write` (create parent dirs, then write), `delete`, `relpath`, and `normpath`. If `Path.BASE_PATH` is set, paths repr relative to it.
+These methods extend [Pathlib.Path](https://docs.python.org/3/library/pathlib.html#basic-use):
 
-Highlights among the rest: `exec_eval` runs a code string like a notebook cell, returning the last expression's value; `fenced` wraps text in a markdown code fence guaranteed longer than any run of the fence char inside it; `str_diff` returns a unified diff, `''` when the texts match; `unqid` and `friendly_name` generate random identifiers (a valid Python name, or a memorable `adjective-noun-...` string); and `flexicache` is an `lru_cache` with pluggable eviction policies such as `time_policy` and `mtime_policy`.
+- `ls()` lists directory contents as an `L`, optionally filtered by MIME prefix or extension.
+- `read_json`, `write_json`, and `read_jsonl` handle JSON files.
+- `readlines` reads lines; `mk_write` creates parent directories before writing.
+- `delete`, `relpath`, and `normpath` provide file deletion and path conversions.
+
+Set `Path.BASE_PATH` to display paths relative to that directory.
+
+Other utilities include:
+
+- `exec_eval`: run a code string and return its last expression, like a notebook cell.
+- `fenced`: wrap text in a Markdown fence longer than any fence character run in the body.
+- `str_diff`: return a unified diff, or `''` for identical text.
+- `unqid` and `friendly_name`: generate random Python identifiers or memorable word-based names.
+- `flexicache`: cache results with configurable expiration policies.
 
 Docs: https://fastcore.fast.ai/xtras.html.md"""
 

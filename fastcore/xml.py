@@ -1,6 +1,10 @@
 """Concise HTML generation and namespace-aware XML construction.
 
-`ft(tag, *children, **attrs)` builds an `FT` tree — a lightweight XML/HTML element — and `to_xml` renders it (this is the foundation [fasthtml](https://fastht.ml) builds on). The common HTML tags are predefined as `ft` partials (`Div`, `P`, `A`, ...). Attributes are passed as keywords: use `klass` and `fr` for the reserved words `class` and `for`, `_` in an attr name becomes `-`, and attrs can be got and set on the object directly. Children can also be supplied after the attrs by calling the element, e.g. `Div(id='x')(child1, child2)`:
+`ft(tag, *children, **attrs)` builds an `FT` tree for HTML generation. `to_xml` renders the tree. [FastHTML](https://fastht.ml) uses these functions to generate HTML.
+
+Common tags have constructors such as `Div`, `P` and `A`. Pass attributes as keywords, using `klass` for `class` and `fr` for `for`. Underscores in attribute names become hyphens. You can also get and set attributes on the element.
+
+To supply children after attributes, call the element: `Div(id='x')(child1, child2)`.
 
 ```python
 t = Div(P('hi', klass='a'), hx_get='/get')
@@ -8,7 +12,15 @@ test_eq(to_xml(t), '<div hx-get="/get">\n  <p class="a">hi</p>\n</div>\n')
 test_eq(to_xml(Div(id='x')('child')), '<div id="x">child</div>\n')
 ```
 
-`E(prefix='', attr_ns=None, ns=None)` creates a namespace-bound XML factory. `e = E('w', attr_ns='w', ns={'w': uri})` supports expressions such as `e.tcW(type='dxa', w=2400)`. Tags and attributes preserve case. `prefix__name` selects an attribute namespace; `attrs_` accepts literal names. Expressions compose with text and ordered collections, retain their namespace bindings, and serialize as UTF-8 with `.bytes()`. XML text is escaped and booleans become `true`/`false`; subclasses override `attr_value` for vocabularies with other rules. The existing `ft` and `to_xml` APIs keep their HTML behavior.
+`E` creates XML elements from Python calls. Its `ns` argument maps namespace prefixes to URIs. The `prefix` and `attr_ns` arguments set the default prefixes for element and attribute names.
+
+For example, `e = E('w', attr_ns='w', ns={'w': uri})` uses `w` for both defaults. Calling `e.tcW(type='dxa', w=2400)` creates a `w:tcW` element with `w:type` and `w:w` attributes.
+
+`E` preserves the case of tag and attribute names. Use `prefix__name` for an explicitly prefixed attribute, or `attrs_` for literal attribute names.
+
+Nesting an element under a different parent does not change its namespace bindings.
+
+XML serialization escapes text and writes booleans as `true` or `false`. Override `attr_value` for other conventions. `.bytes()` returns UTF-8. `ft` and `to_xml` retain their HTML behavior.
 
 Docs: https://fastcore.fast.ai/xml.html.md"""
 

@@ -15,7 +15,7 @@ def main(
     print(msg.upper() if upper else msg)
 ```
 
-Copy that into a file and run it, and you get a CLI with help, defaults, and error handling, with no `if __name__ == "__main__"` or argument parsing code:
+`call_parse` provides argument parsing, help, defaults and error handling. Copy the example into a file and run it without adding an `if __name__ == "__main__"` block:
 
 ```
 $ examples/test_fastcore.py --help
@@ -31,11 +31,11 @@ options:
   --upper     Convert to uppercase? (default: False)
 ```
 
-The function is still a plain Python function too, so it can also be called normally, e.g from a REPL such as Jupyter.
+You can also call the function normally from Python, including in a Jupyter notebook.
 
 ## Annotated params
 
-For `argparse` features that docments can't express, use `typing.Annotated` type hints instead of plain types:
+Use `typing.Annotated` for `argparse` options that docments can't express:
 
 ```python
 from fastcore.script import *
@@ -47,45 +47,61 @@ def main(msg:Annotated[str, "The message"],
     print(msg.upper() if upper else msg)
 ```
 
-The first element of `Annotated` is the parameter's type, and the first string in its metadata is its help. A `dict` in the metadata passes extra arguments to argparse: its keys can be `opt`, `action`, `nargs`, `const`, `choices`, `required`, and `version`. All but `opt` go straight to `add_argument`; `opt` is a bool that overrides whether the param is a flag or positional, which is normally inferred from whether it has a default.
+The first element is the parameter's type. The first string in its metadata provides help text. Add a metadata dictionary to set `action`, `nargs`, `const`, `choices`, `required` or `version` arguments for `argparse.add_argument`.
+
+The dictionary also accepts `opt`. Set it to `True` for a flag or `False` for a positional parameter. Without `opt`, parameters with defaults become flags.
 
 ## Short flags
 
-A capital letter in a parameter name declares a short flag: the capitalized letter becomes the short spelling and the lowercased name the long one, so `Resume:int=None` gets both `-r` and `--resume`. The capital can be any letter (`sUggest:str=None` gives `-u/--suggest`), only the first capital counts, and names without capitals get a long flag only. Underscores in optional parameter names appear as hyphens (`cache_dir` becomes `--cache-dir`), while the Python argument keeps its underscore. Since the flags are lowercased, the parameter's actual name keeps its capital -- so a Python caller writes `main(Resume=3)`, which usefully advertises that it's invoking a CLI entry point. Positional (default-less) parameters have no flags, so capitals there are left alone.
+The first capital letter in an optional parameter's name declares a short flag:
+
+- `Resume:int=None` gives `-r` and `--resume`.
+- `sUggest:str=None` gives `-u` and `--suggest`.
+- Names without capitals have only a long flag.
+
+Long flags use lowercase and hyphens, such as `--cache-dir` for `cache_dir`. Python calls keep the parameter's spelling, such as `main(Resume=3)`. Positional parameters have no flags and keep their names unchanged.
 
 ## Positional params
 
-Parameters without a default are positional, and the rest are flags. A `*args` parameter is a variadic positional, taking zero or more values, and since Python makes any params after it keyword-only, they are flags. A `**kwargs` parameter is skipped: a CLI run passes nothing for it. Pass `pos` to `call_parse` (or to `anno_parser`) to keep named parameters positional even when they have a default, in which case they are optional on the command line and take the default when omitted. Command line order follows the signature, not the order of the names in `pos`. Naming a bool parameter in `pos` raises, since a flag takes no value.
+Parameters without defaults are positional. Other parameters become flags. `*args` accepts zero or more positional values. Parameters after it are flags. CLI calls ignore `**kwargs`.
+
+Pass parameter names in `pos` to `call_parse` or `anno_parser` to keep them positional even with defaults. Omitted values use those defaults. Command-line order follows the signature, regardless of the order in `pos`. A boolean flag cannot appear in `pos` because it takes no value.
 
 ## Param types
 
 A `bool` parameter is a `store_true` flag defaulting to `False`. If its default is `True` it becomes a `--no-` prefixed `store_false` flag instead, so passing the flag turns it off. Use `bool_arg` as the type when you want an explicit `--flag true|false` argument that honors its default.
 
-By default argparse repeats an option's name, upper-cased, as the placeholder for its value: `--path PATH`. That repeat says nothing useful, so help shows the annotation instead: `--path (str)`. `anno2str` gives the display name. The name describes the semantics rather than the mechanics: `Path` displays as `path`, and a union names each member once, dropping `str` when `path` is present since a path already is a string -- which is why `Path|str` is plain `path`. Enum params keep argparse's `{choice,...}` display, and positional params keep their name.
+`argparse` normally repeats an option's name as its value placeholder, such as `--path PATH`. Here help shows the type instead, such as `--path (str)`.
+
+`anno2str` formats the type name. It displays `Path` as `path`. Unions list each type once and omit `str` when `path` is present. For example, `Path|str` displays as `path`.
+
+Enums show their choices as `{choice,...}`. Positional parameters show their names.
 
 Union types such as `int|str` try each type in turn, and `enum` types such as those from `str_enum` become argparse choices.
 
 ## The CLI entry point
 
-The decorated function is always the CLI entry point, and only the entry point gets `sys.argv`: argv is parsed when the function's file is run directly (`python foo.py`, `python -m foo`, or `%run foo.py`), or when it's called with no arguments from the top-level body of a directly-run file (which is how console script wrappers invoke it). Every other call is a plain Python call that ignores argv, whether from a notebook, the REPL, another function, or another `call_parse` function.
+`call_parse` parses `sys.argv` when you run the function's file directly with `python foo.py`, `python -m foo` or `%run foo.py`. It also parses arguments on a zero-argument call from the top-level body of a directly run file. Console-script wrappers use this form.
 
-CLI calls return only `int` values (including `bool`) for console script exit codes; other return values are discarded. Plain Python calls preserve the return value. To report an error message, raise `CliError` rather than returning a string.
+Calls from a notebook, REPL or another function are ordinary Python calls. This includes calls from another `call_parse` function.
 
-Use the `nested` keyword argument to create nested parsers, where earlier parsers consume only their known args from `sys.argv` before later parsers are used. This is useful to create one command line application that executes another. For example:
+CLI calls return integers, including booleans, as exit codes. They discard other return values. Python calls preserve return values. Raise `CliError` to report an error message to CLI users.
+
+Set `nested=True` when one CLI launches another. The outer parser removes the arguments it recognizes from `sys.argv`, leaving the rest for the inner CLI:
 
 ```sh
 myrunner --keyword 1 script.py -- <script.py args>
 ```
 
-A separating `--` after the first application's args is recommended though not always required, otherwise args may be parsed in unexpected ways. For example:
+`--` is optional in some invocations. Use it to separate the applications' arguments and avoid cases such as:
 
 ```sh
 myrunner script.py -h
 ```
 
-would display `myrunner`'s help and not `script.py`'s.
+`myrunner` handles `-h` here instead of passing it to `script.py`.
 
-A function usable both from the command line and from Python can call `is_cli` to tell which way it was invoked, e.g. returning a value to Python callers but printing it when run as a CLI:
+Use `is_cli` to distinguish CLI execution from Python calls. Here the CLI prints a result that Python callers receive as a return value:
 
 ```python
 @call_parse
@@ -97,7 +113,7 @@ def sum_args(a:int=0, b:int=0):
 test_eq(sum_args(1,2), 3)  # Python call: returns the value, prints nothing
 ```
 
-A command that cannot continue raises `CliError` with a message for the user. A CLI run prints just that message to stderr and exits with status 1. A Python call gets the exception to handle as it likes, so the raise site needs no `is_cli` branch:
+Raise `CliError` when a command cannot continue. CLI execution prints its message to stderr and exits with status 1. Python callers can catch the exception:
 
 ```python
 @call_parse

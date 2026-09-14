@@ -1,8 +1,15 @@
-"""Turn operation metadata into documented, introspectable callables: real signatures, informative docstrings, and browsable grouped namespaces
+"""Signatures, documentation and grouped namespaces for generated API clients
 
-A client generated from a machine-readable spec (an OpenAPI document, a Google Discovery document, an SDK symbol graph) is only pleasant to use if its runtime-created callables behave like hand-written ones: tab completion shows real parameters, `?` and `doc()` show real docs, and related operations sit together in namespaces you can browse. This module builds those pieces from plain *operation records*, ducks with these attributes: `name`, `group` (a nesting path: string or list), `summary`, `docs_url`, `params` (ordered parameter names), `required_params`, `param_types`, `param_defaults`, and `param_docs`. `mk_sig` turns a record into an `inspect.Signature` (spec names sanitized to Python identifiers via `sanitized_params`), `mk_doc` renders a docstring, and `OpGroup`/`mk_groups`/`full_docs` assemble named callables into an attribute-chained tree with markdown summaries at every level.
+`apisurface` builds signatures, docstrings and grouped namespaces from API operation metadata. Generated clients can use it to support tab completion and documentation through `?` and `doc()`. `fastspec` uses it for HTTP clients generated from specifications.
 
-`fastspec` builds its HTTP clients on this layer.
+An operation record can be any object with these attributes:
+
+- `name`, `summary` and `docs_url` describe the operation.
+- `group` gives its namespace as a string, or a list for nested groups.
+- `params` lists parameter names in order. `required_params` identifies required parameters.
+- `param_types`, `param_defaults` and `param_docs` map parameter names to their metadata.
+
+`mk_sig` creates an `inspect.Signature` with Python parameter names. `mk_doc` creates a docstring. `OpGroup` and `mk_groups` organize operations into namespaces with attribute access. `full_docs` combines their overviews into Markdown.
 
 Docs: https://fastcore.fast.ai/apisurface.html.md"""
 

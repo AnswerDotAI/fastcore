@@ -1,6 +1,8 @@
 """Threading and multiprocessing functions
 
-`parallel(f, items)` maps `f` over `items` using a process pool (`threadpool=True` for threads instead), with `n_workers`, optional `progress` bar, a `pause` between starts (to stagger e.g. web requests), and `return_exceptions` to collect errors instead of raising; `n_workers=0` runs serially, which makes debugging easy. `parallel_async` is the asyncio version, using a semaphore to limit concurrency. `@threaded` makes a function run in a `Thread` (or `Process`) whose eventual return value lands in its `result` attr, and `startthread`/`startproc` start one immediately.
+`parallel(f, items)` applies `f` to each item using a process pool. Set `threadpool=True` to use threads. Set `n_workers` to control concurrency, or to 0 for serial execution when debugging. Optional arguments include a `progress` bar, a `pause` between starts, and `return_exceptions` to collect errors. `parallel_async` runs work concurrently with asyncio.
+
+`@threaded` runs a function in a background thread and returns the thread. Read its `result` attribute after it finishes. Set `process=True` to run in a process. `startthread` and `startproc` start their decorated functions immediately.
 
 Docs: https://fastcore.fast.ai/parallel.html.md"""
 

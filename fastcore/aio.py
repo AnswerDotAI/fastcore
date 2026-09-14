@@ -2,13 +2,25 @@
 
 ## Calling async code from sync code
 
-Async libraries return coroutines, which normally force every caller up the stack to become async too. `run_sync` (coroutines), `iter_sync` (async generators), and `ctx_sync` (async context managers) let ordinary sync code drive them instead, sharing a single event loop that runs on a background daemon thread, created on first use; `maybe_await(o)` awaits `o` only if it's awaitable, else returns it as-is.
+Use these helpers to call async libraries without making your own code async:
+
+- `run_sync` runs a coroutine and returns its result.
+- `iter_sync` iterates an async generator.
+- `ctx_sync` uses an async context manager in a `with` block.
+
+They share an event loop on a background daemon thread, started on first use.
 
 ## Calling sync code from async code
 
-`athreaded` is the same bridge crossed in the other direction: it wraps a blocking function as an honest `async def`, running the original body in a worker thread so the event loop stays free. Use it to give async color to APIs that only exist in blocking form.
+`athreaded` turns a blocking function into an async function that runs its body in a worker thread. This lets async code use blocking libraries without stalling the event loop.
 
-`then` lets one function body serve sync and async callers alike. It applies each of `fs` in turn, awaiting anything awaitable along the way (the starting value or any step's result), and the caller gets back a plain value if the whole chain was sync, or an awaitable otherwise. This is what a convenience method on a client offering both sync and async modes needs: written as `return then(self.gists.get(gid), ~Self.files.values(), first)`, a sync client returns the file directly while an async client returns something to `await`, with no duplicated method. Because step results are awaited as part of the chain, steps may themselves be async calls; the flip side is that a step cannot return an awaitable *as* its value.
+`await maybe_await(o)` awaits `o` if it is awaitable and returns it unchanged otherwise.
+
+`then(x, *fs)` applies each function to the preceding result. It returns a plain value when all steps are synchronous, or an awaitable if `x` or any step is awaitable.
+
+This is useful for clients with both sync and async modes. A method can use `return then(self.gists.get(gid), ~Self.files.values(), first)` in either mode, without duplicating its body.
+
+`then` awaits every awaitable returned by a step. Steps cannot pass awaitables through as data.
 
 Docs: https://fastcore.fast.ai/aio.html.md"""
 

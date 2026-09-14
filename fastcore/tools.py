@@ -1,10 +1,12 @@
 """Text and file editing primitives shared by the fastai editing tools
 
-The editors here are string-level: each takes `text` plus edit parameters and returns the new text, raising `ValueError` when an edit can't apply. The file tools below wrap them with path I/O and diff reporting; message-level wrappers live in aidialog. (This module previously held experimental LLM path-editing and command tools, superseded by safecmd, rgapi, and the tools here.) Naming, parameter, and workflow conventions for the whole editing toolkit, this module included, are documented in `fastcore.editskill`, which also re-exports these tools alongside `fastcore.nbio`'s.
+The text editors take a string and return the edited text. Invalid edits raise `ValueError`. File editors read and write a path and return a diff. Aidialog provides corresponding message editors.
 
-`line_hash`, `lnhash`, and `lnhash_at` implement the [exhash](https://answerdotai.github.io/exhash) line-address format in pure Python: `lineno|hash|`, where the hash is 4 hex chars of crc32. They let any tool create lnhash-addressed views of text it holds, without depending on the exhash package.
+Read `fastcore.editskill` for the editing toolkit's naming, parameter and workflow conventions. It exposes these tools alongside the notebook editors from `fastcore.nbio`.
 
-File tools wrap the primitives with path I/O, returning unified diffs of what changed ("none: No changes." / "error: ..." otherwise). The path is the first argument, e.g:
+`line_hash`, `lnhash` and `lnhash_at` create [exhash](https://answerdotai.github.io/exhash) addresses without depending on the exhash package. Addresses use `lineno|hash|`. The hash is the low 16 bits of CRC32, formatted as four hexadecimal characters.
+
+File editors take the path first and return a unified diff. An unchanged result returns `none: No changes.` Invalid edits return `error: ...`.
 
     view_file('~/a/b.py', 3)
     create_file('~/a/b/c.py', 'content here')
@@ -12,7 +14,9 @@ File tools wrap the primitives with path I/O, returning unified diffs of what ch
     file_del_lines('myfile.py', 2, 4)
     file_replace_lines('myfile.py', new_content=src)   # no line numbers: replace the entire contents
 
-`file_str_replace`, `file_strs_replace`, and `file_del_lines` support `re_filter` and `invert_filter` for targeting only lines matching (or not matching) a regex, like ex's `g//` and `g!//`, combined with `start_line`/`end_line` to restrict to a region. `ast_replace(text, repls)` and `file_ast_replace(path, repls)` apply ast-grep `(pattern, replacement)` rules with `$VAR` metavariables (requires the optional `remold` package).
+`file_str_replace`, `file_strs_replace` and `file_del_lines` support line ranges, `re_filter` and `invert_filter`. These work like ex's `g//` and `g!//` filters.
+
+For Python syntax-tree replacements, use `ast_replace` or `file_ast_replace`. They accept ast-grep `(pattern, replacement)` rules with `$VAR` metavariables and require the optional `remold` package.
 
 Docs: https://fastcore.fast.ai/tools.html.md"""
 

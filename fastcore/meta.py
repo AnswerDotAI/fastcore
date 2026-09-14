@@ -1,14 +1,18 @@
 """Metaclasses
 
-See this [blog post](https://realpython.com/python-metaclasses/) for more information about metaclasses.
+These metaclasses customize object construction:
 
-- `FixSigMeta` preserves signature introspection (i.e. tab completion in IDEs) when inheritance through a `__new__` or a metaclass `__call__` would otherwise obscure it; the other metaclasses here all inherit from it.
-- `PrePostInitMeta` runs `__pre_init__` and `__post_init__` automatically around `__init__` (without having to call them yourself).
-- `AutoInit` is a `PrePostInitMeta` mixin that calls `super().__init__` for you.
-- `NewChkMeta` makes `C(x)` return `x` unchanged when `x` is already a `C` and no other args are passed (how `L` avoids re-wrapping an `L`).
-- `BypassNewMeta` casts an object of another class (`_bypass_type`) to this class without copying it.
+- `FixSigMeta` preserves the constructor signature for introspection and tab completion. The other metaclasses inherit from it.
+- `PrePostInitMeta` calls `__pre_init__` before `__init__` and `__post_init__` afterward.
+- `AutoInit` is a `PrePostInitMeta` mixin that calls `super().__init__`.
+- `NewChkMeta` makes `C(x)` return `x` when `x` is already a `C` and there are no other arguments.
+- `BypassNewMeta` casts an object of `_bypass_type` to the new class without copying it.
 
-`use_kwargs`/`use_kwargs_dict` replace `**kwargs` in a signature with named params from an explicit list or dict, and `funcs_kwargs` lets a class accept method overrides as constructor kwargs. The one used everywhere in fastai code is `@delegates`: decorating `wrapper` with `@delegates(base)` replaces `**kwargs` in `wrapper`'s shown signature with `base`'s keyword parameters, so introspection and tab completion reveal the real options. Only params with defaults are copied over; `keep=True` retains `**kwargs`; `but=` excludes names; and on a class with no argument it delegates to the superclass:
+See this [introduction to metaclasses](https://realpython.com/python-metaclasses/) for background.
+
+`use_kwargs` and `use_kwargs_dict` replace `**kwargs` in a signature with parameters from a list or dictionary. `funcs_kwargs` lets a class accept method overrides as constructor arguments.
+
+`@delegates(base)` adds `base`'s optional parameters to a wrapper's displayed signature for introspection and tab completion. Use `keep=True` to retain `**kwargs` and `but` to exclude parameters. On a class, `@delegates()` uses the superclass constructor:
 
 ```python
 def basefn(a, b=2, c=3): ...

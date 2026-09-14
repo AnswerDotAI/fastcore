@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.27
+
+### New Features
+
+- simplify `prev_line` truncation format ([#940](https://github.com/AnswerDotAI/fastcore/issues/940))
+
+
 ## 2.2.26
 
 ### New Features

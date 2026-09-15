@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.28
+
+### New Features
+
+- Add `path_glob` and `path_re` filters to globtastic for matching against full file paths ([#941](https://github.com/AnswerDotAI/fastcore/issues/941))
+
+
 ## 2.2.27
 
 ### New Features

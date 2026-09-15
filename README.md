@@ -57,6 +57,8 @@ To install fastcore run: `conda install fastcore -c fastai` (if you use Anaconda
 
 To get started, we recommend you read through [the fastcore tour](https://fastcore.fast.ai/tour.html).
 
+[`globtastic`](https://fastcore.fast.ai/xtras.html#globtastic) supports filename filters (`file_glob`, `file_re`) and full-path filters (`path_glob`, `path_re`). Glob filters use `fnmatch`: `*` matches directory separators and `**` has no special meaning.
+
 ## Contributing
 
 After you clone this repository, please run `nbdev_install_hooks` in your terminal. This sets up git hooks, which clean up the notebooks to remove the extraneous stuff stored in the notebooks (e.g. which cells you ran) which causes unnecessary merge conflicts.

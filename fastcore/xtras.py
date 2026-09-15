@@ -138,6 +138,8 @@ def globtastic(
     symlinks:bool=True, # follow symlinks?
     file_glob:str=None, # Only include files matching glob
     file_re:str=None, # Only include files matching regex
+    path_glob:str=None, # Only include files whose full paths match glob (wildcards match separators)
+    path_re:str=None, # Only include files whose full paths match regex
     folder_re:str=None, # Only enter folders matching regex
     skip_file_glob:str=None, # Skip files matching glob
     skip_file_re:str=None, # Skip files matching regex
@@ -158,10 +160,13 @@ def globtastic(
     if exts:
         exts = [e if e.startswith('.') else f'.{e}' for e in listify(exts)]
         file_re = f"({'|'.join(re.escape(e) for e in exts)})$"
-    file_re,folder_re = compile_re(file_re),compile_re(folder_re)
+    file_re,folder_re,path_re = compile_re(file_re),compile_re(folder_re),compile_re(path_re)
     skip_file_re,skip_folder_re = compile_re(skip_file_re),compile_re(skip_folder_re)
     def _keep_file(root, name):
-        return (not file_glob or fnmatch(name, file_glob)) and (
+        fname = os.path.join(root,name)
+        return (not path_glob or fnmatch(fname, path_glob)) and (
+                not path_re or path_re.search(fname)) and (
+                not file_glob or fnmatch(name, file_glob)) and (
                 not file_re or file_re.search(name)) and (
                 not skip_file_glob or not fnmatch(name, skip_file_glob)) and (
                 not skip_file_re or not skip_file_re.search(name))

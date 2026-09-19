@@ -50,7 +50,7 @@ Edits accept line numbers, lnhash addresses, or section tokens. Get addresses wh
 
 Prefer lnhash addresses when `exhash` is installed. The editor checks the hash against current content and rejects stale addresses. Plain line numbers are unverified and can shift after an edit. Re-view after each plain-line-number edit and apply multiple edits from bottom to top. Read `exhash.skill` for address formats and verified editing.
 
-Section tokens identify sections in document outlines. In `1.6.|12|a3f2|,45|b1c3|`, `1.6.` is the section number. The rest is the lnhash range for its first and last lines. `d.at(token)` returns the section after checking its hash. `d.view(tok1, tok2)` prints the rendered text of both sections. Use the boundary range to edit the section: `file_exhash(path, ('12|a3f2|,45|b1c3|', 'c', new_text))`.
+Section tokens identify sections in document outlines. In `1.6.|12|Py|,45|HD|`, `1.6.` is the section number. The rest is the lnhash range for its first and last lines. `d.at(token)` returns the section after checking its hash. `d.view(tok1, tok2)` prints the rendered text of both sections. Use the boundary range to edit the section: `file_exhash(path, ('12|Py|,45|HD|', 'c', new_text))`.
 
 Read `exhash.skill` before working through large Markdown, code, or notebook files, or documentation from a URL. It describes `open_doc` tree searches and link following, including the llms.txt workflow.
 

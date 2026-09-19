@@ -4,7 +4,7 @@ The text editors take a string and return the edited text. Invalid edits raise `
 
 Read `fastcore.editskill` for the editing toolkit's naming, parameter and workflow conventions. It exposes these tools alongside the notebook editors from `fastcore.nbio`.
 
-`line_hash`, `lnhash` and `lnhash_at` create [exhash](https://answerdotai.github.io/exhash) addresses without depending on the exhash package. Addresses use `lineno|hash|`. The hash is the low 16 bits of CRC32, formatted as four hexadecimal characters.
+`line_hash`, `lnhash` and `lnhash_at` create [exhash](https://answerdotai.github.io/exhash) addresses without depending on the exhash package. Addresses use `lineno|hash|`. The hash is the low 12 bits of CRC32, encoded as two Base64url characters (`A–Z`, `a–z`, `0–9`, `-`, `_`), high six bits first.
 
 File editors take the path first and return a unified diff. An unchanged result returns `none: No changes.` Invalid edits return `error: ...`.
 
@@ -152,8 +152,10 @@ def del_lines(
 def line_hash(
     line:str # Text to hash; when hashing a single line, omit its trailing newline
 )->str:
-    "4-char hex hash of `line`"
-    return f'{zlib.crc32(line.encode()) & 0xffff:04x}'
+    "2-char Base64url hash of `line`"
+    alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+    h = zlib.crc32(line.encode())
+    return alphabet[(h>>6)&63] + alphabet[h&63]
 
 def lnhash(
     lineno:int, # 1-based line number

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.29
+
+### New Features
+
+- Shorten line hashes from 4 hex chars to 2 Base64url chars (low 12 bits of CRC32) ([#942](https://github.com/AnswerDotAI/fastcore/issues/942))
+
+
 ## 2.2.28
 
 ### New Features

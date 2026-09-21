@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.30
+
+### New Features
+
+- Split argv parsing out of `_run_cli` into new exported `parse_cli` function returning positional args, kwargs, and the --pdb flag ([#943](https://github.com/AnswerDotAI/fastcore/issues/943))
+
+
 ## 2.2.29
 
 ### New Features

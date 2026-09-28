@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.31
+
+### New Features
+
+- truncstr: accept maxlen=None to disable truncation; mark xml module docstring as raw ([#944](https://github.com/AnswerDotAI/fastcore/issues/944))
+
+
 ## 2.2.30
 
 ### New Features

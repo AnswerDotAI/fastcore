@@ -1,4 +1,4 @@
-"""Concise HTML generation and namespace-aware XML construction.
+r"""Concise HTML generation and namespace-aware XML construction.
 
 `ft(tag, *children, **attrs)` builds an `FT` tree for HTML generation. `to_xml` renders the tree. [FastHTML](https://fastht.ml) uses these functions to generate HTML.
 

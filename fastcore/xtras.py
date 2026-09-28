@@ -1000,8 +1000,8 @@ def partial_format(s:str, **kwargs):
 
 # %% ../nbs/03_xtras.ipynb #becf7a2d
 def truncstr(s:str, maxlen:int, suf='…', space='', sizevar:str=None)->str:
-    "Truncate `s` to length `maxlen`, adding suffix `suf` if truncated; a callable `suf` gets the number of characters cut"
-    if len(s)+len(space)<=maxlen: return s+space
+    "Truncate `s` to length `maxlen` (None: no limit), adding suffix `suf` if truncated; a callable `suf` gets the number of characters cut"
+    if maxlen is None or len(s)+len(space)<=maxlen: return s+space
     if sizevar: suf = suf.format_map({sizevar: len(s)})
     if callable(suf):
         f,n = suf,0

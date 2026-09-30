@@ -44,7 +44,7 @@ def docstring(sym):
     if isinstance(sym, partial): return docstring(sym.func)
     if _callable_instance(sym):
         own = inspect.getattr_static(sym, '__doc__', None)
-        if own is not getattr(type(sym), '__doc__', None): return getdoc(sym) or ''
+        if isinstance(own, property) or own is not getattr(type(sym), '__doc__', None): return getdoc(sym) or ''
         return getdoc(sym.__call__) or getdoc(sym) or ''
     res = getdoc(sym)
     if not getattr(sym, '__doc__', None) and res == object.__init__.__doc__: res = None
@@ -183,7 +183,7 @@ def docments(s, full=False, eval_str=False, returns=True, args_kwargs=False):
     except (ValueError, TypeError): return AttrDict()
     nps = parse_docstring(s)
     docs = {}
-    while s:
+    while s is not None:
         p = _param_locs(s, returns=returns, args_kwargs=args_kwargs) or {}
         c = {o.start[0]:_clean_comment(o.string) for o in _tokens(s) if o.type==COMMENT}
         for k,v in p.items():

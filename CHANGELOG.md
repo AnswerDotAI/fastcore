@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.32
+
+### Bugs Squashed
+
+- Fix docments to handle property `__doc__` and falsy-but-valid symbols in docstring/docments traversal ([#945](https://github.com/AnswerDotAI/fastcore/issues/945))
+
+
 ## 2.2.31
 
 ### New Features

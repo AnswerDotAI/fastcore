@@ -1,6 +1,6 @@
 """XDG Base Directory Specification helpers.
 
-`xdg_cache_home`, `xdg_config_home`, `xdg_data_home`, `xdg_state_home`, and `xdg_runtime_dir` each return the `Path` given by their `XDG_*` environment variable, falling back to the [spec](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)'s default (`~/.cache`, `~/.config`, `~/.local/share`, `~/.local/state`; `None` for the runtime dir) when it's unset, empty, or relative. `xdg_config_dirs` and `xdg_data_dirs` likewise return the colon-split search-path lists.
+Each helper reads one `XDG_*` environment variable and falls back to the [spec](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)'s default when the variable is unset or empty. The single-path helpers also fall back when the variable holds a relative path. The `*_DIRS` helpers split the variable on colons and drop relative entries. `xdg_runtime_dir` has no default and returns `None`.
 
 Docs: https://fastcore.fast.ai/xdg.html.md"""
 

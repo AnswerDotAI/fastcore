@@ -1,6 +1,6 @@
 """Helper functions to quickly write tests in notebooks
 
-All the helpers here wrap `test(a,b,cmp)`: an `assert cmp(a,b)` that shows both values when the comparison fails, rather than a bare `AssertionError`. The named comparisons are `test_eq`, `test_ne`, `test_eq_type` (equal and same type), `test_close` (within `eps`, default 1e-5), `test_is`, `test_shuffled` (equal ignoring order), `test_stdout` (what `f` prints), and `test_warns`.
+All the helpers here wrap `test(a,b,cmp)`, an `assert cmp(a,b)` that shows both values when the comparison fails, rather than a bare `AssertionError`.
 
 To check that code fails as expected, use `test_fail(f, contains=..., exc=...)` for a callable, or `expect_fail` as a context manager, which also accepts `regex`:
 

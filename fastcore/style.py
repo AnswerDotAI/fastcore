@@ -1,6 +1,6 @@
 """Fast styling for friendly CLIs.
 
-Build ANSI terminal styles by chaining attributes on the exported `S` object, then apply by calling with a string: `S.blue.bold('hi')` returns the escaped string, nesting correctly inside other styles. Chains are plain objects, so a style can be defined once and reused; tab completion on `S.` lists the available colors and effects.
+Build an ANSI terminal style by chaining attributes on the exported `S` object, then apply it by calling it with a string. `S.blue.bold('hi')` returns the escaped string, which nests correctly inside other styles. A chain is a plain object that can be defined once and reused. Tab completion on `S.` lists the available colors and effects.
 
 Docs: https://fastcore.fast.ai/style.html.md"""
 

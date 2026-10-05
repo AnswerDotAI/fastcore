@@ -1,6 +1,6 @@
 """Network, HTTP, and URL functions
 
-`urlread`/`urljson` retrieve a URL (POSTing when `data` or kwargs are given), `urlsave` downloads to a file named from the URL, and `urlopen` wraps `urllib` with quoting, header, and data handling; on HTTP failure they raise a status-specific exception (`HTTP404NotFoundError`, ...), each a subclass of `HTTP4xxClientError` or `HTTP5xxServerError`, with the response body included in the message. `start_server`/`start_client` make TCP — or, passing a string `port`, Unix-socket — connections; `waitfor` polls a callable until truthy with a timeout; and `is_port_free`/`wait_port_free` help coordinate with servers.
+Every URL function here goes through `urlopen`. It quotes the URL, sends `url_default_headers`, and encodes `data`. On an HTTP error it raises the status-specific exception for the code, such as `HTTP404NotFoundError` or `HTTP503ServiceUnavailableError`. Each is a subclass of `HTTP4xxClientError` or `HTTP5xxServerError`. Its message includes the response body. The module also has TCP and Unix-socket clients and servers, and helpers that wait for a condition or a free port.
 
 Docs: https://fastcore.fast.ai/net.html.md"""
 
@@ -19,7 +19,11 @@ __all__ = ['url_default_headers', 'ExceptionsHTTP', 'urlquote', 'urlwrap', 'HTTP
            'HTTP418AmAteapotError', 'HTTP421MisdirectedRequestError', 'HTTP422UnprocessableEntityError',
            'HTTP423LockedError', 'HTTP424FailedDependencyError', 'HTTP425TooEarlyError', 'HTTP426UpgradeRequiredError',
            'HTTP428PreconditionRequiredError', 'HTTP429TooManyRequestsError', 'HTTP431HeaderFieldsTooLargeError',
-           'HTTP451LegalReasonsError']
+           'HTTP451LegalReasonsError', 'HTTP500InternalServerError', 'HTTP501NotImplementedError',
+           'HTTP502BadGatewayError', 'HTTP503ServiceUnavailableError', 'HTTP504GatewayTimeoutError',
+           'HTTP505HTTPVersionNotSupportedError', 'HTTP506VariantAlsoNegotiatesError',
+           'HTTP507InsufficientStorageError', 'HTTP508LoopDetectedError', 'HTTP510NotExtendedError',
+           'HTTP511NetworkAuthenticationRequiredError']
 
 # %% ../nbs/03b_net.ipynb #05c808e7
 from .utils import *
@@ -99,18 +103,28 @@ _httperrors = ((400,'Bad Request'),(401,'Unauthorized'),(402,'Payment Required')
     (414,'URI Too Long'),(415,'Unsupported Media Type'),(416,'Range Not Satisfiable'),(417,'Expectation Failed'),
     (418,'Am A teapot'),(421,'Misdirected Request'),(422,'Unprocessable Entity'),(423,'Locked'),(424,'Failed Dependency'),
     (425,'Too Early'),(426,'Upgrade Required'),(428,'Precondition Required'),(429,'Too Many Requests'),
-    (431,'Header Fields Too Large'),(451,'Legal Reasons'))
+    (431,'Header Fields Too Large'),(451,'Legal Reasons'),(500,'Internal Server Error'),(501,'Not Implemented'),
+    (502,'Bad Gateway'),(503,'Service Unavailable'),(504,'Gateway Timeout'),(505,'HTTP Version Not Supported'),
+    (506,'Variant Also Negotiates'),(507,'Insufficient Storage'),(508,'Loop Detected'),(510,'Not Extended'),
+    (511,'Network Authentication Required'))
 
 for code,msg in _httperrors:
-    nm = f'HTTP{code}{msg.replace(" ","")}Error'
-    def _init(self, url, hdrs, fp, msg=msg, code=code): HTTP4xxClientError.__init__(self, url, code, msg, hdrs, fp)
-    cls = type(nm, (HTTP4xxClientError,), {'__init__':_init})
+    base = HTTP4xxClientError if code<500 else HTTP5xxServerError
+    nm = f'HTTP{code}{msg.replace(" ","").removesuffix("Error")}Error'
+    def _init(self, url, hdrs, fp, msg=msg, code=code, base=base): base.__init__(self, url, code, msg, hdrs, fp)
+    cls = type(nm, (base,), {'__init__':_init})
     globals()[nm] = ExceptionsHTTP[code] = cls
 
 # %% ../nbs/03b_net.ipynb #21fa32a4
-_all_ = ['HTTP400BadRequestError', 'HTTP401UnauthorizedError', 'HTTP402PaymentRequiredError', 'HTTP403ForbiddenError', 'HTTP404NotFoundError', 'HTTP405MethodNotAllowedError', 'HTTP406NotAcceptableError', 'HTTP407ProxyAuthRequiredError', 'HTTP408RequestTimeoutError', 'HTTP409ConflictError', 'HTTP410GoneError', 'HTTP411LengthRequiredError', 'HTTP412PreconditionFailedError', 'HTTP413PayloadTooLargeError', 'HTTP414URITooLongError', 'HTTP415UnsupportedMediaTypeError', 'HTTP416RangeNotSatisfiableError', 'HTTP417ExpectationFailedError', 'HTTP418AmAteapotError', 'HTTP421MisdirectedRequestError', 'HTTP422UnprocessableEntityError', 'HTTP423LockedError', 'HTTP424FailedDependencyError', 'HTTP425TooEarlyError', 'HTTP426UpgradeRequiredError', 'HTTP428PreconditionRequiredError', 'HTTP429TooManyRequestsError', 'HTTP431HeaderFieldsTooLargeError', 'HTTP451LegalReasonsError']
+_all_ = ['HTTP400BadRequestError', 'HTTP401UnauthorizedError', 'HTTP402PaymentRequiredError', 'HTTP403ForbiddenError', 'HTTP404NotFoundError', 'HTTP405MethodNotAllowedError', 'HTTP406NotAcceptableError', 'HTTP407ProxyAuthRequiredError', 'HTTP408RequestTimeoutError', 'HTTP409ConflictError', 'HTTP410GoneError', 'HTTP411LengthRequiredError', 'HTTP412PreconditionFailedError', 'HTTP413PayloadTooLargeError', 'HTTP414URITooLongError', 'HTTP415UnsupportedMediaTypeError', 'HTTP416RangeNotSatisfiableError', 'HTTP417ExpectationFailedError', 'HTTP418AmAteapotError', 'HTTP421MisdirectedRequestError', 'HTTP422UnprocessableEntityError', 'HTTP423LockedError', 'HTTP424FailedDependencyError', 'HTTP425TooEarlyError', 'HTTP426UpgradeRequiredError', 'HTTP428PreconditionRequiredError', 'HTTP429TooManyRequestsError', 'HTTP431HeaderFieldsTooLargeError', 'HTTP451LegalReasonsError', 'HTTP500InternalServerError', 'HTTP501NotImplementedError', 'HTTP502BadGatewayError', 'HTTP503ServiceUnavailableError', 'HTTP504GatewayTimeoutError', 'HTTP505HTTPVersionNotSupportedError', 'HTTP506VariantAlsoNegotiatesError', 'HTTP507InsufficientStorageError', 'HTTP508LoopDetectedError', 'HTTP510NotExtendedError', 'HTTP511NetworkAuthenticationRequiredError']
 
 # %% ../nbs/03b_net.ipynb #0d72881c
+def _http_exc(e):
+    "The status-specific exception for `HTTPError` `e`, or `e` itself outside 4xx and 5xx"
+    if e.code in ExceptionsHTTP: return ExceptionsHTTP[e.code](e.url, e.hdrs, e.fp, msg=e.msg)
+    if 400 <= e.code < 600: return (HTTP4xxClientError if e.code<500 else HTTP5xxServerError)(e.url, e.code, e.msg, e.hdrs, e.fp)
+    return e
+
 def urlopen(url, data=None, headers=None, timeout=None, **kwargs):
     "Like `urllib.request.urlopen`, but first `urlwrap` the `url`, and encode `data`"
     if kwargs and not data: data=kwargs
@@ -118,18 +132,14 @@ def urlopen(url, data=None, headers=None, timeout=None, **kwargs):
         if not isinstance(data, strtyps): data = urlencode(data)
         if not isinstance(data, bytes): data = data.encode('ascii')
     try: return urlopener().open(urlwrap(url, data=data, headers=headers), timeout=timeout)
-    except HTTPError as e: 
+    except HTTPError as e:
         e.msg += f"\n====Error Body====\n{e.read().decode(errors='ignore')}"
-        raise
+        raise _http_exc(e) from None
 
 # %% ../nbs/03b_net.ipynb #fa6a4dfe
 def urlread(url, data=None, headers=None, decode=True, return_json=False, return_headers=False, timeout=None, **kwargs):
     "Retrieve `url`, using `data` dict or `kwargs` to `POST` if present"
-    try:
-        with urlopen(url, data=data, headers=headers, timeout=timeout, **kwargs) as u: res,hdrs = u.read(),u.headers
-    except HTTPError as e:
-        if 400 <= e.code < 500: raise ExceptionsHTTP[e.code](e.url, e.hdrs, e.fp, msg=e.msg) from None
-        else: raise
+    with urlopen(url, data=data, headers=headers, timeout=timeout, **kwargs) as u: res,hdrs = u.read(),u.headers
 
     if decode: res = res.decode()
     if return_json: res = loads(res)

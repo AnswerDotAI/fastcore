@@ -1,10 +1,10 @@
 """Basic functionality used in the fastai library
 
-The staples used throughout fastai code, each replacing a common multi-line pattern with a one-liner: `ifnone(a,b)` is `b if a is None else a` (though both args are always evaluated); `listify` and `tuplify` convert anything to a list or tuple the way you'd mean it (`None` becomes `[]`, a `str` or `dict` stays a single item, a generator is consumed); and `basic_repr('a,b')` gives a class a deterministic `key=value` repr with no memory address, so notebook and git diffs stay clean.
+The staples used throughout fastai code, each replacing a common multi-line pattern with a one-liner.
 
 Curried versions of the comparison and arithmetic functions in Python's `operator` module: `lt gt le ge eq ne add sub mul truediv is_ is_not in_ mod`. With two args they work like `operator`'s versions; with one arg they return a partial that binds it as the *second* argument, so `lt(3)` means "is less than 3" and `in_(vals)` means "is contained in `vals`". They read especially well as `cmp` arguments to `fastcore.test.test`, e.g. `test(x, valid, in_)`.
 
-`AttrDict` is a `dict` whose keys are also attributes, so `d.foo` reads and writes `d['foo']` (to convert a whole nested structure at once, see `dict2obj` in `fastcore.xtras`); `NS` is the same idea built on `SimpleNamespace`, adding indexing and iteration. `store_attr()`, called inside `__init__`, stores the function's arguments as attributes of `self` in one line:
+`store_attr()`, called inside `__init__`, stores the function's arguments as attributes of `self` in one line:
 
 ```python
 class Point:
@@ -13,7 +13,7 @@ p = Point(1, 2)
 test_eq((p.x, p.y, p.scale), (1, 2, 1))
 ```
 
-Tools for making and transforming functions: `compose(f,g,...)` chains functions left to right; `bind` is `partial` extended with `arg0`,`arg1`,... placeholders for reordering positional arguments; and `fail_clean` re-raises exceptions with the library's own traceback frames stripped, for errors that are part of a function's contract rather than bugs.
+Utilities for functional programming or for defining, modifying, or debugging functions.
 
 `~Self` is a concise alternative to `lambda` for a function that operates on a single object (note the capitalization!). Write the chain of attribute accesses, method calls, and indexing just as you would after a variable name, with `~Self` in its place, and the result is a plain function that runs the chain on its argument:
 
@@ -25,7 +25,7 @@ Tools for making and transforming functions: `compose(f,g,...)` chains functions
 
 Since `.`, `()`, and `[]` bind tighter than `~`, the whole chain builds first and `~` then converts it to a function, so the chain never needs its own parentheses: `map(~Self.imag, nums)` works as written.
 
-`@patch` adds a function to an existing class as a method, using the function's `self:` type annotation to pick the class (a union annotation patches several classes at once); `@patch_to(Cls)` is the same with the class passed explicitly. Both take `as_prop`, `set_prop`, and `cls_method`. fastai code uses this to build classes incrementally across a notebook, so expect to find a class's methods defined far from the class itself:
+fastai code builds classes incrementally across a notebook. A class's methods often appear far from the class itself. `@patch` adds a function to an existing class as a method, and picks the class from the function's `self:` annotation:
 
 ```python
 @patch

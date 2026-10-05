@@ -4,19 +4,19 @@ Python is a powerful, dynamic language. Rather than bake everything into the lan
 
 Here are some tips on using fastcore:
 
-- **Liberal imports**: Use `from fastcore.module import *` freely. The library is designed for safe wildcard imports.
-- **Enhanced list operations**: Substitute `list` with `L`. This provides advanced indexing, method chaining, and additional functionality while maintaining list-like behavior.
-- **Extend existing classes**: Apply the `@patch` decorator to add methods to classes, including built-ins, without subclassing.
-- **Streamline class initialization**: In `__init__` methods, use `store_attr()` to efficiently set multiple attributes, reducing repetitive assignment code.
-- **Explicit keyword arguments**: Apply the `delegates` decorator to functions to replace `**kwargs` with specific parameters, enhancing IDE support and documentation.
-- **Optimize parallel execution**: Use fastcore's enhanced `ThreadPoolExecutor` and `ProcessPoolExecutor` for simplified concurrent processing.
-- **Expressive testing**: Prefer fastcore's testing functions like `test_eq`, `test_ne`, `test_close` for more readable and informative test assertions.
-- **Advanced file operations**: Use the extended `Path` class, which adds methods like `ls()`, `read_json()`, and others to `pathlib.Path`.
-- **Flexible data structures**: Convert between dictionaries and attribute-access objects using `dict2obj` and `obj2dict` for more intuitive data handling.
-- **Functional programming paradigms**: Use tools like `compose`, `maps`, and `filter_ex` to write more functional-style Python code.
-- **Documentation**: Document parameters and return values with `docments`, using source comments or `Annotated` metadata for generated APIs. `MarkdownRenderer` shows the effective signature and retains usage sections such as Notes, Raises, and Examples.
-- **Time-aware caching**: Apply the `timed_cache` decorator to add time-based expiration to the standard `lru_cache` functionality.
-- **Simplified CLI creation**: Use `fastcore.script` to easily transform Python functions into command-line interfaces.
+- Use `from fastcore.module import *` freely. fastcore's modules are built to be safe for wildcard imports.
+- Use `L` in place of `list`. `L` behaves like a list, with extra indexing options, method chaining and more methods.
+- Add methods to existing classes, including built-ins, with the `@patch` decorator instead of subclassing.
+- In `__init__` methods, call `store_attr()` to set multiple attributes at once instead of assigning each one.
+- Apply the `delegates` decorator to show a function's real parameters in place of `**kwargs`, for IDEs and generated documentation.
+- Use fastcore's versions of `ThreadPoolExecutor` and `ProcessPoolExecutor` for simpler concurrent processing.
+- Prefer fastcore's test functions, such as `test_eq`, `test_ne` and `test_close`, for assertions that read clearly and give informative failures.
+- fastcore extends `pathlib.Path` with methods such as `ls()` and `read_json()`.
+- Convert between dictionaries and objects with attribute access using `dict2obj` and `obj2dict`.
+- Write in a functional style with tools such as `compose`, `maps` and `filter_ex`.
+- Document parameters and return values with `docments`, using source comments or `Annotated` metadata for generated APIs. `MarkdownRenderer` shows the effective signature and keeps usage sections such as Notes, Raises and Examples.
+- Apply the `timed_cache` decorator to add time-based expiry to the standard `lru_cache`.
+- Turn Python functions into command-line interfaces with `fastcore.script`.
 
 For example, `L` is a drop-in replacement for `list` with extra superpowers:
 

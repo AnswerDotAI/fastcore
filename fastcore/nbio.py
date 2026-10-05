@@ -1,10 +1,10 @@
 """Reading, writing, and running Jupyter notebooks
 
-Cell tools apply `fastcore.tools`' string editing primitives to one notebook cell's source, addressed by path and cell id, mirroring that module's file tools: the same operations and parameters, with `path, cell_id` in place of `path`. Each editor (including the structural `cell_ast_replace`) returns a diff of the change, and `view_cell` shows a cell's source with optional line numbers or exhash addresses.
+The cell tools apply `fastcore.tools`' string editing primitives to one notebook cell's source. They match that module's file tools, with the same operations and parameters, but take `path, cell_id` where the file tools take `path`. Every editor, including the structural `cell_ast_replace`, returns a diff of its change. `view_cell` shows a cell's source with optional line numbers or exhash addresses.
 
-Naming and parameter conventions shared across the editing toolkit are documented in `fastcore.editskill`, which also re-exports this module's editing tools.
+`fastcore.editskill` documents the naming and parameter conventions shared across the editing toolkit, and re-exports this module's editing tools.
 
-`diff_cells` compares two versions of a cell sequence -- an open notebook against its file on disk, a dialog against an edited copy -- and yields the edits that turn one into the other. Items are aligned by `id` (any objects with `.id` work, not just cells), and each edit is a *block*: a contiguous run of deletions, insertions, or in-place changes, so an applier can handle a whole run at once and inserted items keep their order. Identity questions ride the ids; whether an aligned pair *changed* is a content question, answered by comparing `key(item)` on each side.
+`diff_cells` compares two versions of a cell sequence, such as an open notebook and its file on disk, or a dialog and an edited copy. It yields the edits that turn one into the other. It aligns items by `id`, and works with any objects that have an `.id`, not just cells. Each edit is a *block* covering a contiguous run of deletions, insertions or in-place changes. An applier can handle each block in one step, keeping inserted items in order. An aligned pair counts as changed when `key(item)` differs between the two sides.
 
 Docs: https://fastcore.fast.ai/nbio.html.md"""
 

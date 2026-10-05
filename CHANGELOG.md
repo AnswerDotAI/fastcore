@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.33
+
+### New Features
+
+- Add status-specific HTTP5xx exceptions and raise HTTP error subclasses from urlopen so all URL functions get them ([#946](https://github.com/AnswerDotAI/fastcore/issues/946))
+
+
 ## 2.2.32
 
 ### Bugs Squashed

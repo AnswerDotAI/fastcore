@@ -155,8 +155,8 @@ def _get_comment(line, arg, comments, parms):
 
 def _get_full(p, docs, eval_str=False):
     anno = p.annotation
-    if anno==empty:
-        if p.default!=empty: anno = type(p.default)
+    if anno is empty:
+        if p.default is not empty: anno = type(p.default)
         elif eval_str: anno = None
     return AttrDict(docment=docs.get(p.name), anno=anno, default=p.default, kind=p.kind)
 
@@ -255,7 +255,7 @@ def extract_docstrings(code):
 def _bold(s): return f'**{s}**' if s.strip() else s
 
 def _maybe_nm(o):
-    if (o == inspect._empty): return ''
+    if (o is inspect._empty): return ''
     else: return o.__name__ if hasattr(o, '__name__') else str(o)
 
 # %% ../nbs/04_docments.ipynb #ac070254
@@ -291,13 +291,13 @@ class DocmentTbl(_DocmentBase):
     def _columns(self):
         "Fields with at least one non-empty value"
         candidates = self._map if self.verbose else {'docment': 'Details'}
-        return {k:v for k,v in candidates.items() if any(d[k] != empty for d in self.dm.values())}
+        return {k:v for k,v in candidates.items() if any(d[k] is not empty for d in self.dm.values())}
 
     @property
     def has_docment(self): return 'docment' in self._columns and bool(self.params)
 
     @property
-    def has_return(self): return self.returns and any(v != empty for v in self.dm.get('return', {}).values())
+    def has_return(self): return self.returns and any(v is not empty for v in self.dm.get('return', {}).values())
 
     @property
     def hdr_str(self):
@@ -330,7 +330,7 @@ class DocmentTbl(_DocmentBase):
 class DocmentList(_DocmentBase):
     def _fmt(self, nm, p):
         anno,default,doc = _maybe_nm(p.get('anno','')), p.get('default',empty), p.get('docment','')
-        s = f'`{nm}{":" + anno if anno else ""}{"=" + _maybe_nm(default) if default != empty else ""}`'
+        s = f'`{nm}{":" + anno if anno else ""}{"=" + _maybe_nm(default) if default is not empty else ""}`'
         br = '\xa0'*3
         return f'- {s}' + (f'{br}*{doc}*' if doc else '')
 
@@ -374,8 +374,8 @@ class DocmentText(_DocmentBase):
     def _fmt_param(self, nm, p):
         anno,default,kind = p.get('anno',empty), p.get('default',empty), p.get('kind')
         pre = '*' if kind==Parameter.VAR_POSITIONAL else '**' if kind==Parameter.VAR_KEYWORD else ''
-        anno = f':{_type_str(anno)}' if anno != empty else ''
-        default = f'={_fmt_default(default)}' if default != empty else ''
+        anno = f':{_type_str(anno)}' if anno is not empty else ''
+        default = f'={_fmt_default(default)}' if default is not empty else ''
         return pre + nm + anno + default
 
     def _repr_markdown_(self): return f"```python\n{self}\n```"
@@ -406,7 +406,7 @@ def _clean_text_sig(obj):
 @patch(as_prop=True)
 def _ret_str(self:DocmentText):
     ret = self.dm.get('return', {})
-    anno = f"->{_type_str(ret['anno'])}" if ret.get('anno',empty) != empty else ''
+    anno = f"->{_type_str(ret['anno'])}" if ret.get('anno',empty) is not empty else ''
     doc = f" # {ret['docment']}" if ret.get('docment') else ''
     return f"){anno}:{doc}"
 

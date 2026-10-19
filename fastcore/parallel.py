@@ -156,12 +156,12 @@ def _add_one(x, a=1):
 async def parallel_async_gen(f, items, *args, n_workers=16, pause=0,
     timeout=None, return_exceptions=False, cancel_on_exit=True, **kwargs):
     "Yield `(index,result)` pairs as `f` applied to each of `items` completes, in completion order"
-    import asyncio
+    import asyncio, inspect
     semaphore = asyncio.Semaphore(n_workers)
     async def limited_task(i, item):
         if pause: await asyncio.sleep(i * pause)
         async with semaphore:
-            coro = f(item, *args, **kwargs) if asyncio.iscoroutinefunction(f) else asyncio.to_thread(f, item, *args, **kwargs)
+            coro = f(item, *args, **kwargs) if inspect.iscoroutinefunction(f) else asyncio.to_thread(f, item, *args, **kwargs)
             try: return i, (await asyncio.wait_for(coro, timeout) if timeout else await coro)
             except Exception as e:
                 if return_exceptions: return i, e

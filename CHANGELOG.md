@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.34
+
+### New Features
+
+- Strip OSC hyperlinks in `strip_ansi`, let `call_func` accept functions directly, add `find_cells` maxlen, full flag on Safe/PrettyString ([#952](https://github.com/AnswerDotAI/fastcore/issues/952))
+
+
 ## 2.2.33
 
 ### New Features

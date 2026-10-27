@@ -259,7 +259,7 @@ def detect_mime(data):
     from fastcore import imghdr
     for (sig,pos),mime in _sigs.items():
         if data[pos:pos+len(sig)]==sig and (res := mime(data) if callable(mime) else mime): return res
-    return mimetypes.types_map.get(f'.{imghdr.what(None, h=data)}')
+    return mimetypes.guess_type(f'x.{imghdr.what(None, h=data)}', strict=False)[0]
 
 # %% ../nbs/03_xtras.ipynb #f856746a
 def bunzip(fn):

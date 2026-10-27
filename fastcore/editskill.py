@@ -1,50 +1,48 @@
 """Text, file, cell, and notebook editing from `fastcore.tools` and `fastcore.nbio`, plus the conventions the whole fastai editing toolkit follows. Read this before working with the editing tools in any package that shares them.
 
-`from fastcore.editskill import *` loads `fastcore.tools` (text primitives, file tools) and `fastcore.nbio` (notebook I/O, cell editors). Where installed, prefer `exhash` for hash-verified editing, `rgapi` for search, and `aidialog`/`dialoghelper` for dialogs.
+`from fastcore.editskill import *` loads `fastcore.tools` and `fastcore.nbio`.
 
-## Places
+## Targets and tools
 
-Targets: strings in memory, files (a path), notebook cells (`path, cell_id`; edits that cell's source), and in-memory `Notebook`/`NbCell`. A Solveit dialog is an `.ipynb` whose cells are notes, runnable code, and prompt/reply pairs; cell tools work with notebook structure whatever produced the file, while `aidialog.dlgskill`/`dialoghelper` read and edit dialog messages. exhash's `open_doc` outlines Markdown, code, and notebooks (`doc(open_doc)`: inputs, navigation, llms.txt workflow); a section is a span of lines or a run of cells, changed with the file and cell tools.
+Targets: in-memory strings, file paths, notebook cell sources (`path, cell_id`), and held `Notebook`/`NbCell` objects.
 
-Open a `Notebook` with `Notebook.open(path)` and save it with `nb.save()`. Index it by position or cell id (exact or unique prefix): `nb[k]` returns a cell, `nb[k] = src` sets its source, and `del nb[k]` removes it. `nb.add(src, cell_type)` and `nb.md(src)` insert a cell at `idx`, or `after` or `before` a cell id. `nb.move(ids, after=, before=)` reorders cells.
+- `fastcore.tools`: text primitives, file tools, and `line_hash`/`lnhash`/`lnhash_at` address creation without exhash installed.
+- `fastcore.nbio`: notebook read/write/validate/repair, cell construction/editing, and `Notebook`/`NbCell` session objects with snapshot queries (`find_cells`, `summary_nb`).
+- `exhash.skill`: preferred hash-verified file/cell editing where installed; covers address forms and the verified edit loop.
+- `rgapi.skill`: preferred search where installed: `rg`/`fd`/`ls`/`nbrg` with lnhash output, `rgstr` for text already held.
+- `remold`: structural Python search/rewrite with declarative ast-grep rules, LibCST matcher transforms and symbol queries; the engine behind `ast_replace`.
+- `aidialog.dlgskill`, `dialoghelper`: preferred dialog layer where installed, including its own theory of dialogs and projections. A Solveit dialog is an `.ipynb` with notes, runnable code and prompt/reply pairs. Cell tools handle notebook structure regardless of origin; this layer reads/edits dialog messages.
+
+Open/save: `Notebook.open(path)`, `nb.save()`. Index by position or cell id (exact/unique prefix): `nb[k]` returns a cell, `nb[k] = src` sets its source, `del nb[k]` removes it. `nb.add(src, cell_type)`/`nb.md(src)` insert at `idx`, `after` or `before` a cell id; `nb.move(ids, after=, before=)` reorders cells.
 
 ## Naming
 
-- Operations on files, notebooks, cells, and messages: `verb_target` (`view_file`, `create_file`, `read_nb`, `write_nb`, `view_cell`, `validate_nb`, `view_msg`, `view_dlg`, `lnhashview_cell`). `find_msgs`, `add_msg`, `del_msgs`, `find_cells` need no extra dialog/notebook prefix. `msg` = dialog message; `cell` = notebook cell. `summary_nb` returns rows for notebook cells.
-- Text primitives (`insert_line`, `del_lines`, `replace_lines`, `str_replace`) get `file_`/`cell_`/`msg_` versions (`file_del_lines`, `cell_del_lines`, `msg_del_lines`) that take the primitive's arguments after their address arguments. `str_replace` keeps the name and argument order of Anthropic's text editor tool. `ast_replace` (AST patterns) and `exhash` (hash-verified line addresses) use the same prefixes: `file_ast_replace`, `msg_ast_replace`, `file_exhash`, `cell_exhash`.
-- Converters: `x2y` (`nb2dict`, `cell2xml`, aidialog's `dlg2md`); converter methods: `to_y` (`nb.to_dict()`).
-- Plural names take several items: `view_cell` one cell, `lnhashview_cells` several, `del_msgs` many.
+- File/notebook/cell/message operations: `verb_target` (`view_file`, `create_file`, `read_nb`, `write_nb`, `view_cell`, `validate_nb`, `view_msg`, `view_dlg`, `lnhashview_cell`). `find_msgs`, `add_msg`, `del_msgs`, `find_cells` need no extra dialog/notebook prefix. `msg` = dialog message; `cell` = notebook cell; `summary_nb` returns notebook-cell rows.
+- Text primitives (`insert_line`, `del_lines`, `replace_lines`, `str_replace`) gain `file_`/`cell_`/`msg_` prefixes (`file_del_lines`, `cell_del_lines`, `msg_del_lines`); address arguments precede the primitive's arguments. `str_replace` retains Anthropic's text editor name/argument order. `ast_replace` (AST patterns) and `exhash` (hash-verified line addresses) use these prefixes too: `file_ast_replace`, `msg_ast_replace`, `file_exhash`, `cell_exhash`.
+- Converters: `x2y` (`nb2dict`, `cell2xml`); methods: `to_y` (`nb.to_dict()`).
+- Plurals accept several items: `view_cell` one cell, `lnhashview_cells` several, `del_msgs` many.
 
-## Parameters (one vocabulary wherever it appears)
+## Parameters: shared vocabulary
 
-- Order: the place's address (`text`; `path`; `path, cell_id`; a message `id`), then the new text, then ambient context as keyword-only (how message tools name their dialog).
-- `start_line`/`end_line`: 1-based, inclusive, `None` = first/last line; a negative `end_line` counts from the end. `del_lines` has no defaults: state the range.
-- `re_filter`/`invert_filter`: restrict an edit to lines (not) matching a regex, like ex `g//`/`g!//`; combines with the range.
-- Searches read patterns as regex by default; editors read them as literal text unless `use_regex=True`.
-- Views: `nums` (line numbers), `lnhashs` (`lineno|hash|` addresses); `maxlen` caps summary lines; `trunc_out`/`trunc_in` truncate outputs/sources in dialog views.
-- Search tools (`fd`, `ls`, `rg`, `nbrg`): `pattern` first, `root='.'`, one include/exclude/ext/hidden/ignore block; variants differ by defaults, not API (`ls` is `fd` with listing defaults).
-- Boolean filters narrow as `only_*` (`only_err`, `only_exp`, `only_errors`) and widen as `incl_*` (`incl_out`).
-- `context=` counts the place's units: lines (blocks in summary mode) for files, cells for notebooks, messages for dialogs.
-- Editors return a diff, which is the verification: read it rather than re-viewing. No change: fastcore editors and exhash return `none: No changes.`
+- Order: address (`text`; `path`; `path, cell_id`; message `id`), new text, then keyword-only ambient context (message tools' dialog).
+- `start_line`/`end_line`: 1-based, inclusive; `None` = first/last line; negative `end_line` counts from the end. `del_lines` has no defaults: state the range.
+- `re_filter`/`invert_filter`: lines (not) matching a regex, like ex `g//`/`g!//`; combines with the range.
+- Search patterns default to regex; editors default to literal unless `use_regex=True`.
+- Views: `nums` line numbers; `lnhashs` `lineno|hash|` addresses; `maxlen` caps summary lines; `trunc_out`/`trunc_in` truncate dialog outputs/sources.
+- `fd`/`ls`/`rg`/`nbrg` share one include/exclude/ext/hidden/ignore block. `fd`/`rg`/`nbrg`: `pattern` first, `root='.'` second. `ls` is `fd` with listing defaults, but `root` first, like shell `ls DIR`.
+- Filters narrow with `only_*` (`only_err`, `only_exp`, `only_errors`), widen with `incl_*` (`incl_out`).
+- `context=` units: file lines (blocks in summary mode), notebook cells, dialog messages.
+- Editors return a diff: read it as verification rather than re-viewing. No change: fastcore editors and exhash return `none: No changes.`
 
 ## Functions and methods
 
-Functions take a path, save, and return a diff; methods change an object in memory, saved explicitly. Methods drop the address arguments and the object's part of the name: `cell_str_replace(path, cell_id, ...)` -> `c.str_replace(...)` on an `NbCell`; `find_cells(path, pat)` -> `nb.find_cells(pat)` on a `Notebook`. Read functions return snapshot rows (addresses, source, metadata); read methods return the objects. One style per file at a time: save before switching to functions, reopen before returning to methods.
+Functions take a path, save and return a diff; methods change held objects, saved explicitly. Methods drop address arguments and the object's part of the name: `cell_str_replace(path, cell_id, ...)` -> `c.str_replace(...)` on `NbCell`; `find_cells(path, pat)` -> `nb.find_cells(pat)` on `Notebook`. Read functions return snapshot rows (addresses, source, metadata); read methods return objects. One style per file: save before switching to functions; reopen before returning to methods.
 
-## Addresses
+## Navigation and addresses
 
-Edits take plain line numbers or lnhash addresses, got while reading: `nums=True`/`lnhashs=True` views, `rg(lnhashs=True)`. Prefer lnhash addresses where exhash is installed; stale ones are rejected. Plain line numbers are unverified and shift, so re-view after each such edit and apply several bottom-to-top. `exhash.skill` covers address forms and the verified edit loop.
+When unsure where to edit, start with summaries: rgapi's `rg(summary=True)`/`nbrg`, aidialog's `summary_dlg`, exhash's `open_doc` outlines. They give one addressed row per block/cell/message/section. `open_doc` outlines Markdown, code and notebooks; `doc(open_doc)` covers inputs, navigation and llms.txt. A section is a span of lines or a run of cells, edited through file/cell tools. Token `1.6.|12|Py|,45|HD|` combines section number and first/last-line lnhash range; the range is an exhash address.
 
-Not sure where to edit? Start with a summary: rgapi's `rg(summary=True)` and `nbrg`, aidialog's `summary_dlg`, and exhash's `open_doc` outlines give one addressed row per block, cell, message, or section. A section token such as `1.6.|12|Py|,45|HD|` is the section number plus the lnhash range of the section's first and last lines; that range works as an exhash address.
-
-## What's where
-
-- `fastcore.tools`: text primitives, file tools, and `line_hash`/`lnhash`/`lnhash_at` for creating addresses without exhash installed.
-- `fastcore.nbio`: notebook read/write/validate/repair, cell construction, cell editors, and the `Notebook`/`NbCell` session objects with their snapshot queries (`find_cells`, `summary_nb`).
-- `exhash.skill`: hash-verified editing for files and cells, plus `open_doc` section outlines for Markdown, code, and notebooks; prefer it for edits where installed.
-- `rgapi.skill`: `rg`/`fd`/`ls`/`nbrg` search with lnhash output, and `rgstr` to search text already in hand.
-- `remold`: structural search and rewrite for Python source (declarative ast-grep rules, LibCST matcher transforms, symbol queries); the engine behind `ast_replace`.
-- `aidialog.dlgskill`, `dialoghelper`: the dialog layer, including its own theory of dialogs and projections.
+Edits take plain line numbers or lnhash addresses obtained while reading: `nums=True`/`lnhashs=True` views, `rg(lnhashs=True)`. Prefer lnhash addresses where exhash is installed; stale ones are rejected. Plain numbers are unverified and shift: re-view after each such edit; apply several bottom-to-top.
 
 Docs: https://fastcore.fast.ai/tools.html.md and https://fastcore.fast.ai/nbio.html.md
 """

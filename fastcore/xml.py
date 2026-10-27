@@ -158,6 +158,7 @@ def Html(*c, doctype=True, **kwargs)->FT:
 # %% ../nbs/09_xml.ipynb #116c886e
 class Safe(str):
     def __html__(self): return self
+    full = True # Tools that truncate long strings show this whole
 
 # %% ../nbs/09_xml.ipynb #254c8ff3
 def _escape(s):

@@ -1314,6 +1314,7 @@ class NotStr(GetAttr):
 class PrettyString(str):
     "Little hack to get strings to show properly in Jupyter."
     def __repr__(self): return self
+    full = True # Tools that truncate long strings show this whole
 
 # %% ../nbs/01_basics.ipynb #a5138103
 def even_mults(start, stop, n):

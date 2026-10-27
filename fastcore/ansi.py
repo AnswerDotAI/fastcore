@@ -9,20 +9,21 @@ from html import escape
 __all__ = ["strip_ansi", "ansi2html", "ansi2latex"]
 
 _ANSI_RE = re.compile("\x1b\\[(.*?)([@-~])")
+_OSC_RE = re.compile(r'\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)')
 _ANSI_COLORS = ( "ansi-black", "ansi-red", "ansi-green", "ansi-yellow", "ansi-blue", "ansi-magenta", "ansi-cyan", "ansi-white", "ansi-black-intense",
     "ansi-red-intense", "ansi-green-intense", "ansi-yellow-intense", "ansi-blue-intense", "ansi-magenta-intense", "ansi-cyan-intense", "ansi-white-intense")
 
 def strip_terminal_queries(text):
-    # Remove OSC sequences (like background color queries)
-    text = re.sub('\x1b\\][^\x07]*\x07', '', text)
+    # Remove OSC sequences, such as hyperlinks and background color queries
+    text = _OSC_RE.sub('', text)
     # Remove DSR sequences (device status reports)
     return re.sub(r'\x1b\[[0-9]*n', '', text)
 
 
 def strip_ansi(source, term_queries:bool=False):
-    "Remove ANSI escape codes from text."
+    "Remove ANSI escape codes, including OSC sequences such as hyperlinks, from text."
     if term_queries: source = strip_terminal_queries(source)
-    return _ANSI_RE.sub("", source)
+    return _ANSI_RE.sub("", _OSC_RE.sub("", source))
 
 
 def _htmlconverter(fg, bg, bold, underline, inverse):

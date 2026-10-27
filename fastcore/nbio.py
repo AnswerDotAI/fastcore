@@ -799,9 +799,10 @@ def to_dict(self:Notebook):
 class Found:
     "Mixin for find-result containers: `matched` ids, id-only indexing, and match/context kinds"
     _unit = 'item'
-    def __init__(self, items=None, matched=None):
+    def __init__(self, items=None, matched=None, maxlen=MAXLEN):
         super().__init__(items if items is not None else [])
         self.matched = set(matched) if matched is not None else {o.id for o in self}
+        self.maxlen = maxlen
     def kind(self, o): return 'match' if o.id in self.matched else 'context'
     def __getitem__(self, k):
         if not isinstance(k, str): raise TypeError(
@@ -814,7 +815,7 @@ class FoundCells(Found, list):
     "Find results: cells indexed by id (exact or unique prefix), shown as `CellRow` lines with context rows marked"
     _unit = 'cell'
     def __repr__(self):
-        rows = [c if isinstance(c, CellRow) else CellRow(c) for c in self]
+        rows = [c if isinstance(c, CellRow) else CellRow(c, self.maxlen) for c in self]
         for r in rows: r.kind = self.kind(r)
         return '\n'.join(repr(r) for r in rows)
 
@@ -825,6 +826,7 @@ def find_cells(self:Notebook,
     cell_type:str=None, # Optional limit by type ('code', 'markdown', or 'raw')
     ids='', # Optional limit by cell ids (comma-separated str, or list); exact or unique prefixes
     context:int=None, # Cells of context around matches (default 1)
+    maxlen:int=MAXLEN, # Maximum source characters per displayed cell
 ):
     "Find live cells matching all the given criteria, plus `context` neighbouring cells"
     if context is None: context = 1
@@ -832,7 +834,7 @@ def find_cells(self:Notebook,
     cs = self.cells
     idxs = [i for i,c in enumerate(cs) if (not pat or re.search(pat, c.source)) and (not cell_type or c.cell_type==cell_type) and (not ids or c.id in ids)]
     keep = sorted({j for i in idxs for j in range(max(0,i-context), min(len(cs),i+context+1))})
-    return FoundCells([cs[j] for j in keep], matched={cs[i].id for i in idxs})
+    return FoundCells([cs[j] for j in keep], matched={cs[i].id for i in idxs}, maxlen=maxlen)
 
 # %% ../nbs/13_nbio.ipynb #cb639e77
 def find_cells(
@@ -841,10 +843,11 @@ def find_cells(
     cell_type:str=None, # Optional limit by type ('code', 'markdown', or 'raw')
     ids='', # Optional limit by cell ids (comma-separated str, or list); exact or unique prefixes
     context:int=None, # Cells of context around matches (default 1)
+    maxlen:int=MAXLEN, # Maximum source characters per displayed cell
 ):
     "Snapshot `FoundCells` for matching cells in the notebook at `path`"
     fc = Notebook.open(path).find_cells(pat, cell_type, ids=ids, context=context)
-    return FoundCells([CellRow(c) for c in fc], matched=fc.matched)
+    return FoundCells([CellRow(c, maxlen) for c in fc], matched=fc.matched)
 
 # %% ../nbs/13_nbio.ipynb #202a29f1
 def deep_merge(

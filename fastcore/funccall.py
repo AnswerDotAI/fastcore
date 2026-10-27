@@ -219,10 +219,9 @@ def _nm_map(nms):
     return py2orig
 
 # %% ../nbs/14_funccall.ipynb #47b49644
-def call_func(fc_name, fc_inputs, ns, raise_on_err=True):
-    "Call the function `fc_name` with the given `fc_inputs` using namespace `ns`."
-    if not isinstance(ns, abc.Mapping): ns = mk_ns(ns)
-    func = resolve_nm(fc_name, ns)
+def call_func(fc_name, fc_inputs, ns=None, raise_on_err=True):
+    "Call `fc_name`, a function or its name in namespace `ns`, with the given `fc_inputs`."
+    func = resolve_nm(fc_name, mk_ns(ns)) if isinstance(fc_name, str) else fc_name
     inps = {_norm_nm(k):v for k,v in fc_inputs.items()}
     inps = coerce_inputs(func, inps)
     try: return func(**inps)
@@ -231,17 +230,12 @@ def call_func(fc_name, fc_inputs, ns, raise_on_err=True):
         else: return traceback.format_exc()
 
 # %% ../nbs/14_funccall.ipynb #73bca085
-async def call_func_async(fc_name, fc_inputs, ns, raise_on_err=True):
-    "Awaits the function `fc_name` with the given `fc_inputs` using namespace `ns`."
-    if not isinstance(ns, abc.Mapping): ns = mk_ns(ns)
-    func = resolve_nm(fc_name, ns)
-    try:
-        res = call_func(fc_name, fc_inputs, ns, raise_on_err=raise_on_err)
-        res = await maybe_await(res)
+async def call_func_async(fc_name, fc_inputs, ns=None, raise_on_err=True):
+    "Awaits `fc_name`, a function or its name in namespace `ns`, with the given `fc_inputs`."
+    try: return await maybe_await(call_func(fc_name, fc_inputs, ns, raise_on_err=raise_on_err))
     except Exception as e:
         if raise_on_err: raise e from None
         else: return traceback.format_exc()
-    return res
 
 # %% ../nbs/14_funccall.ipynb #5a2588d5
 type_map = dict(string=str, boolean=bool, integer=int, number=float, array=list, object=dict)

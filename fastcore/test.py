@@ -96,7 +96,9 @@ def is_close(a,b,eps=1e-5):
         return (abs(a-b)<eps).all()
     if isinstance(a,str) or isinstance(b,str): return a==b
     if isinstance(a, (Iterable,Generator)) or isinstance(b, (Iterable,Generator)):
-        return all(is_close(a_,b_,eps) for a_,b_ in zip(a,b))
+        missing = object()
+        return all(a_ is not missing and b_ is not missing and is_close(a_,b_,eps)
+                   for a_,b_ in itertools.zip_longest(a,b,fillvalue=missing))
     try: return abs(a-b)<eps
     except TypeError: return a==b
 

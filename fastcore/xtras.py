@@ -1100,7 +1100,11 @@ def modified_env(*delete, **replace):
 class ContextManagers(GetAttr):
     "Wrapper for `contextlib.ExitStack` which enters a collection of context managers"
     def __init__(self, mgrs): self.default,self.stack = L(mgrs),ExitStack()
-    def __enter__(self): self.default.map(self.stack.enter_context)
+    def __enter__(self):
+        try: self.default.map(self.stack.enter_context)
+        except BaseException as e:
+            self.stack.__exit__(type(e),e,e.__traceback__)
+            raise
     def __exit__(self, *args, **kwargs): self.stack.__exit__(*args, **kwargs)
 
 # %% ../nbs/03_xtras.ipynb #f58a49b6

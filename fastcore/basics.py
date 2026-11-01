@@ -394,6 +394,11 @@ def get_annotations_ex(obj, *, globals=None, locals=None):
 def eval_type(t, glb, loc):
     "`eval` a type or collection of types, if needed, for annotations in py3.10+"
     if isinstance(t,str):
+        if '|' in t:
+            import ast
+            node = ast.parse(t.strip(), mode='eval').body
+            if isinstance(node,ast.BinOp) and isinstance(node.op,ast.BitOr):
+                return Union[eval_type((ast.unparse(node.left), ast.unparse(node.right)), glb, loc)]
         return eval(t, glb, loc)
     if isinstance(t,(tuple,list)): return type(t)([eval_type(c, glb, loc) for c in t])
     return t

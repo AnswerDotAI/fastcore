@@ -394,7 +394,6 @@ def get_annotations_ex(obj, *, globals=None, locals=None):
 def eval_type(t, glb, loc):
     "`eval` a type or collection of types, if needed, for annotations in py3.10+"
     if isinstance(t,str):
-        if '|' in t: return Union[eval_type(tuple(t.split('|')), glb, loc)]
         return eval(t, glb, loc)
     if isinstance(t,(tuple,list)): return type(t)([eval_type(c, glb, loc) for c in t])
     return t

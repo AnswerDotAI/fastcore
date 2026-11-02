@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.36
+
+### New Features
+
+- `get_source` raises OSError telling you to reload the module when a function source changed on disk since import, instead of returning wrong lines ([#958](https://github.com/AnswerDotAI/fastcore/issues/958))
+
+
 ## 2.2.35
 
 ### New Features

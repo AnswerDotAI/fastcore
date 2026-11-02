@@ -54,10 +54,11 @@ __all__ = ['defaults', 'null', 'num_methods', 'rnum_methods', 'inum_methods', 'a
            'loop_first_last', 'loop_first', 'loop_last', 'first_match', 'last_match', 'joins', 'fastuple', 'bind',
            'mapt', 'map_ex', 'compose', 'maps', 'partialler', 'instantiate', 'using_attr', 'negate', 'fail_clean',
            'dstar', 'copy_func', 'patch_to', 'patch', 'extend_enum', 'compile_re', 'ImportEnum', 'StrEnum', 'str_enum',
-           'ValEnum', 'Stateful', 'NotStr', 'PrettyString', 'even_mults', 'num_cpus', 'add_props', 'str2bool',
-           'str2int', 'str2float', 'str2list', 'str2date', 'str2dt', 'to_bool', 'to_int', 'to_float', 'to_list',
-           'to_date', 'typed', 'exec_new', 'exec_import', 'kindsort', 'sig_with_params', 'fdelegates', 'xdumps',
-           'revive_dates', 'lt', 'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub', 'mul', 'truediv', 'is_', 'is_not', 'mod']
+           'ValEnum', 'Stateful', 'NotStr', 'PrettyString', 'FullString', 'even_mults', 'num_cpus', 'add_props',
+           'str2bool', 'str2int', 'str2float', 'str2list', 'str2date', 'str2dt', 'to_bool', 'to_int', 'to_float',
+           'to_list', 'to_date', 'typed', 'exec_new', 'exec_import', 'kindsort', 'sig_with_params', 'fdelegates',
+           'xdumps', 'revive_dates', 'lt', 'gt', 'le', 'ge', 'eq', 'ne', 'add', 'sub', 'mul', 'truediv', 'is_',
+           'is_not', 'mod']
 
 # %% ../nbs/01_basics.ipynb #0e91ed82
 from .imports import *
@@ -1314,7 +1315,11 @@ class NotStr(GetAttr):
 class PrettyString(str):
     "Little hack to get strings to show properly in Jupyter."
     def __repr__(self): return self
-    full = True # Tools that truncate long strings show this whole
+
+# %% ../nbs/01_basics.ipynb #591c0a8a
+class FullString(PrettyString):
+    "A pretty string that tools leave untruncated."
+    full = True
 
 # %% ../nbs/01_basics.ipynb #a5138103
 def even_mults(start, stop, n):

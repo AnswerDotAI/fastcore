@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.37
+
+### New Features
+
+- Add FullString subclass of PrettyString with full=True so tools leave it untruncated, and drop full flag from PrettyString ([#959](https://github.com/AnswerDotAI/fastcore/issues/959))
+
+
 ## 2.2.36
 
 ### New Features

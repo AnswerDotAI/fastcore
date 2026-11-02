@@ -65,13 +65,23 @@ def get_dataclass_source(s):
     "Get source code for dataclass `s`"
     return getsource(s) if not getattr(s, "__module__") == '__main__' else ""
 
+def _defines(src, f):
+    "Whether `src` begins with function `f`'s decorators or `def`, and its first `def` has `f`'s name"
+    nm = f.__code__.co_name
+    if nm == '<lambda>': return True
+    d = re.search(r'^\s*(?:async\s+)?def\s+(\w+)', src, re.M)
+    return bool(re.match(r'\s*(@|(async\s+)?def\s)', src)) and bool(d) and d[1]==nm
+
 def get_source(s):
     "Get source for a function, callable implementation, dataclass, or source string"
     if isinstance(s,str): return s
     s = inspect.unwrap(s)
     if isinstance(s, partial): s = s.func
     if _callable_instance(s): s = s.__call__
-    return getsource(s) if isfunction(s) or ismethod(s) else get_dataclass_source(s) if isdataclass(s) else None
+    if not (isfunction(s) or ismethod(s)): return get_dataclass_source(s) if isdataclass(s) else None
+    src,f = getsource(s),getattr(s, '__func__', s)
+    if not _defines(src, f): raise OSError(f"The source of `{f.__qualname__}` changed since it was imported; reload its module")
+    return src
 
 # %% ../nbs/04_docments.ipynb #40e3f274
 def _get_property_name(p):
@@ -106,7 +116,7 @@ def _parses(s):
     try: return parse(dedent(get_source(s) or ''))
     except SyntaxError:
         if isinstance(s,str): raise
-        return parse('')   # live object whose file changed on disk since import: degrade to no docments
+        return parse('')   # a live object whose source line does not parse alone, such as a lambda inside a call: no docments
 
 def _tokens(s):
     "Tokenize Python code in string or function object `s`"

@@ -24,7 +24,7 @@ __all__ = ['empty', 'docstring', 'parse_docstring', 'isdataclass', 'get_dataclas
            'sig2str', 'can_render', 'ShowDocRenderer', 'MarkdownRenderer']
 
 # %% ../nbs/04_docments.ipynb #4c662acc
-import re,ast,inspect
+import re,ast,inspect,linecache
 from tokenize import tokenize,COMMENT
 from ast import parse,FunctionDef,AsyncFunctionDef,AnnAssign
 from io import BytesIO
@@ -72,6 +72,16 @@ def _defines(src, f):
     d = re.search(r'^\s*(?:async\s+)?def\s+(\w+)', src, re.M)
     return bool(re.match(r'\s*(@|(async\s+)?def\s)', src)) and bool(d) and d[1]==nm
 
+def _relocated_source(f):
+    src = ''.join(linecache.getlines(inspect.getfile(f), f.__globals__))
+    node = parse(src)
+    for name in f.__qualname__.replace('.<locals>', '').split('.'):
+        nodes = [o for o in node.body if isinstance(o, (FunctionDef,AsyncFunctionDef,ast.ClassDef)) and o.name==name]
+        if len(nodes)!=1: raise OSError(f"Could not locate source for {f.__qualname__}")
+        node = nodes[0]
+    start = min([node.lineno, *(d.lineno for d in node.decorator_list)])-1
+    return ''.join(src.splitlines(keepends=True)[start:node.end_lineno])
+
 def get_source(s):
     "Get source for a function, callable implementation, dataclass, or source string"
     if isinstance(s,str): return s
@@ -79,9 +89,10 @@ def get_source(s):
     if isinstance(s, partial): s = s.func
     if _callable_instance(s): s = s.__call__
     if not (isfunction(s) or ismethod(s)): return get_dataclass_source(s) if isdataclass(s) else None
-    src,f = getsource(s),getattr(s, '__func__', s)
-    if not _defines(src, f): raise OSError(f"The source of `{f.__qualname__}` changed since it was imported; reload its module")
-    return src
+    f = getattr(s, '__func__', s)
+    try: src = getsource(s)
+    except OSError: return _relocated_source(f)
+    return src if _defines(src, f) else _relocated_source(f)
 
 # %% ../nbs/04_docments.ipynb #40e3f274
 def _get_property_name(p):

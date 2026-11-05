@@ -1232,7 +1232,7 @@ class CachedIter:
 # %% ../nbs/03_xtras.ipynb #d2b4fe09
 def flexicache(*funcs, maxsize=128):
     "Like `lru_cache`, but customisable with policy `funcs`"
-    import asyncio
+    import asyncio, inspect
     from collections import OrderedDict
     wants = [getattr(f, 'needs_args', False) for f in funcs]
     def _f(func):
@@ -1262,7 +1262,7 @@ def flexicache(*funcs, maxsize=128):
         async def async_wrapper(*args, **kwargs):
             return await _cache_logic(f"{args} // {kwargs}", lambda: asyncio.ensure_future(func(*args, **kwargs)), args, kwargs)
 
-        return async_wrapper if asyncio.iscoroutinefunction(func) else wrapper
+        return async_wrapper if inspect.iscoroutinefunction(func) else wrapper
     return _f
 
 # %% ../nbs/03_xtras.ipynb #cf131274

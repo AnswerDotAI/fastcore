@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.38
+
+### New Features
+
+- Make `get_source` find relocated functions by qualified name in current source instead of raising OSError when line numbers are stale ([#960](https://github.com/AnswerDotAI/fastcore/issues/960))
+
+
 ## 2.2.37
 
 ### New Features

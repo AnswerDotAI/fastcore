@@ -1,6 +1,6 @@
 """Threading and multiprocessing functions
 
-`parallel(f, items)` applies `f` to each item using a process pool. Set `threadpool=True` to use threads. Set `n_workers` to control concurrency, or to 0 for serial execution when debugging. Optional arguments include a `progress` bar, a `pause` between starts, and `return_exceptions` to collect errors. `parallel_async` runs work concurrently with asyncio.
+`parallel(f, items)` applies `f` to each item using a process pool. Set `threadpool=True` to use threads. Set `n_workers` to control concurrency, or to 0 for serial execution when debugging. Optional arguments include a `progress` bar, a `pause` between starts, `return_exceptions` to collect errors, and `max_tasks_per_child=1` to run each item in a new process (Python 3.11 and later, with `f` importable from a module rather than defined in `__main__`). `parallel_async` runs work concurrently with asyncio.
 
 `@threaded` runs a function in a background thread and returns the thread. Read its `result` attribute after it finishes. Set `process=True` to run in a process. `startthread` and `startproc` start their decorated functions immediately.
 
@@ -129,11 +129,14 @@ class ProcessPoolExecutor(concurrent.futures.ProcessPoolExecutor):
 
 # %% ../nbs/03a_parallel.ipynb #529e1bb1
 def parallel(f, items, *args, n_workers=defaults.cpus, total=None, progress=None, pause=0,
-    method=None, threadpool=False, timeout=None, chunksize=1, return_exceptions=False, **kwargs):
+    method=None, threadpool=False, timeout=None, chunksize=1, return_exceptions=False, max_tasks_per_child=None, **kwargs):
     "Applies `func` in parallel to `items`, using `n_workers`"
     kwpool = {}
     if threadpool: pool = ThreadPoolExecutor
     else:
+        if max_tasks_per_child:
+            kwpool['max_tasks_per_child'] = max_tasks_per_child
+            if not method: method = 'spawn' if sys.platform == 'win32' else 'forkserver'
         if not method and sys.platform == 'darwin': method='fork'
         if method: kwpool['mp_context'] = get_context(method)
         pool = ProcessPoolExecutor

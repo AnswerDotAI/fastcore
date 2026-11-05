@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.39
+
+### New Features
+
+- Add `max_tasks_per_child` param to `parallel` ([#961](https://github.com/AnswerDotAI/fastcore/pull/961)), thanks to [@jackhogan](https://github.com/jackhogan)
+
+
 ## 2.2.38
 
 ### New Features

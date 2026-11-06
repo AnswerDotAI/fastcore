@@ -99,7 +99,9 @@ class ThreadPoolExecutor(concurrent.futures.ThreadPoolExecutor):
     def map(self, f, items, *args, timeout=None, chunksize=1, return_exceptions=False, **kwargs):
         self.lock = Lock() if self.not_parallel==False and self.pause else None
         g = partial(f, *args, **kwargs)
-        if self.not_parallel: return map(g, items)
+        if self.not_parallel:
+            if return_exceptions: g = partial(_call, None, 0, self.max_workers, g, return_exceptions=True)
+            return map(g, items)
         _g = partial(_call, self.lock, self.pause, self.max_workers, g, return_exceptions=return_exceptions)
         try: return super().map(_g, items, timeout=timeout, chunksize=chunksize)
         except Exception as e: self.on_exc(e)
@@ -122,7 +124,9 @@ class ProcessPoolExecutor(concurrent.futures.ProcessPoolExecutor):
 
         self.lock = Manager().Lock() if self.not_parallel==False and self.pause else None
         g = partial(f, *args, **kwargs)
-        if self.not_parallel: return map(g, items)
+        if self.not_parallel:
+            if return_exceptions: g = partial(_call, None, 0, self.max_workers, g, return_exceptions=True)
+            return map(g, items)
         _g = partial(_call, self.lock, self.pause, self.max_workers, g, return_exceptions=return_exceptions)
         try: return super().map(_g, items, timeout=timeout, chunksize=chunksize)
         except Exception as e: self.on_exc(e)

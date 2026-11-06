@@ -164,6 +164,7 @@ class L(GetAttr, CollBase, metaclass=_L_Meta):
         if isinstance(idx, (int, slice)): self.items[idx] = o
         else:
             idx = idx if isinstance(idx,L) else listify(idx)
+            if idx and is_bool(idx[0]): idx = mask2idxs(idx)
             if not is_iter(o): o = [o]*len(idx)
             for i,o_ in zip(idx,o): self.items[i] = o_
 

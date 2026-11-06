@@ -118,9 +118,7 @@ class ProcessPoolExecutor(concurrent.futures.ProcessPoolExecutor):
         super().__init__(max_workers, **kwargs)
 
     def map(self, f, items, *args, timeout=None, chunksize=1, return_exceptions=False, **kwargs):
-        if not parallelable('max_workers', self.max_workers, f): self.max_workers = 0
-        self.not_parallel = self.max_workers==0
-        if self.not_parallel: self.max_workers=1
+        self.not_parallel = self.max_workers==0 or not parallelable('max_workers', self.max_workers, f)
 
         self.lock = Manager().Lock() if self.not_parallel==False and self.pause else None
         g = partial(f, *args, **kwargs)

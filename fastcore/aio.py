@@ -144,7 +144,7 @@ def reawaitable(func:callable):
 def is_async_callable(obj):
     "Check if `obj` is an async callable, handling `partial` wrappers and callable instances"
     # Implementation from Starlette; Copyright © 2018, Encode OSS Ltd.
-    from asyncio import iscoroutinefunction
+    from inspect import iscoroutinefunction
     while isinstance(obj, partial): obj = obj.func
     return iscoroutinefunction(obj) or (callable(obj) and iscoroutinefunction(obj.__call__))
 

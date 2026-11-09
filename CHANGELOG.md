@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.40
+
+### New Features
+
+- Add `cache_clear` method to flexicache-wrapped functions to discard all cached results ([#963](https://github.com/AnswerDotAI/fastcore/issues/963))
+
+
 ## 2.2.39
 
 ### New Features

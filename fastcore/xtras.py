@@ -1262,6 +1262,7 @@ def flexicache(*funcs, maxsize=128):
         async def async_wrapper(*args, **kwargs):
             return await _cache_logic(f"{args} // {kwargs}", lambda: asyncio.ensure_future(func(*args, **kwargs)), args, kwargs)
 
+        wrapper.cache_clear = async_wrapper.cache_clear = cache.clear
         return async_wrapper if asyncio.iscoroutinefunction(func) else wrapper
     return _f
 

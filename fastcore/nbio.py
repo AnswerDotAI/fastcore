@@ -563,7 +563,7 @@ def mk_error(traceback, ename='', evalue=''):
 
 # %% ../nbs/13_nbio.ipynb #493e36b0
 def concat_streams(outputs):
-    "Concatenate stream outputs by name (stdout/stderr), preserving execute_result at end"
+    "Concatenate stdout/stderr and Markdown streams, preserving execute_result at end"
     streams, res, execute_results = {}, [], []
     for out in outputs:
         if out['output_type'] == 'stream':
@@ -573,6 +573,7 @@ def concat_streams(outputs):
         else: res.append(out)
     for name in ('stdout','stderr'):
         if name in streams: res.append(mk_stream(name, clean_cli_output(streams[name], strip=False)))
+    if 'markdown' in streams: res.append(mk_display(text_markdown=streams['markdown']))
     res.extend(execute_results)
     return res
 

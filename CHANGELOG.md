@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.41
+
+### New Features
+
+- Merge markdown stream outputs into a single `display_data` output in `concat_streams` ([#964](https://github.com/AnswerDotAI/fastcore/issues/964))
+
+
 ## 2.2.40
 
 ### New Features

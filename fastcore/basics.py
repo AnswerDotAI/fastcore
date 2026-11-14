@@ -70,6 +70,7 @@ from datetime import date,datetime,time
 from uuid import UUID
 from pathlib import PurePath
 from collections import abc
+from abc import update_abstractmethods
 try: from types import UnionType
 except ImportError: UnionType = None
 
@@ -1188,6 +1189,8 @@ def copy_func(f):
 class _clsmethod:
     def __init__(self, f): self.f = f
     def __get__(self, _, f_cls): return MethodType(self.f, f_cls)
+    @property
+    def __isabstractmethod__(self): return getattr(self.f, '__isabstractmethod__', False)
 
 # %% ../nbs/01_basics.ipynb #3f2733ef
 def patch_to(cls, as_prop=False, cls_method=False, set_prop=False, static_method=False, nm=None, glb=None):
@@ -1203,13 +1206,16 @@ def patch_to(cls, as_prop=False, cls_method=False, set_prop=False, static_method
             nf.__name__ = _nm
             nf.__qualname__ = f"{c_.__name__}.{_nm}"
             if hasattr(nf.__code__, 'co_qualname'): nf.__code__ = nf.__code__.replace(co_qualname=nf.__qualname__)
-            if hasattr(c_, _nm) and not hasattr(c_, onm): setattr(c_, onm, getattr(c_, _nm))
+            # Abstract aliases would themselves become required methods.
+            if hasattr(c_, _nm) and not hasattr(c_, onm) and not getattr(getattr(c_, _nm), '__isabstractmethod__', False):
+                setattr(c_, onm, getattr(c_, _nm))
             if cls_method:    attr = _clsmethod(nf)
             elif static_method:  attr = staticmethod(nf)
             elif set_prop:    attr = getattr(c_, _nm).setter(nf)
             elif as_prop:     attr = property(nf)
             else:             attr = nf
             setattr(c_, _nm, attr)
+            update_abstractmethods(c_)
         return glb.get(_nm, builtins.__dict__.get(_nm, None))
     return _inner
 

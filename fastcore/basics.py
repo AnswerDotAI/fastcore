@@ -1203,7 +1203,7 @@ def patch_to(cls, as_prop=False, cls_method=False, set_prop=False, static_method
             nf.__name__ = _nm
             nf.__qualname__ = f"{c_.__name__}.{_nm}"
             if hasattr(nf.__code__, 'co_qualname'): nf.__code__ = nf.__code__.replace(co_qualname=nf.__qualname__)
-            if hasattr(c_, _nm) and not hasattr(c_, onm): setattr(c_, onm, getattr(c_, _nm))
+            if hasattr(c_, _nm) and not hasattr(c_, onm): setattr(c_, onm, inspect.getattr_static(c_, _nm, getattr(c_, _nm)))
             if cls_method:    attr = _clsmethod(nf)
             elif static_method:  attr = staticmethod(nf)
             elif set_prop:    attr = getattr(c_, _nm).setter(nf)

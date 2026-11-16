@@ -21,11 +21,8 @@ from .xtras import *
 from functools import wraps
 
 import concurrent.futures,time
-from multiprocessing import Process,Manager,set_start_method,get_context
+from multiprocessing import Manager,get_context
 from threading import Thread,Lock
-try:
-    if sys.platform == 'darwin' and IN_NOTEBOOK: set_start_method("fork")
-except: pass
 
 # %% ../nbs/03a_parallel.ipynb #21e71104
 @metadec
@@ -41,8 +38,7 @@ def threaded(
         _obj_td.result = res
     @wraps(f)
     def _f(*args, **kwargs):
-        Proc = get_context('fork').Process if sys.platform == 'darwin' else Process
-        res = (Thread,Proc)[process](target=g, args=args, kwargs=kwargs)
+        res = (get_context('fork').Process if process else Thread)(target=g, args=args, kwargs=kwargs)
         res._args = (res,)+res._args
         if daemon: res.daemon = True
         res.start()

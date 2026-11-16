@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.44
+
+### New Features
+
+- Default parallel to fork start method on all POSIX platforms, not just macOS ([#972](https://github.com/AnswerDotAI/fastcore/issues/972))
+
+
 ## 2.2.43
 
 ### Bugs Squashed

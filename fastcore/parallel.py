@@ -156,6 +156,13 @@ def _add_one(x, a=1):
     return x+a
 
 # %% ../nbs/03a_parallel.ipynb #9a6e2f26
+def _report_exc(t, on_err=None, skip=None):
+    "Pass finished task `t`'s exception to `on_err`, or print its traceback; nothing if `t` was cancelled, succeeded, or raised `skip`"
+    import traceback
+    if t.cancelled() or (exc := t.exception()) is None or exc is skip: return
+    if on_err: on_err(exc)
+    else: traceback.print_exception(exc)
+
 async def parallel_async_gen(f, items, *args, n_workers=16, pause=0,
     timeout=None, return_exceptions=False, cancel_on_exit=True, **kwargs):
     "Yield `(index,result)` pairs as `f` applied to each of `items` completes, in completion order"
@@ -176,6 +183,9 @@ async def parallel_async_gen(f, items, *args, n_workers=16, pause=0,
         if cancel_on_exit:
             for t in tasks: t.cancel()
             await asyncio.gather(*tasks, return_exceptions=True)
+        else:
+            raised = sys.exc_info()[1]
+            for t in tasks: t.add_done_callback(partial(_report_exc, skip=raised))
 
 # %% ../nbs/03a_parallel.ipynb #7406c085
 @delegates(parallel_async_gen)
@@ -198,13 +208,9 @@ def bg_task(
     on_err=None, # Called with the exception when the task fails; default prints the traceback
 ):
     "Like `asyncio.create_task`, but keeps the task alive and reports exceptions, for fire-and-forget tasks"
-    import traceback,asyncio
-    def _done(t):
-        if not t.cancelled() and (exc := t.exception()):
-            if on_err: on_err(exc)
-            else: traceback.print_exception(exc)
+    import asyncio
     task = asyncio.create_task(coro)
     _bg_tasks.add(task)
     task.add_done_callback(_bg_tasks.discard)
-    task.add_done_callback(_done)
+    task.add_done_callback(partial(_report_exc, on_err=on_err))
     return task

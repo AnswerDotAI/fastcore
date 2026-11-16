@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.42
+
+### New Features
+
+- `parallel_async`: each task that fails after the first prints its traceback when it fails ([#969](https://github.com/AnswerDotAI/fastcore/issues/969))
+
+
 ## 2.2.41
 
 ### New Features

@@ -681,11 +681,10 @@ def __repr__(self:Path):
 @patch
 def delete(self:Path):
     "Delete a file, symlink, or directory tree"
-    if not self.exists(): return
-    if self.is_dir():
+    if not self.is_symlink() and self.is_dir():
         import shutil
         shutil.rmtree(self)
-    else: self.unlink()
+    else: self.unlink(missing_ok=True)
 
 # %% ../nbs/03_xtras.ipynb #f2bb033e
 class IterLen:

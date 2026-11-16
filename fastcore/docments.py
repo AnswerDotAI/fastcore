@@ -206,7 +206,7 @@ def docments(s, full=False, eval_str=False, returns=True, args_kwargs=False):
     docs = {}
     while s is not None:
         p = _param_locs(s, returns=returns, args_kwargs=args_kwargs) or {}
-        c = {o.start[0]:_clean_comment(o.string) for o in _tokens(s) if o.type==COMMENT}
+        c = {o.start[0]:_clean_comment(o.string) for o in _tokens(s) if o.type==COMMENT} if p else {}
         for k,v in p.items():
             if v not in docs: docs[v] = _get_comment(k, v, c, p)
         s = getattr(s, '__delwrap__', None)

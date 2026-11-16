@@ -2,6 +2,14 @@
 
 <!-- do not remove -->
 
+## 2.2.43
+
+### Bugs Squashed
+
+- Fix Path.delete to handle broken symlinks and remove symlinks to dirs without deleting their target contents ([#971](https://github.com/AnswerDotAI/fastcore/issues/971))
+- Skip comment tokenization in docments when no parameter locations are found ([#970](https://github.com/AnswerDotAI/fastcore/issues/970))
+
+
 ## 2.2.42
 
 ### New Features

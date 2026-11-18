@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.45
+
+### New Features
+
+- Add fastcore.diff module with `diff_lines` for word-level refined line diffs and `source_diff` for unified diffs with final-newline markers ([#975](https://github.com/AnswerDotAI/fastcore/issues/975))
+
+
 ## 2.2.44
 
 ### New Features

@@ -297,8 +297,22 @@ def dumps(obj, **kw):
 
 # %% ../nbs/03_xtras.ipynb #ac84300c
 def _unpack(fname, out):
-    import shutil
-    shutil.unpack_archive(str(fname), str(out))
+    "Unpack `fname` into `out`, rejecting members that escape `out` (tar path traversal / 'tar slip')."
+    import shutil,tarfile
+    fname,out = str(fname),Path(out)
+    if not tarfile.is_tarfile(fname):
+        shutil.unpack_archive(fname, str(out))  # zip/etc: stdlib already strips '..'
+    else:
+        with tarfile.open(fname) as tf:
+            try: tf.extractall(out, filter='data')  # py3.12+/3.11.4+: blocks '..', abs paths, links
+            except TypeError:  # older interpreters: validate members manually
+                base = out.resolve()
+                for m in tf.getmembers():
+                    if m.issym() or m.islnk(): raise ValueError(f'unsafe link member in archive: {m.name!r}')
+                    dest = (out/m.name).resolve()
+                    if dest!=base and base not in dest.parents:
+                        raise ValueError(f'archive member escapes extraction dir: {m.name!r}')
+                tf.extractall(out)
     ls = out.ls()
     return ls[0] if len(ls) == 1 else out
 

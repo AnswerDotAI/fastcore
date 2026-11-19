@@ -80,7 +80,7 @@ def _is_empty_class(node):
     if len(node.body) != 1: return False
     child = node.body[0]
     if isinstance(child, ast.Pass): return True
-    if isinstance(child, ast.Expr) and isinstance(child.value, (ast.Ellipsis, ast.Str)): return True
+    if isinstance(child, ast.Expr) and isinstance(child.value, ast.Constant) and (child.value.value is ... or isinstance(child.value.value, str)): return True
     return False
 
 # %% ../nbs/10_py2pyi.ipynb #7f34cb57-c780-44a3-b7e8-99d763e51211
@@ -144,7 +144,7 @@ def ast_args(func):
 
 # %% ../nbs/10_py2pyi.ipynb #c7e1ee39
 def _body_ellip(n: ast.AST):
-    stidx = 1 if isinstance(n.body[0], ast.Expr) and isinstance(n.body[0].value, ast.Str) else 0
+    stidx = 1 if isinstance(n.body[0], ast.Expr) and isinstance(n.body[0].value, ast.Constant) and isinstance(n.body[0].value.value, str) else 0
     n.body[stidx:] = [ast.Expr(ast.Constant(...))]
 
 # %% ../nbs/10_py2pyi.ipynb #741c3d0b

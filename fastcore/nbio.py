@@ -213,7 +213,7 @@ def _directive(s, lang='python'):
 # %% ../nbs/13_nbio.ipynb #16c08410
 def _meta_directives(meta):
     "Directives from the `nbdev` dict in metadata dict `meta`, as `{name: value}`; values must be str (`'true'` for a bare directive)"
-    d = (meta or {}).get('nbdev',{})
+    d = (meta or {}).get('nbdev') or {}
     if bad := [k for k,v in d.items() if not isinstance(v,str)]:
         raise TypeError(f"`nbdev` metadata directive values must be str (e.g 'true'/'false'), got non-str for: {bad}")
     return {k:'' if v=='true' else v for k,v in d.items()}
@@ -259,8 +259,10 @@ def _directives_set(self, d):
     mnames = self['_meta_names_']
     meta = {k:_unparse_dir(v) for k,v in d.items() if k in mnames}
     lines = [_dir_line(k, v, self.lang_) for k,v in d.items() if k not in mnames]
-    if meta: self.setdefault('metadata', AttrDict())['nbdev'] = meta
-    elif 'nbdev' in self.get('metadata', {}): del self.metadata['nbdev']
+    if meta:
+        if self.get('metadata') is None: self['metadata'] = AttrDict()
+        self['metadata']['nbdev'] = meta
+    elif 'nbdev' in (self.get('metadata') or {}): del self['metadata']['nbdev']
     dirs,code = self._partition()
     self.set_source(''.join([o for o in dirs if _cell_mgc.match(o)] + lines + code))
 

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.46
+
+### Bugs Squashed
+
+- Handle None metadata and nbdev values in nbio directives ([#976](https://github.com/AnswerDotAI/fastcore/issues/976))
+
+
 ## 2.2.45
 
 ### New Features

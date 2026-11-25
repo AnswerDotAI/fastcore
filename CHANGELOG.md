@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.48
+
+### New Features
+
+- Add `from_data_url` to parse base64 data URLs into (data, mime) tuples ([#978](https://github.com/AnswerDotAI/fastcore/issues/978))
+
+
 ## 2.2.47
 
 ### New Features

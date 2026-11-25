@@ -43,18 +43,18 @@ Docs: https://fastcore.fast.ai/xtras.html.md"""
 
 # %% auto #0
 __all__ = ['UNSET', 'spark_chars', 'walk_join', 'walk', 'exttypes', 'globtastic', 'pglob', 'maybe_open', 'mkdir', 'image_size',
-           'img_bytes', 'detect_mime', 'bunzip', 'loads', 'loads_multi', 'dumps', 'untar_dir', 'repo_details', 'shell',
-           'ssh', 'rsync_multi', 'run', 'open_file', 'save_pickle', 'load_pickle', 'parse_env', 'expand_wildcards',
-           'atomic_save', 'load_mod', 'import_no_init', 'save_config_file', 'read_config_file', 'find_file_parents',
-           'Config', 'Unset', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy', 'mapped', 'take_lines', 'IterLen',
-           'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter', 'strloader', 'frontmatter',
-           'clean_cli_output', 'unqid', 'rtoken_hex', 'friendly_name', 'n_friendly_names', 'exec_eval',
-           'get_source_link', 'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads', 'join_path_file',
-           'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format', 'truncstr', 'trunc_ctr',
-           'TruncatedString', 'fenced', 'fenced_blocks', 'str_diff', 'utc2local', 'local2utc', 'trace', 'modified_env',
-           'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str', 'dataclass_src', 'nullable_dc',
-           'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict', 'is_namedtuple', 'CachedIter',
-           'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
+           'img_bytes', 'detect_mime', 'to_data_url', 'bunzip', 'loads', 'loads_multi', 'dumps', 'untar_dir',
+           'repo_details', 'shell', 'ssh', 'rsync_multi', 'run', 'open_file', 'save_pickle', 'load_pickle', 'parse_env',
+           'expand_wildcards', 'atomic_save', 'load_mod', 'import_no_init', 'save_config_file', 'read_config_file',
+           'find_file_parents', 'Config', 'Unset', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy', 'mapped',
+           'take_lines', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter',
+           'strloader', 'frontmatter', 'clean_cli_output', 'unqid', 'rtoken_hex', 'friendly_name', 'n_friendly_names',
+           'exec_eval', 'get_source_link', 'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads',
+           'join_path_file', 'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format',
+           'truncstr', 'trunc_ctr', 'TruncatedString', 'fenced', 'fenced_blocks', 'str_diff', 'utc2local', 'local2utc',
+           'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str',
+           'dataclass_src', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict',
+           'is_namedtuple', 'CachedIter', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb #3401d507
 from .imports import *
@@ -254,12 +254,29 @@ _sigs = {
 
 def detect_mime(data):
     "Get the MIME type for bytes `data`, covering common PDF, audio, video, and image types"
+    if isinstance(data, (bytearray, memoryview)): data = bytes(data)
     if not isinstance(data,bytes): return None
     import mimetypes
     from fastcore import imghdr
     for (sig,pos),mime in _sigs.items():
         if data[pos:pos+len(sig)]==sig and (res := mime(data) if callable(mime) else mime): return res
     return mimetypes.guess_type(f'x.{imghdr.what(None, h=data)}', strict=False)[0]
+
+# %% ../nbs/03_xtras.ipynb #7f47bac5
+def to_data_url(
+    data:bytes|bytearray|memoryview|Path, # Raw bytes or file path to encode
+    mime:str=None, # Optional MIME type (inferred via `detect_mime` or filename if omitted)
+)->str: # Base64 `data:<mime>;base64,...` URL
+    "Encode `data` as a base64 data URL"
+    from base64 import b64encode
+    import mimetypes
+    path = data if isinstance(data, Path) else None
+    if path is not None: data = path.expanduser().read_bytes()
+    if isinstance(data, (bytearray, memoryview)): data = bytes(data)
+    if not isinstance(data, bytes): raise TypeError(f'Expected bytes or Path, got {type(data).__name__}')
+    if not mime: mime = detect_mime(data) or (path and mimetypes.guess_type(path.name, strict=False)[0])
+    if not mime: raise ValueError('Could not determine MIME type')
+    return f'data:{mime};base64,{b64encode(data).decode()}'
 
 # %% ../nbs/03_xtras.ipynb #f856746a
 def bunzip(fn):

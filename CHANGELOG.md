@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.47
+
+### New Features
+
+- Add `to_data_url` and support bytearray/memoryview in `detect_mime` ([#977](https://github.com/AnswerDotAI/fastcore/issues/977))
+
+
 ## 2.2.46
 
 ### Bugs Squashed

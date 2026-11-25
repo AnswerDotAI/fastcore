@@ -43,18 +43,18 @@ Docs: https://fastcore.fast.ai/xtras.html.md"""
 
 # %% auto #0
 __all__ = ['UNSET', 'spark_chars', 'walk_join', 'walk', 'exttypes', 'globtastic', 'pglob', 'maybe_open', 'mkdir', 'image_size',
-           'img_bytes', 'detect_mime', 'to_data_url', 'bunzip', 'loads', 'loads_multi', 'dumps', 'untar_dir',
-           'repo_details', 'shell', 'ssh', 'rsync_multi', 'run', 'open_file', 'save_pickle', 'load_pickle', 'parse_env',
-           'expand_wildcards', 'atomic_save', 'load_mod', 'import_no_init', 'save_config_file', 'read_config_file',
-           'find_file_parents', 'Config', 'Unset', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy', 'mapped',
-           'take_lines', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter', 'asave_iter',
-           'strloader', 'frontmatter', 'clean_cli_output', 'unqid', 'rtoken_hex', 'friendly_name', 'n_friendly_names',
-           'exec_eval', 'get_source_link', 'sparkline', 'modify_exception', 'round_multiple', 'set_num_threads',
-           'join_path_file', 'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter', 'partial_format',
-           'truncstr', 'trunc_ctr', 'TruncatedString', 'fenced', 'fenced_blocks', 'str_diff', 'utc2local', 'local2utc',
-           'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md', 'type2str',
-           'dataclass_src', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub', 'is_typeddict',
-           'is_namedtuple', 'CachedIter', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
+           'img_bytes', 'detect_mime', 'to_data_url', 'from_data_url', 'bunzip', 'loads', 'loads_multi', 'dumps',
+           'untar_dir', 'repo_details', 'shell', 'ssh', 'rsync_multi', 'run', 'open_file', 'save_pickle', 'load_pickle',
+           'parse_env', 'expand_wildcards', 'atomic_save', 'load_mod', 'import_no_init', 'save_config_file',
+           'read_config_file', 'find_file_parents', 'Config', 'Unset', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy',
+           'mapped', 'take_lines', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter',
+           'asave_iter', 'strloader', 'frontmatter', 'clean_cli_output', 'unqid', 'rtoken_hex', 'friendly_name',
+           'n_friendly_names', 'exec_eval', 'get_source_link', 'sparkline', 'modify_exception', 'round_multiple',
+           'set_num_threads', 'join_path_file', 'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter',
+           'partial_format', 'truncstr', 'trunc_ctr', 'TruncatedString', 'fenced', 'fenced_blocks', 'str_diff',
+           'utc2local', 'local2utc', 'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md',
+           'type2str', 'dataclass_src', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub',
+           'is_typeddict', 'is_namedtuple', 'CachedIter', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb #3401d507
 from .imports import *
@@ -277,6 +277,19 @@ def to_data_url(
     if not mime: mime = detect_mime(data) or (path and mimetypes.guess_type(path.name, strict=False)[0])
     if not mime: raise ValueError('Could not determine MIME type')
     return f'data:{mime};base64,{b64encode(data).decode()}'
+
+# %% ../nbs/03_xtras.ipynb #ba59a09b
+def from_data_url(
+    url:str, # Base64 `data:<mime>;base64,...` URL to parse
+    decode:bool=True, # Base64-decode payload to `bytes` (else return raw base64 `str`)?
+)->tuple[bytes|str, str]|None: # `(data, mime)` tuple, or `None` if `url` is not a base64 data URL
+    "Parse a base64 `data:` URL into `(data, mime)`, or `None`"
+    from base64 import b64decode
+    if not isinstance(url, str) or not url.startswith('data:') or ',' not in url: return None
+    header, body = url.split(',', 1)
+    if not header.strip().lower().endswith(';base64') or not body: return None
+    mime = header[5:].split(';', 1)[0].strip() or 'application/octet-stream'
+    return b64decode(body) if decode else body, mime
 
 # %% ../nbs/03_xtras.ipynb #f856746a
 def bunzip(fn):

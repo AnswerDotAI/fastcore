@@ -1,4 +1,4 @@
-"""Bridging async and sync code: `run_sync`, `iter_sync`, `ctx_sync`, `athreaded`, `maybe_await`, and `then`, plus `Debounce` for coalescing bursts of calls
+"""Bridging async and sync code: `run_sync`, `iter_sync`, `ctx_sync`, `athreaded`, `maybe_await`, and `then`, plus `Debounce` for coalescing bursts of calls and `RingQueue` for bounded drop-oldest async queues
 
 ## Calling async code from sync code
 
@@ -28,11 +28,12 @@ Docs: https://fastcore.fast.ai/aio.html.md"""
 
 # %% auto #0
 __all__ = ['run_sync', 'iter_sync', 'ctx_sync', 'athreaded', 'maybe_await', 'then', 'acache', 'CachedAwaitable', 'reawaitable',
-           'is_async_callable', 'to_aiter', 'maybe_aiter', 'mapa', 'noopa', 'wait_until', 'Debounce',
+           'is_async_callable', 'to_aiter', 'maybe_aiter', 'mapa', 'noopa', 'wait_until', 'Debounce', 'RingQueue',
            'enable_async_magics', 'disable_async_magics']
 
 # %% ../nbs/03c_aio.ipynb #7e2193be
 import asyncio,contextvars,threading
+from collections import deque
 from contextlib import contextmanager
 from functools import wraps
 from .imports import *
@@ -234,6 +235,28 @@ class Debounce:
         p = self._pending
         self.cancel()
         if p: await self._fire()
+
+# %% ../nbs/03c_aio.ipynb #d232f2b1
+class RingQueue:
+    "Bounded async queue that drops the oldest item when full"
+    def __init__(self,
+        maxlen:int=128 # Maximum number of buffered items before dropping the oldest
+    ): self.q,self.ev = deque(maxlen=maxlen),asyncio.Event()
+    def put_nowait(self, x):
+        "Append `x`, evicting the oldest item if full, and wake any waiting consumer"
+        self.q.append(x)
+        self.ev.set()
+    def get_nowait(self):
+        "Pop and return the oldest item, or raise `asyncio.QueueEmpty` if empty"
+        if not self.q: raise asyncio.QueueEmpty()
+        return self.q.popleft()
+    async def get(self):
+        "Wait for and return the oldest item"
+        while not self.q:
+            self.ev.clear()
+            await self.ev.wait()
+        return self.q.popleft()
+    def __len__(self): return len(self.q)
 
 # %% ../nbs/03c_aio.ipynb #58511536
 import re

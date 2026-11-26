@@ -39,7 +39,7 @@ test_eq(x.unique(), [1,2,3,4,5])
 
 ## Modules
 
-- [fastcore.aio](https://fastcore.fast.ai/aio.html.md): Bridging async and sync code: `run_sync`, `iter_sync`, `ctx_sync`, `athreaded`, `maybe_await`, and `then`, plus `Debounce` for coalescing bursts of calls
+- [fastcore.aio](https://fastcore.fast.ai/aio.html.md): Bridging async and sync code: `run_sync`, `iter_sync`, `ctx_sync`, `athreaded`, `maybe_await`, and `then`, plus `Debounce` for coalescing bursts of calls and `RingQueue` for bounded drop-oldest async queues
 - [fastcore.apisurface](https://fastcore.fast.ai/apisurface.html.md): Signatures, documentation and grouped namespaces for generated API clients
 - [fastcore.basics](https://fastcore.fast.ai/basics.html.md): Basic functionality used in the fastai library
 - [fastcore.docments](https://fastcore.fast.ai/docments.html.md): Document parameters using comments.

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.49
+
+### New Features
+
+- Add RingQueue bounded drop-oldest async queue to fastcore.aio ([#979](https://github.com/AnswerDotAI/fastcore/issues/979))
+
+
 ## 2.2.48
 
 ### New Features

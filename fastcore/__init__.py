@@ -48,6 +48,7 @@ Modules:
 - `fastcore.net`: Network, HTTP, and URL functions
 - `fastcore.parallel`: Threading and multiprocessing functions
 - `fastcore.script`: Creates a CLI from a Python function decorated with `call_parse`.
+- `fastcore.skill`: Write idiomatic Python with `fastcore`: `L`, `@patch`, `store_attr`, `@delegates`, `call_parse` CLIs, async/sync bridging, and concise IO/testing helpers.
 - `fastcore.style`: Fast styling for friendly CLIs.
 - `fastcore.test`: Helper functions to quickly write tests in notebooks
 - `fastcore.tools`: Text and file editing primitives shared by the fastai editing tools

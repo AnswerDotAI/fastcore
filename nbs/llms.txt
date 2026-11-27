@@ -1,60 +1,70 @@
 # fastcore
 
-> Python supercharged for fastai development
+> Write idiomatic Python with `fastcore`: `L`, `@patch`, `store_attr`, `@delegates`, `call_parse` CLIs, async/sync bridging, and concise IO/testing helpers.
 
-Python is a powerful, dynamic language. Rather than bake everything into the language, it lets the programmer customize it to make it work for them. `fastcore` uses this flexibility to add to Python features inspired by other languages we've loved, mixins from Ruby, and currying, binding, and more from Haskell. It also adds some "missing features" and cleans up some rough edges in the Python standard library, such as simplifying parallel processing, and bringing ideas from NumPy over to Python's `list` type.
+Base URL: https://fastcore.fast.ai/
 
-Here are some tips on using fastcore:
+- imports: `from fastcore.utils import *` (safe wildcard: `imports` (`os`, `re`, `sys`, `Path`, `partial`, ...), `foundation`, `basics`, `xtras`, `parallel`, `aio`); `from fastcore.all import *` adds `net`, `test`, `meta`, `apisurface`, `script`, `docments`, `xml`
 
-- Use `from fastcore.module import *` freely. fastcore's modules are built to be safe for wildcard imports.
-- Use `L` in place of `list`. `L` behaves like a list, with extra indexing options, method chaining and more methods.
-- Add methods to existing classes, including built-ins, with the `@patch` decorator instead of subclassing.
-- In `__init__` methods, call `store_attr()` to set multiple attributes at once instead of assigning each one.
-- Apply the `delegates` decorator to show a function's real parameters in place of `**kwargs`, for IDEs and generated documentation.
-- Use fastcore's versions of `ThreadPoolExecutor` and `ProcessPoolExecutor` for simpler concurrent processing.
-- Prefer fastcore's test functions, such as `test_eq`, `test_ne` and `test_close`, for assertions that read clearly and give informative failures.
-- fastcore extends `pathlib.Path` with methods such as `ls()` and `read_json()`.
-- Convert between dictionaries and objects with attribute access using `dict2obj` and `obj2dict`.
-- Write in a functional style with tools such as `compose`, `maps` and `filter_ex`.
-- Document parameters and return values with `docments`, using source comments or `Annotated` metadata for generated APIs. `MarkdownRenderer` shows the effective signature and keeps usage sections such as Notes, Raises and Examples.
-- Apply the `timed_cache` decorator to add time-based expiry to the standard `lru_cache`.
-- Turn Python functions into command-line interfaces with `fastcore.script`.
+### CLIs (`fastcore.script`)
 
-For example, `L` is a drop-in replacement for `list` with extra superpowers:
+- MUST read `doc(fastcore.script)` before writing any CLI; `@call_parse` turns a typed, docmented function into an `argparse` CLI without `if __name__ == "__main__"` while staying callable from Python/notebooks
+- easy-to-miss rules: first capital letter in optional param → short flag (`Resume=None` → `-r`/`--resume`); `bool=False` → `--flag`, `bool=True` → `--no-flag` (`bool_arg` for explicit `true|false`); `pos=[...]` keeps defaulted params positional; `Annotated[t, "help", {...}]` for `choices`/`nargs`/`action`; `is_cli()` separates CLI output from Python return values; `CliError` for clean stderr + exit 1; `nested=True` for wrapper CLIs; `parse_cli` for custom runners
 
-```python
-x = L(1,2,3,4)
-test_eq(x[[0,3]], [1,4])               # index with a collection
-test_eq(x.map(lambda o:o*2), [2,4,6,8])
-test_eq(x.filter(lambda o:o>2), [3,4])
-x += [5]
-test_eq(x.unique(), [1,2,3,4,5])
-```
+### `L` (`fastcore.foundation`)
 
-## Tutorials
+- NumPy-style list (`doc(fastcore.foundation)`, `doc(L)`): index by int, slice, index list (`x[[0,3]]`), or bool mask (`x[mask]`); `+` accepts scalars (`5 + x`); `L.range(coll)` uses `len(coll)`
+- construction traps: `L(1,2,3) == L([1,2,3])`; `L(None)` → `[]`; `L('abc')` → `['abc']` (strings, bytes, dicts, arrays, tensors stay 1 item; `use_list=True` unpacks; `use_list=None` wraps arrays/DataFrames in place); `L(existing_L)` returns same object; `L(1, match=xs)` replicates or checks length
+- `map` and `filter`: `L.map(f, *args, **kwargs)` uses `map_ex`: callable with forwarded args (`bind`/`arg0` placeholders too), format `str` (`L([1,2]).map('x={}')`), or mapping/indexable `f.__getitem__` (`L(ks).map(d)`); `L.filter(f, negate=False, **kwargs)` forwards `kwargs`; unpack tuple/dict items via `star(f)`, `rstar(f)` (reversed, in `foundation`), `dstar(f)` (dict → kwargs, in `basics`); zip variants (`map_zip`, `map_zipwith`, `zip`, `zipwith`) accept `cycled=True`; `concat` (1 level) vs `flatten` (recursive)
+- pipelines and subclasses: curried class calls (`L.map(int)`, `L.filter(...)`, `L.sorted(...)`) return functions; override `_new(self, items)` on `L` subclasses to keep metadata across slices/chains
 
-- [Quick tour](https://fastcore.fast.ai/tour.html.md): A quick tour of a few highlights from fastcore.
-- [fastcore: an underrated Python library](https://gist.githubusercontent.com/hamelsmu/ea9e0519d9a94a4203bcc36043eb01c5/raw/6c0c96a2823d67aecc103206d6ab21c05dcd520a/fastcore:_an_underrated_python_library.md): A tour of some of the features of fastcore.
-- [API list](https://fastcore.fast.ai/apilist.txt): A succinct list of all functions and methods in fastcore.
+### Async, sync, and concurrency (`fastcore.aio`, `fastcore.parallel`)
 
-## Modules
+- `doc(fastcore.aio)`: `run_sync`/`iter_sync`/`ctx_sync` call async from sync via shared daemon loop; `@athreaded` runs blocking sync code in worker thread; `then(x, *fs)` builds one sync+async pipeline without duplicating methods
+- `doc(fastcore.parallel)`: `parallel(f, items, n_workers=...)` (`n_workers=0` runs serially for debugging); `parallel_async*` for bounded asyncio concurrency; `bg_task`; `@threaded`/`@startthread`
 
-- [fastcore.aio](https://fastcore.fast.ai/aio.html.md): Bridging async and sync code: `run_sync`, `iter_sync`, `ctx_sync`, `athreaded`, `maybe_await`, and `then`, plus `Debounce` for coalescing bursts of calls and `RingQueue` for bounded drop-oldest async queues
-- [fastcore.apisurface](https://fastcore.fast.ai/apisurface.html.md): Signatures, documentation and grouped namespaces for generated API clients
-- [fastcore.basics](https://fastcore.fast.ai/basics.html.md): Basic functionality used in the fastai library
-- [fastcore.docments](https://fastcore.fast.ai/docments.html.md): Document parameters using comments.
-- `fastcore.editskill`: Text, file, cell, and notebook editing from `fastcore.tools` and `fastcore.nbio`, plus the conventions the whole fastai editing toolkit follows. Read this before working with the editing tools in any package that shares them. (Docs: https://fastcore.fast.ai/tools.html.md and https://fastcore.fast.ai/nbio.html.md)
-- [fastcore.foundation](https://fastcore.fast.ai/foundation.html.md): The `L` class and helpers for it
-- [fastcore.meta](https://fastcore.fast.ai/meta.html.md): Metaclasses
-- [fastcore.nbio](https://fastcore.fast.ai/nbio.html.md): Reading, writing, and running Jupyter notebooks
-- [fastcore.net](https://fastcore.fast.ai/net.html.md): Network, HTTP, and URL functions
-- [fastcore.parallel](https://fastcore.fast.ai/parallel.html.md): Threading and multiprocessing functions
-- [fastcore.script](https://fastcore.fast.ai/script.html.md): Creates a CLI from a Python function decorated with `call_parse`.
-- [fastcore.style](https://fastcore.fast.ai/style.html.md): Fast styling for friendly CLIs.
-- [fastcore.test](https://fastcore.fast.ai/test.html.md): Helper functions to quickly write tests in notebooks
-- [fastcore.tools](https://fastcore.fast.ai/tools.html.md): Text and file editing primitives shared by the fastai editing tools
-- [fastcore.xdg](https://fastcore.fast.ai/xdg.html.md): XDG Base Directory Specification helpers.
-- [fastcore.xml](https://fastcore.fast.ai/xml.html.md): Concise HTML generation and namespace-aware XML construction.
-- [fastcore.xtras](https://fastcore.fast.ai/xtras.html.md): Utility functions used in the fastai library
+### Core idioms (`basics`, `xtras`, `meta`, `docments`, `test`)
 
-<!-- Generated by nbdev-export; edit the index notebook, not this file -->
+- `doc(fastcore.basics)` (large; search via `xdir`/`docfind`): `@patch` (`as_prop`, `cls_method`, `static_method`) adds methods via `self:` annotation; `store_attr()` binds `__init__` args; `~Self.foo().bar` replaces `lambda o: o.foo().bar` (capital `S`, no parens); curried ops (`lt(3)`, `in_(vals)`) bind 2nd arg
+- `doc(fastcore.xtras)` (search via `xdir`/`docfind`): `Path` extensions (`ls()`, `read_json`/`write_json`/`read_jsonl`, `mk_write`, `delete`), `dict2obj`/`obj2dict`, `run`, `atomic_save`, `globtastic`, `Config`, `timed_cache`
+- `doc(fastcore.meta)`, `doc(fastcore.docments)`: `@delegates(callee)` exposes forwarded `**kwargs` in signatures/help/docs (collector MUST be `kwargs`; `@delegated` fills defaults); trailing `# comment` docments drive `doc()`, `nbdev`, `fastcore.script`
+- `doc(fastcore.test)`: `test_eq`/`test_ne`/`test_close`/`test_is`, `test(a, b, in_)` (shows both values on failure), `with expect_fail(Exc, contains=..., regex=...):` (prefer over `test_fail`)
+
+### Other modules
+
+- text/file/notebook editing: `doc(fastcore.editskill)` (`fastcore.tools`, `fastcore.nbio`)
+- HTML/XML: `doc(fastcore.xml)` (`ft`/`to_xml`, `klass=`/`fr=`, namespace-aware `E`)
+- HTTP/sockets: `doc(fastcore.net)` (`urlopen`/`urlread`/`urljson`/`urlsave` with status-specific `HTTP4xx`/`HTTP5xx` errors carrying body, TCP/Unix helpers, `wait_port_free`)
+- LLM tool schemas & dispatch: `doc(fastcore.funccall)`; also `fastcore.apisurface`, `fastcore.diff`, `fastcore.style`, `fastcore.xdg`
+
+## Docs
+
+- [fastcore.script](script.html.md): Creates a CLI from a Python function decorated with `call_parse`.
+- [fastcore.foundation](foundation.html.md): The `L` class and helpers for it
+- [fastcore.aio](aio.html.md): Bridging async and sync code: `run_sync`, `iter_sync`, `ctx_sync`, `athreaded`, `maybe_await`, and `then`, plus `Debounce` for coalescing bursts of calls and `RingQueue` for bounded drop-oldest async queues
+- [fastcore.editskill](llms-editskill.txt): Text, file, cell, and notebook editing from `fastcore.tools` and `fastcore.nbio`, plus the conventions the whole fastai editing toolkit follows. Read this before working with the editing tools in any package that shares them.
+- [Quick tour](tour.html.md): Highlights from fastcore
+- [API list](apilist.txt): All functions and methods in fastcore
+
+## Optional
+
+- [fastcore: an underrated Python library](https://gist.githubusercontent.com/hamelsmu/ea9e0519d9a94a4203bcc36043eb01c5/raw/6c0c96a2823d67aecc103206d6ab21c5dcd520a/fastcore:_an_underrated_python_library.md): External tour of fastcore features
+- [fastcore.apisurface](apisurface.html.md): Signatures, documentation and grouped namespaces for generated API clients
+- [fastcore.basics](basics.html.md): Basic functionality used in the fastai library
+- [fastcore.diff](diff.html.md): Line and word differences between plain-text sources.
+- [fastcore.docments](docments.html.md): Document parameters using comments.
+- [fastcore.funccall](funccall.html.md): Generate JSON schemas from Python functions, call functions from LLM tool-use requests, and convert schemas back to callables
+- [fastcore.meta](meta.html.md): Metaclasses
+- [fastcore.nbio](nbio.html.md): Reading, writing, and running Jupyter notebooks
+- [fastcore.net](net.html.md): Network, HTTP, and URL functions
+- [fastcore.parallel](parallel.html.md): Threading and multiprocessing functions
+- [fastcore.py2pyi](py2pyi.html.md): Generate `.pyi` stubs for wildcard imports, `@patch`, and `@delegates`
+- [fastcore.pyparse](pyparse.html.md): Structured static views of Python modules, definitions, docstrings, literals, and `@patch` targets.
+- [fastcore.style](style.html.md): Fast styling for friendly CLIs.
+- [fastcore.test](test.html.md): Helper functions to quickly write tests in notebooks
+- [fastcore.tools](tools.html.md): Text and file editing primitives shared by the fastai editing tools
+- [fastcore.xdg](xdg.html.md): XDG Base Directory Specification helpers.
+- [fastcore.xml](xml.html.md): Concise HTML generation and namespace-aware XML construction.
+- [fastcore.xtras](xtras.html.md): Utility functions used in the fastai library
+
+<!-- Generated by pyskills-llms; edit fastcore/skill.py, not this file -->

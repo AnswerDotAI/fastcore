@@ -6,6 +6,8 @@
 
 `L` extends Python's list operations with indexing inspired by [NumPy](http://www.numpy.org/). You can index with an integer, slice, collection of integers or boolean mask. Methods such as `map`, `filter`, `sorted`, `unique`, `itemgot` and `attrgot` return an `L`:
 
+`L(None)` is empty; `L('abc')` (and bytes, dicts, arrays, tensors) stays a single item unless `use_list=True`; `use_list=None` wraps an array or DataFrame in place without copying; `L(existing_L)` returns the same object via `_L_Meta`. Override `_new(self, items, *args, **kwargs)` in `L` subclasses to preserve metadata across slices and chained methods.
+
 ```python
 t = L(1,2,3)
 t.append(4)
@@ -139,7 +141,12 @@ class _L_Meta(type):
 class L(GetAttr, CollBase, metaclass=_L_Meta):
     "Behaves like a list of `items` but can also index with list of indices or masks"
     _default='items'
-    def __init__(self, items=None, *rest, use_list=False, match=None):
+    def __init__(self,
+        items=None, # Initial item, iterable, or `None` (empty `L`); strings, bytes, dicts, arrays, and tensors stay single items unless `use_list=True`
+        *rest, # Additional positional items, e.g. `L(1, 2, 3)`
+        use_list=False, # `True` forces `list(items)`; `False` wraps scalars/strings/dicts as 1 item; `None` keeps array/DataFrame in place
+        match=None # Replicate a 1-item `L` to `len(match)`, or assert lengths match
+    ):
         if (use_list is not None) or not is_array(items):
             items = listify(items, *rest, use_list=use_list, match=match)
         super().__init__(items)

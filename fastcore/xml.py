@@ -147,6 +147,7 @@ _all_ = ['Head', 'Title', 'Meta', 'Link', 'Style', 'Body', 'Pre', 'Code',
     'Audio', 'Source', 'Canvas', 'Svg', 'Math', 'Script', 'Noscript', 'Template', 'Slot']
 
 for o in _all_: _g[o] = partial(ft, o.lower(), void_=o.lower() in voids)
+__pyskill_sigs__ = False
 
 # %% ../nbs/09_xml.ipynb #39834fcb
 def Html(*c, doctype=True, **kwargs)->FT:

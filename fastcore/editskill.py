@@ -7,7 +7,7 @@
 - remold: engine behind `ast_replace`
 - `Notebook` `nb[k]`: k = position, cell id or unique id prefix; get cell, assign source, `del`
 
-## Names, parameters: same across the toolkit
+### Names, parameters: same across the toolkit
 
 - text primitives (`str_replace`, `del_lines`, `ast_replace`, `exhash`, ...) act on a str; `file_`, `cell_`, `msg_` prefix: same op on that target, address args first
 - other ops: verb_target (`view_file`, `read_nb`, `summary_nb`, `lnhashview_cell`); no extra dialog or notebook part: `find_msgs`, `add_msg`, `del_msgs`, `find_cells`
@@ -17,7 +17,7 @@
 - `only_*` narrows, `incl_*` widens; `context=`: file lines (summary mode: blocks), cells or messages
 - editors return a diff: read it, don't re-view
 
-## Functions, methods
+### Functions, methods
 
 | |function|method
 -|-|-
@@ -30,7 +30,7 @@ reads return|snapshot rows: addresses, source, metadata|objects
 - method: the function's name and arguments, minus its target part and address
 - one style per file: save before switching to functions; reopen before methods
 
-## Addresses
+### Addresses
 
 - unsure where: summary first: `rg(summary=True)`, `nbrg`, `summary_dlg`, `open_doc` outline    /an addressed row per block, cell, message or section
 - copy from a view (`nums=True`, `lnhashs=True`, `rg(lnhashs=True)`); prefer lnhash where exhash is installed    /stale ones rejected

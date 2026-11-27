@@ -22,10 +22,11 @@ Documentation = "https://fastcore.fast.ai/"
 fastcore = "fastcore._modidx:d"
 
 [project.entry-points.pyskills]
+"fastcore" = "fastcore.skill"
 "fastcore.editskill" = "fastcore.editskill"
 
 [project.optional-dependencies]
-dev = ['numpy', 'nbdev>=3.3.2', 'matplotlib', 'pillow', 'torch', 'pandas', 'nbclassic', 'pysym2md>=0.0.6', 'llms-txt', 'plum-dispatch', 'remold']
+dev = ['numpy', 'nbdev>=3.3.31', 'matplotlib', 'pillow', 'torch', 'pandas', 'nbclassic', 'pysym2md>=0.0.6', 'llms-txt', 'plum-dispatch', 'remold']
 
 
 [project.scripts]
@@ -39,10 +40,12 @@ version = {attr = "fastcore.__version__"}
 include = ["fastcore"]
 
 [tool.nbdev]
+to_meta = ["export"]
 allowed_metadata_keys = ['solveit']
 tst_flags = ''
 custom_sidebar = false
 allowed_cell_metadata_keys = ['solveit_ai']
+pre_docs = ["pysym2md --output-file apilist.txt fastcore"]
 
 [tool.chkstyle]
 skip_paths = ["_modidx.py"]

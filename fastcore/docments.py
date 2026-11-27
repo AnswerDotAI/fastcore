@@ -33,6 +33,7 @@ from inspect import getsource,isfunction,ismethod,isclass,signature,Parameter
 from dataclasses import is_dataclass
 from .utils import *
 from . import docscrape
+from .pyparse import parse_py
 from inspect import isclass,getdoc,signature
 
 # %% ../nbs/04_docments.ipynb #53e21187
@@ -74,13 +75,9 @@ def _defines(src, f):
 
 def _relocated_source(f):
     src = ''.join(linecache.getlines(inspect.getfile(f), f.__globals__))
-    node = parse(src)
-    for name in f.__qualname__.replace('.<locals>', '').split('.'):
-        nodes = [o for o in node.body if isinstance(o, (FunctionDef,AsyncFunctionDef,ast.ClassDef)) and o.name==name]
-        if len(nodes)!=1: raise OSError(f"Could not locate source for {f.__qualname__}")
-        node = nodes[0]
-    start = min([node.lineno, *(d.lineno for d in node.decorator_list)])-1
-    return ''.join(src.splitlines(keepends=True)[start:node.end_lineno])
+    matches = [d for d in parse_py(src).all_defs if d.qualname == f.__qualname__.replace('.<locals>', '')]
+    if len(matches)!=1: raise OSError(f"Could not locate source for {f.__qualname__}")
+    return matches[0].source
 
 def get_source(s):
     "Get source for a function, callable implementation, dataclass, or source string"
@@ -234,43 +231,21 @@ def _get_params(node):
     if node.args.kwarg: params.append(f"**{node.args.kwarg.arg}")
     return ", ".join(params)
 
-# %% ../nbs/04_docments.ipynb #5dc1b730
-class _DocstringExtractor(ast.NodeVisitor):
-    def __init__(self): self.docstrings,self.cls,self.cls_init = {},None,None
-
-    def visit_FunctionDef(self, node):
-        name = node.name
-        if name == '__init__':
-            self.cls_init = node
-            return
-        elif name.startswith('_'): return
-        elif self.cls: name = f"{self.cls}.{node.name}"
-        docs = ast.get_docstring(node)
-        params = _get_params(node)
-        if docs: self.docstrings[name] = (docs, params)
-        self.generic_visit(node)
-
-    def visit_ClassDef(self, node):
-        self.cls,self.cls_init = node.name,None
-        docs = ast.get_docstring(node)
-        if docs: self.docstrings[node.name] = ()
-        self.generic_visit(node)
-        if not docs and self.cls_init: docs = ast.get_docstring(self.cls_init)
-        params = _get_params(self.cls_init) if self.cls_init else ""
-        if docs: self.docstrings[node.name] = (docs, params)
-        self.cls,self.cls_init = None,None
-
-    def visit_Module(self, node):
-        module_doc = ast.get_docstring(node)
-        if module_doc: self.docstrings['_module'] = (module_doc, "")
-        self.generic_visit(node)
-
 # %% ../nbs/04_docments.ipynb #ac56083a
 def extract_docstrings(code):
     "Create a dict from function/class/method names to tuples of docstrings and param lists"
-    extractor = _DocstringExtractor()
-    extractor.visit(ast.parse(code))
-    return extractor.docstrings
+    m = parse_py(code)
+    res = {'_module': (m.doc, '')} if m.doc else {}
+    for sym in m.defs:
+        if not sym.is_public: continue
+        if isinstance(sym.node, ast.ClassDef):
+            init = first(f for f in sym.methods if f.name == '__init__')
+            doc = sym.doc or (init.doc if init else '')
+            if doc: res[sym.name] = (doc, _get_params(init.node) if init else '')
+            for meth in sym.methods:
+                if meth.is_public and meth.doc: res[meth.qualname] = (meth.doc, _get_params(meth.node))
+        elif sym.doc: res[sym.name] = (sym.doc, _get_params(sym.node))
+    return res
 
 # %% ../nbs/04_docments.ipynb #e4e1b815
 def _bold(s): return f'**{s}**' if s.strip() else s

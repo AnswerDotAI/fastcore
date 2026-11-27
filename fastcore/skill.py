@@ -1,0 +1,51 @@
+r"""Write idiomatic Python with `fastcore`: `L`, `@patch`, `store_attr`, `@delegates`, `call_parse` CLIs, async/sync bridging, and concise IO/testing helpers.
+
+- imports: `from fastcore.utils import *` (safe wildcard: `imports` (`os`, `re`, `sys`, `Path`, `partial`, ...), `foundation`, `basics`, `xtras`, `parallel`, `aio`); `from fastcore.all import *` adds `net`, `test`, `meta`, `apisurface`, `script`, `docments`, `xml`
+
+### CLIs (`fastcore.script`)
+
+- MUST read `doc(fastcore.script)` before writing any CLI; `@call_parse` turns a typed, docmented function into an `argparse` CLI without `if __name__ == "__main__"` while staying callable from Python/notebooks
+- easy-to-miss rules: first capital letter in optional param → short flag (`Resume=None` → `-r`/`--resume`); `bool=False` → `--flag`, `bool=True` → `--no-flag` (`bool_arg` for explicit `true|false`); `pos=[...]` keeps defaulted params positional; `Annotated[t, "help", {...}]` for `choices`/`nargs`/`action`; `is_cli()` separates CLI output from Python return values; `CliError` for clean stderr + exit 1; `nested=True` for wrapper CLIs; `parse_cli` for custom runners
+
+### `L` (`fastcore.foundation`)
+
+- NumPy-style list (`doc(fastcore.foundation)`, `doc(L)`): index by int, slice, index list (`x[[0,3]]`), or bool mask (`x[mask]`); `+` accepts scalars (`5 + x`); `L.range(coll)` uses `len(coll)`
+- construction traps: `L(1,2,3) == L([1,2,3])`; `L(None)` → `[]`; `L('abc')` → `['abc']` (strings, bytes, dicts, arrays, tensors stay 1 item; `use_list=True` unpacks; `use_list=None` wraps arrays/DataFrames in place); `L(existing_L)` returns same object; `L(1, match=xs)` replicates or checks length
+- `map` and `filter`: `L.map(f, *args, **kwargs)` uses `map_ex`: callable with forwarded args (`bind`/`arg0` placeholders too), format `str` (`L([1,2]).map('x={}')`), or mapping/indexable `f.__getitem__` (`L(ks).map(d)`); `L.filter(f, negate=False, **kwargs)` forwards `kwargs`; unpack tuple/dict items via `star(f)`, `rstar(f)` (reversed, in `foundation`), `dstar(f)` (dict → kwargs, in `basics`); zip variants (`map_zip`, `map_zipwith`, `zip`, `zipwith`) accept `cycled=True`; `concat` (1 level) vs `flatten` (recursive)
+- pipelines and subclasses: curried class calls (`L.map(int)`, `L.filter(...)`, `L.sorted(...)`) return functions; override `_new(self, items)` on `L` subclasses to keep metadata across slices/chains
+
+### Async, sync, and concurrency (`fastcore.aio`, `fastcore.parallel`)
+
+- `doc(fastcore.aio)`: `run_sync`/`iter_sync`/`ctx_sync` call async from sync via shared daemon loop; `@athreaded` runs blocking sync code in worker thread; `then(x, *fs)` builds one sync+async pipeline without duplicating methods
+- `doc(fastcore.parallel)`: `parallel(f, items, n_workers=...)` (`n_workers=0` runs serially for debugging); `parallel_async*` for bounded asyncio concurrency; `bg_task`; `@threaded`/`@startthread`
+
+### Core idioms (`basics`, `xtras`, `meta`, `docments`, `test`)
+
+- `doc(fastcore.basics)` (large; search via `xdir`/`docfind`): `@patch` (`as_prop`, `cls_method`, `static_method`) adds methods via `self:` annotation; `store_attr()` binds `__init__` args; `~Self.foo().bar` replaces `lambda o: o.foo().bar` (capital `S`, no parens); curried ops (`lt(3)`, `in_(vals)`) bind 2nd arg
+- `doc(fastcore.xtras)` (search via `xdir`/`docfind`): `Path` extensions (`ls()`, `read_json`/`write_json`/`read_jsonl`, `mk_write`, `delete`), `dict2obj`/`obj2dict`, `run`, `atomic_save`, `globtastic`, `Config`, `timed_cache`
+- `doc(fastcore.meta)`, `doc(fastcore.docments)`: `@delegates(callee)` exposes forwarded `**kwargs` in signatures/help/docs (collector MUST be `kwargs`; `@delegated` fills defaults); trailing `# comment` docments drive `doc()`, `nbdev`, `fastcore.script`
+- `doc(fastcore.test)`: `test_eq`/`test_ne`/`test_close`/`test_is`, `test(a, b, in_)` (shows both values on failure), `with expect_fail(Exc, contains=..., regex=...):` (prefer over `test_fail`)
+
+### Other modules
+
+- text/file/notebook editing: `doc(fastcore.editskill)` (`fastcore.tools`, `fastcore.nbio`)
+- HTML/XML: `doc(fastcore.xml)` (`ft`/`to_xml`, `klass=`/`fr=`, namespace-aware `E`)
+- HTTP/sockets: `doc(fastcore.net)` (`urlopen`/`urlread`/`urljson`/`urlsave` with status-specific `HTTP4xx`/`HTTP5xx` errors carrying body, TCP/Unix helpers, `wait_port_free`)
+- LLM tool schemas & dispatch: `doc(fastcore.funccall)`; also `fastcore.apisurface`, `fastcore.diff`, `fastcore.style`, `fastcore.xdg`
+"""
+
+__docs__ = {
+    'Docs': [
+        'fastcore.script',
+        'fastcore.foundation',
+        'fastcore.aio',
+        'fastcore.editskill',
+        ('Quick tour', 'tour.html.md', 'Highlights from fastcore'),
+        ('API list', 'apilist.txt', 'All functions and methods in fastcore'),
+    ],
+    'Optional': [
+        ('fastcore: an underrated Python library',
+         'https://gist.githubusercontent.com/hamelsmu/ea9e0519d9a94a4203bcc36043eb01c5/raw/6c0c96a2823d67aecc103206d6ab21c5dcd520a/fastcore:_an_underrated_python_library.md',
+         'External tour of fastcore features'),
+    ],
+}

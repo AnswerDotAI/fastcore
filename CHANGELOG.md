@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.3.1
+
+### New Features
+
+- Add fastcore.project helpers for TOML editing, project/package discovery, and versioning, plus Path.`read_toml` and `write_if_changed` ([#982](https://github.com/AnswerDotAI/fastcore/issues/982))
+
+
 ## 2.3.0
 
 ### New Features

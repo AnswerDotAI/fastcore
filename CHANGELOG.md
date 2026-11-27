@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.3.0
+
+### New Features
+
+- Remove py310 support ([#981](https://github.com/AnswerDotAI/fastcore/issues/981))
+
+
 ## 2.2.50
 
 ### New Features

@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.2.50
+
+### New Features
+
+- Add fastcore.pyparse and fastcore.skill; refactor docments and py2pyi to use pyparse ([#980](https://github.com/AnswerDotAI/fastcore/issues/980))
+
+
 ## 2.2.49
 
 ### New Features

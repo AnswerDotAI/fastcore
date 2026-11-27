@@ -26,7 +26,7 @@ fastcore = "fastcore._modidx:d"
 "fastcore.editskill" = "fastcore.editskill"
 
 [project.optional-dependencies]
-dev = ['numpy', 'nbdev>=3.3.32', 'matplotlib', 'pillow', 'torch', 'pandas', 'nbclassic', 'pysym2md>=0.0.6', 'plum-dispatch', 'remold']
+dev = ['numpy', 'nbdev[exec]>=3.3.32', 'matplotlib', 'pillow', 'torch', 'pandas', 'nbclassic', 'pysym2md>=0.0.6', 'plum-dispatch', 'remold']
 
 
 [project.scripts]

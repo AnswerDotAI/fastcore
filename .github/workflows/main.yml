@@ -36,7 +36,7 @@ jobs:
         python-version: ${{ matrix.py }}
     - name: Install dependencies
       run: |
-        pip install -Uqq "nbdev>3"
+        pip install -Uqq "nbdev[exec]>=3.3.32"
         pip install -e ".[dev]"
         python -c "import matplotlib.pyplot"
     - name: Run tests

@@ -23,7 +23,7 @@ test_eq(d.b.d[1], 4)
 These methods extend [Pathlib.Path](https://docs.python.org/3/library/pathlib.html#basic-use):
 
 - `ls()` lists directory contents as an `L`, optionally filtered by MIME prefix or extension.
-- `read_json`, `write_json`, and `read_jsonl` handle JSON files.
+- `read_json`, `write_json`, `read_jsonl`, and `read_toml` handle JSON and TOML files.
 - `readlines` reads lines; `mk_write` creates parent directories before writing.
 - `delete`, `relpath`, and `normpath` provide file deletion and path conversions.
 
@@ -47,14 +47,15 @@ __all__ = ['UNSET', 'spark_chars', 'walk_join', 'walk', 'exttypes', 'globtastic'
            'untar_dir', 'repo_details', 'shell', 'ssh', 'rsync_multi', 'run', 'open_file', 'save_pickle', 'load_pickle',
            'parse_env', 'expand_wildcards', 'atomic_save', 'load_mod', 'import_no_init', 'save_config_file',
            'read_config_file', 'find_file_parents', 'Config', 'Unset', 'dict2obj', 'obj2dict', 'repr_dict', 'is_listy',
-           'mapped', 'take_lines', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps', 'save_iter',
-           'asave_iter', 'strloader', 'frontmatter', 'clean_cli_output', 'unqid', 'rtoken_hex', 'friendly_name',
-           'n_friendly_names', 'exec_eval', 'get_source_link', 'sparkline', 'modify_exception', 'round_multiple',
-           'set_num_threads', 'join_path_file', 'autostart', 'EventTimer', 'stringfmt_names', 'PartialFormatter',
-           'partial_format', 'truncstr', 'trunc_ctr', 'TruncatedString', 'fenced', 'fenced_blocks', 'str_diff',
-           'utc2local', 'local2utc', 'trace', 'modified_env', 'ContextManagers', 'shufflish', 'console_help', 'hl_md',
-           'type2str', 'dataclass_src', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict', 'vars_pub',
-           'is_typeddict', 'is_namedtuple', 'CachedIter', 'flexicache', 'time_policy', 'mtime_policy', 'timed_cache']
+           'mapped', 'take_lines', 'write_if_changed', 'IterLen', 'ReindexCollection', 'SaveReturn', 'trim_wraps',
+           'save_iter', 'asave_iter', 'strloader', 'frontmatter', 'clean_cli_output', 'unqid', 'rtoken_hex',
+           'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link', 'sparkline', 'modify_exception',
+           'round_multiple', 'set_num_threads', 'join_path_file', 'autostart', 'EventTimer', 'stringfmt_names',
+           'PartialFormatter', 'partial_format', 'truncstr', 'trunc_ctr', 'TruncatedString', 'fenced', 'fenced_blocks',
+           'str_diff', 'utc2local', 'local2utc', 'trace', 'modified_env', 'ContextManagers', 'shufflish',
+           'console_help', 'hl_md', 'type2str', 'dataclass_src', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict',
+           'vars_pub', 'is_typeddict', 'is_namedtuple', 'CachedIter', 'flexicache', 'time_policy', 'mtime_policy',
+           'timed_cache']
 
 # %% ../nbs/03_xtras.ipynb #3401d507
 from .imports import *
@@ -64,7 +65,7 @@ from .ansi import strip_ansi
 
 from importlib import import_module
 from functools import wraps
-import string,time,dataclasses,difflib,json
+import string,time,dataclasses,difflib,json,tomllib
 from enum import Enum
 from contextlib import contextmanager,ExitStack
 from configparser import ConfigParser
@@ -651,6 +652,12 @@ def read_json(self:Path, encoding=None, errors=None):
     "Same as `read_text` followed by `loads`"
     return loads(self.read_text(encoding=encoding, errors=errors))
 
+# %% ../nbs/03_xtras.ipynb #7fcdd901
+@patch
+def read_toml(self:Path, encoding='utf-8', errors=None):
+    "Same as `read_text` followed by `tomllib.loads`"
+    return tomllib.loads(self.read_text(encoding=encoding, errors=errors))
+
 # %% ../nbs/03_xtras.ipynb #69a6fa3a
 @patch
 def read_jsonl(self:Path, encoding=None, errors=None):
@@ -673,6 +680,18 @@ def mk_write(self:Path, data, encoding=None, errors=None, mode=511, uid=-1, gid=
 def write_json(self:Path, data, encoding=None, errors=None, mode=511, uid=-1, gid=-1, **kw):
     "Same as `dumps`followed by `mk_write`"
     self.mk_write(dumps(data,**kw),encoding,errors,mode,uid,gid)
+
+# %% ../nbs/03_xtras.ipynb #6412e8ed
+def write_if_changed(
+    p:str|Path, # Destination file path
+    txt:str, # Text content to write
+    encoding:str='utf-8', # File encoding
+)->bool: # True if file was created or updated
+    "Write `txt` to `p` only if missing or content differs; return whether written"
+    p = Path(p)
+    if p.exists() and p.read_text(encoding=encoding) == txt: return False
+    p.mk_write(txt, encoding=encoding)
+    return True
 
 # %% ../nbs/03_xtras.ipynb #9fc9965f
 @patch

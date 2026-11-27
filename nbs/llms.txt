@@ -58,6 +58,7 @@ Base URL: https://fastcore.fast.ai/
 - [fastcore.nbio](nbio.html.md): Reading, writing, and running Jupyter notebooks
 - [fastcore.net](net.html.md): Network, HTTP, and URL functions
 - [fastcore.parallel](parallel.html.md): Threading and multiprocessing functions
+- [fastcore.project](project.html.md): Format-preserving TOML edits, project and package discovery, and version reading, writing, and bumping.
 - [fastcore.py2pyi](py2pyi.html.md): Generate `.pyi` stubs for wildcard imports, `@patch`, and `@delegates`
 - [fastcore.pyparse](pyparse.html.md): Structured static views of Python modules, definitions, docstrings, literals, and `@patch` targets.
 - [fastcore.style](style.html.md): Fast styling for friendly CLIs.

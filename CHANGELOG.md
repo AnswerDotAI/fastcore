@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.3.3
+
+### New Features
+
+- Add `md_sub`, pass filenames to ast.parse in pyparse/nbio, refactor version helpers via `set_py_var`, and handle CRLF frontmatter ([#984](https://github.com/AnswerDotAI/fastcore/issues/984))
+
+
 ## 2.3.2
 
 ### New Features

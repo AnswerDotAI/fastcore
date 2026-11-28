@@ -65,7 +65,7 @@ Base URL: https://fastcore.fast.ai/
 - [fastcore.nbio](nbio.html.md): Reading, writing, and running Jupyter notebooks
 - [fastcore.funccall](funccall.html.md): Generate JSON schemas from Python functions, call functions from LLM tool-use requests, and convert schemas back to callables
 - [fastcore.pyparse](pyparse.html.md): Structured static views of Python modules, definitions, docstrings, literals, and `@patch` targets.
-- [fastcore.project](project.html.md): Format-preserving TOML edits, project and package discovery, and version reading, writing, and bumping.
+- [fastcore.project](project.html.md): Project and package discovery, generated Python module variables, and version reading, writing, and bumping.
 
 ## Resources
 

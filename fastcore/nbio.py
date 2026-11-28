@@ -170,17 +170,20 @@ def cell_frontmatter(s:str, strvals:bool=False):
     return d if not body.strip() else {}
 
 def md_frontmatter(s:str, strvals:bool=False):
-    "Frontmatter synthesized from an H1-formatted markdown cell: `# title`, `> description`, and `- key: value` lines"
+    "Frontmatter synthesized from leading H1-formatted markdown lines: `# title`, `> description`, and `- key: value`"
     import yaml
-    m = re.search(r'^#\s+(\S.*?)\s*$', s, flags=re.MULTILINE)
-    if not m: return {}
-    res = dict(title=m.group(1))
-    m = re.search(r'^>\s+(\S.*?)\s*$', s, flags=re.MULTILINE)
-    if m: res['description'] = m.group(1)
-    r = re.findall(r'^-\s+(\S.*:.*\S)\s*$', s, flags=re.MULTILINE)
-    if r:
-        try: res.update(frontmatter('---\n' + '\n'.join(r) + '\n---\n', strvals=strvals)[0])
-        except yaml.YAMLError as e: warn(f'Failed to create YAML dict for:\n{r}\n\n{e}\n')
+    res, kvs = {}, []
+    for ln in s.splitlines():
+        st = ln.strip()
+        if not st: continue
+        if 'title' not in res and (m := re.match(r'^#\s+(\S.*?)$', st)): res['title'] = m.group(1)
+        elif 'title' not in res: return {}
+        elif 'description' not in res and (m := re.match(r'^>\s+(\S.*?)$', st)): res['description'] = m.group(1)
+        elif m := re.match(r'^-\s+(\S.*:.*\S)$', st): kvs.append(m.group(1))
+        else: break
+    if kvs:
+        try: res.update(frontmatter('---\n' + '\n'.join(kvs) + '\n---\n', strvals=strvals)[0])
+        except yaml.YAMLError as e: warn(f'Failed to create YAML dict for:\n{kvs}\n\n{e}\n')
     return res
 
 def nb_frontmatter(nb, strvals:bool=False):

@@ -536,10 +536,15 @@ def read_config_file(file, **kwargs):
     return config['DEFAULT']
 
 # %% ../nbs/03_xtras.ipynb #3ab1e73c
-def find_file_parents(fname, frompath=None):
-    "Search `cfg_path` and its parents to find `cfg_name`"
+def find_file_parents(
+    fname, # Filename to search for in `frompath` and its parents
+    frompath=None, # Starting directory or file (defaults to current working directory)
+    pred:callable=None, # Optional predicate `(Path) -> bool` on each candidate file
+):
+    "Find nearest parent directory containing `fname` (matching `pred` if given), else `None`"
     p = Path(frompath or Path.cwd()).expanduser().absolute()
-    return first(o for o in [p, *p.parents] if (o/fname).exists())
+    if p.is_file(): p = p.parent
+    return first(o for o in [p, *p.parents] if (f := o/fname).exists() and (not pred or pred(f)))
 
 # %% ../nbs/03_xtras.ipynb #11212a22
 class Config:
@@ -816,17 +821,14 @@ def strloader():
         strloader.ldr = StrLoader
     return strloader.ldr
 
+_re_fm = re.compile(r'^---\r?\n(.*?)\r?\n(?:---|\.\.\.)(?:\r?\n|$)', re.S)
+
 def frontmatter(txt:str, strvals:bool=False)->tuple:
     "Tuple of (dict, body) from frontmatter in `txt`; missing frontmatter returns ({}, txt), malformed YAML raises"
     import yaml
-    if txt.startswith('---\r\n'): txt = txt.replace('\r\n', '\n')
-    if not txt.startswith('---\n'): return {},txt
-    end = min((i for i in (txt.find(f'\n{c}\n', 3) for c in ('---','...')) if i >= 0), default=-1)
-    if end < 0:
-        if not txt.endswith(('\n---','\n...')): return {},txt
-        end = len(txt) - 4
-    res = yaml.load(txt[4:end], Loader=strloader() if strvals else yaml.SafeLoader)
-    return (res,txt[end+5:]) if isinstance(res,dict) else ({},txt)
+    if not (m := _re_fm.match(txt)): return {},txt
+    res = yaml.load(m.group(1), Loader=strloader() if strvals else yaml.SafeLoader)
+    return (res,txt[m.end():]) if isinstance(res,dict) else ({},txt)
 
 # %% ../nbs/03_xtras.ipynb #45eb5141
 def clean_cli_output(txt:str, strip:bool=True):
@@ -1083,21 +1085,31 @@ def fenced(text:str, info:str='', ch:str='`')->str:
     return f'{fence}{info}\n{body}\n{fence}'
 
 # %% ../nbs/03_xtras.ipynb #a914f01a
+def _fence_match(line:str, chs:str='`~'):
+    t = line.rstrip('\r\n')
+    s = t.lstrip(' ')
+    if len(t) - len(s) > 3 or not s or s[0] not in chs: return None
+    n = len(s) - len(s.lstrip(s[0]))
+    return (s[:n], s[n:]) if n >= 3 else None
+
+def _fence_step(line:str, fence:str|None, chs:str='`~'):
+    m = _fence_match(line, fence[0] if fence else chs)
+    if fence is None:
+        if m and not (m[0][0] == '`' and '`' in m[1]): return m[0], 'open', m[1].strip()
+        return None, None, ''
+    if m and len(m[0]) >= len(fence) and not m[1].strip(): return None, 'close', ''
+    return fence, None, ''
+
 def fenced_blocks(text:str, # Markdown text to scan
                   ch:str='`' # Fence character
                  )->list: # `(info, body, start, end)` per block; `start`/`end` are char offsets of the whole block
     "Top-level fenced blocks in `text`, fence-nesting-aware: the inverse of `fenced`"
-    res,fence,info,body,bstart = [],None,None,None,None
-    pos = 0
+    res,fence,info,body,bstart,pos = [],None,None,None,None,0
     for line in text.splitlines(keepends=True):
-        t = line.rstrip('\n')
-        run = len(t) - len(t.lstrip(ch)) if t.startswith(ch) else 0
-        if fence is None:
-            if run>=3: fence,info,body,bstart = run,t[run:].strip(),[],pos
-        elif run>=fence and not t[run:].strip(): 
-            res.append((info, ''.join(body), bstart, pos+len(line)))
-            fence = None
-        else: body.append(line)
+        fence,ev,f_info = _fence_step(line, fence, ch)
+        if ev == 'open': info,body,bstart = f_info,[],pos
+        elif ev == 'close': res.append((info, ''.join(body), bstart, pos+len(line)))
+        elif fence is not None: body.append(line)
         pos += len(line)
     return res
 
@@ -1124,10 +1136,9 @@ def md_sub(
     p = re.compile(pat) if isinstance(pat, str) else pat
     fence, lines = None, txt.splitlines(keepends=True)
     for i, l in enumerate(lines):
-        if fence:
-            if re.fullmatch(rf' {{0,3}}{fence[0]}{{{len(fence)},}}\s*', l): fence = None
-        elif (m := re.match(r' {0,3}(`{3,}|~{3,})', l)) and not (m[1][0] == '`' and '`' in l[m.end():]): fence = m[1]
-        elif not l.startswith(('    ', '\t')): lines[i] = _sub_non_code(p, repl, l) if skip_inline else p.sub(repl, l)
+        fence, ev, _ = _fence_step(l, fence)
+        if fence is None and ev is None and not l.startswith(('    ', '\t')):
+            lines[i] = _sub_non_code(p, repl, l) if skip_inline else p.sub(repl, l)
     return ''.join(lines)
 
 # %% ../nbs/03_xtras.ipynb #273a90fd

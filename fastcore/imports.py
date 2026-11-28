@@ -30,7 +30,9 @@ def is_coll(o):
 def all_equal(a,b):
     "Compares whether `a` and `b` are the same length and have the same contents"
     if not is_iter(b): return a==b
-    return all(equals(a_,b_) for a_,b_ in itertools.zip_longest(a,b))
+    missing = object()  # sentinel so a padded (missing) position never matches a real value, incl. `None`
+    return all(a_ is not missing and b_ is not missing and equals(a_,b_)
+               for a_,b_ in itertools.zip_longest(a,b,fillvalue=missing))
 
 def noop (x=None, *args, **kwargs):
     "Do nothing"

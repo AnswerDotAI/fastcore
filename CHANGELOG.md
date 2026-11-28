@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.3.4
+
+### New Features
+
+- Remove TOML helpers and `find_marker` from project, add pred to `find_file_parents`, and refine frontmatter and fence parsing ([#985](https://github.com/AnswerDotAI/fastcore/issues/985))
+
+
 ## 2.3.3
 
 ### New Features

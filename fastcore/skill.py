@@ -33,19 +33,3 @@ r"""Write idiomatic Python with `fastcore`: `L`, `@patch`, `store_attr`, `@deleg
 - HTTP/sockets: `doc(fastcore.net)` (`urlopen`/`urlread`/`urljson`/`urlsave` with status-specific `HTTP4xx`/`HTTP5xx` errors carrying body, TCP/Unix helpers, `wait_port_free`)
 - LLM tool schemas & dispatch: `doc(fastcore.funccall)`; also `fastcore.apisurface`, `fastcore.diff`, `fastcore.style`, `fastcore.xdg`
 """
-
-__docs__ = {
-    'Docs': [
-        'fastcore.script',
-        'fastcore.foundation',
-        'fastcore.aio',
-        'fastcore.editskill',
-        ('Quick tour', 'tour.html.md', 'Highlights from fastcore'),
-        ('API list', 'apilist.txt', 'All functions and methods in fastcore'),
-    ],
-    'Optional': [
-        ('fastcore: an underrated Python library',
-         'https://gist.githubusercontent.com/hamelsmu/ea9e0519d9a94a4203bcc36043eb01c5/raw/6c0c96a2823d67aecc103206d6ab21c5dcd520a/fastcore:_an_underrated_python_library.md',
-         'External tour of fastcore features'),
-    ],
-}

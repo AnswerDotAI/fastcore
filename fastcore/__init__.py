@@ -33,7 +33,6 @@ test_eq(x.unique(), [1,2,3,4,5])
 
 - [Quick tour](https://fastcore.fast.ai/tour.html.md): A quick tour of a few highlights from fastcore.
 - [fastcore: an underrated Python library](https://gist.githubusercontent.com/hamelsmu/ea9e0519d9a94a4203bcc36043eb01c5/raw/6c0c96a2823d67aecc103206d6ab21c05dcd520a/fastcore:_an_underrated_python_library.md): A tour of some of the features of fastcore.
-- [API list](https://fastcore.fast.ai/apilist.txt): A succinct list of all functions and methods in fastcore.
 
 Modules:
 

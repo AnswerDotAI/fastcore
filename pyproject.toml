@@ -26,7 +26,7 @@ fastcore = "fastcore._modidx:d"
 "fastcore.editskill" = "fastcore.editskill"
 
 [project.optional-dependencies]
-dev = ['numpy', 'nbdev[exec]>=3.3.32', 'matplotlib', 'pillow', 'torch', 'pandas', 'nbclassic', 'pysym2md>=0.0.6', 'plum-dispatch', 'remold']
+dev = ['numpy', 'nbdev[exec]>=3.3.32', 'matplotlib', 'pillow', 'torch', 'pandas', 'nbclassic', 'plum-dispatch', 'remold']
 
 
 [project.scripts]
@@ -45,7 +45,19 @@ allowed_metadata_keys = ['solveit']
 tst_flags = ''
 custom_sidebar = false
 allowed_cell_metadata_keys = ['solveit_ai']
-pre_docs = ["pysym2md --output-file apilist.txt fastcore"]
 
 [tool.chkstyle]
 skip_paths = ["_modidx.py"]
+
+[tool.docs]
+Docs = [
+  "06_script.ipynb",
+  "02_foundation.ipynb",
+  "03c_aio.ipynb",
+  "fastcore.editskill",
+  "000_tour.ipynb",
+]
+API = "."
+Resources = [
+  ["fastcore: an underrated Python library", "https://gist.githubusercontent.com/hamelsmu/ea9e0519d9a94a4203bcc36043eb01c5/raw/6c0c96a2823d67aecc103206d6ab21c5dcd520a/fastcore:_an_underrated_python_library.md", "External tour of fastcore features"],
+]

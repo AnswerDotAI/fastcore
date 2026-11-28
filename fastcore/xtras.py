@@ -33,6 +33,7 @@ Other utilities include:
 
 - `exec_eval`: run a code string and return its last expression, like a notebook cell.
 - `fenced`: wrap text in a Markdown fence longer than any fence character run in the body.
+- `md_sub`: regex-substitute Markdown text outside fenced/indented code blocks and inline code.
 - `str_diff`: return a unified diff, or `''` for identical text.
 - `unqid` and `friendly_name`: generate random Python identifiers or memorable word-based names.
 - `flexicache`: cache results with configurable expiration policies.
@@ -52,7 +53,7 @@ __all__ = ['UNSET', 'spark_chars', 'walk_join', 'walk', 'exttypes', 'globtastic'
            'friendly_name', 'n_friendly_names', 'exec_eval', 'get_source_link', 'sparkline', 'modify_exception',
            'round_multiple', 'set_num_threads', 'join_path_file', 'autostart', 'EventTimer', 'stringfmt_names',
            'PartialFormatter', 'partial_format', 'truncstr', 'trunc_ctr', 'TruncatedString', 'fenced', 'fenced_blocks',
-           'str_diff', 'utc2local', 'local2utc', 'trace', 'modified_env', 'ContextManagers', 'shufflish',
+           'md_sub', 'str_diff', 'utc2local', 'local2utc', 'trace', 'modified_env', 'ContextManagers', 'shufflish',
            'console_help', 'hl_md', 'type2str', 'dataclass_src', 'nullable_dc', 'make_nullable', 'flexiclass', 'asdict',
            'vars_pub', 'is_typeddict', 'is_namedtuple', 'CachedIter', 'flexicache', 'time_policy', 'mtime_policy',
            'timed_cache']
@@ -818,6 +819,7 @@ def strloader():
 def frontmatter(txt:str, strvals:bool=False)->tuple:
     "Tuple of (dict, body) from frontmatter in `txt`; missing frontmatter returns ({}, txt), malformed YAML raises"
     import yaml
+    if txt.startswith('---\r\n'): txt = txt.replace('\r\n', '\n')
     if not txt.startswith('---\n'): return {},txt
     end = min((i for i in (txt.find(f'\n{c}\n', 3) for c in ('---','...')) if i >= 0), default=-1)
     if end < 0:
@@ -1098,6 +1100,35 @@ def fenced_blocks(text:str, # Markdown text to scan
         else: body.append(line)
         pos += len(line)
     return res
+
+# %% ../nbs/03_xtras.ipynb #ee761efc
+_re_inline_code = re.compile(r'(?<!`)(`+)(?!`)[^\n]+?(?<!`)\1(?!`)')
+
+def _sub_non_code(pat, repl, line):
+    out, pos = [], 0
+    for m in _re_inline_code.finditer(line):
+        if m.start() > pos: out.append(pat.sub(repl, line[pos:m.start()]))
+        out.append(m.group(0))
+        pos = m.end()
+    if pos < len(line): out.append(pat.sub(repl, line[pos:]))
+    return ''.join(out)
+
+def md_sub(
+    pat, # Regex pattern or compiled regex to replace
+    repl, # Replacement string or callable taking a `re.Match`
+    txt:str, # Markdown text
+    skip_inline:bool=True, # Also skip inline backtick code spans?
+)->str:
+    "Replace `pat` with `repl` in Markdown `txt`, skipping fenced and indented code blocks (and optionally inline code)"
+    if not txt: return txt
+    p = re.compile(pat) if isinstance(pat, str) else pat
+    fence, lines = None, txt.splitlines(keepends=True)
+    for i, l in enumerate(lines):
+        if fence:
+            if re.fullmatch(rf' {{0,3}}{fence[0]}{{{len(fence)},}}\s*', l): fence = None
+        elif (m := re.match(r' {0,3}(`{3,}|~{3,})', l)) and not (m[1][0] == '`' and '`' in l[m.end():]): fence = m[1]
+        elif not l.startswith(('    ', '\t')): lines[i] = _sub_non_code(p, repl, l) if skip_inline else p.sub(repl, l)
+    return ''.join(lines)
 
 # %% ../nbs/03_xtras.ipynb #273a90fd
 def str_diff(

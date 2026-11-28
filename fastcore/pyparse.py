@@ -97,10 +97,11 @@ class PyMod(PyDef):
 def parse_py(
     src:str|ast.Module, # Python source string or pre-parsed `ast.Module`
     safe:bool=False, # Return `None` on parse error instead of raising?
+    filename:str='<unknown>', # Filename passed to `ast.parse` for warnings and tracebacks
 )->PyMod|None:
     "Parse Python source `src` (or wrap an `ast.Module`) into a `PyMod`"
     if isinstance(src, ast.Module): return PyMod(src)
-    try: tree = ast.parse(src)
+    try: tree = ast.parse(src, filename=filename)
     except (SyntaxError, ValueError):
         if safe: return None
         raise
@@ -116,7 +117,7 @@ def parse_py_file(
     except (OSError, UnicodeDecodeError):
         if safe: return None
         raise
-    return parse_py(src, safe=safe)
+    return parse_py(src, safe=safe, filename=str(path))
 
 # %% ../nbs/15_pyparse.ipynb #f9bb2062
 def _target_names(node):

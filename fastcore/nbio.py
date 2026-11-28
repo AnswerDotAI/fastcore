@@ -111,11 +111,12 @@ class NbCell(AttrDict):
     def parsed_(self):
         if self.cell_type!='code' or self.source.strip()[:1] in ['%', '!']: return
         if '_parsed_' not in self:
-            try: self._parsed_ = ast.parse(self.source).body
+            fn = f"{self['path_']}:{self.id}" if 'path_' in self else f"<cell:{self.id}>"
+            try: self['_parsed_'] = ast.parse(self.source, filename=fn).body
             # you can assign the result of ! to a variable in a notebook cell
             # which will result in a syntax error if parsed with the ast module.
             except SyntaxError: return
-        return self._parsed_
+        return self['_parsed_']
 
     def __hash__(self): return hash(self.id) if 'id' in self else hash(self.source) + hash(self.cell_type)
     def __eq__(self,o): return self.id==o.id if 'id' in self and 'id' in o else self.source==o.source and self.cell_type==o.cell_type
@@ -139,6 +140,7 @@ def read_nb(path):
     path = Path(path).expanduser()
     res = dict2nb(_read_json(path, encoding='utf-8'))
     res['path_'] = str(path)
+    for c in res.cells: c['path_'] = res['path_']
     return res
 
 # %% ../nbs/13_nbio.ipynb #c86fe311

@@ -12,7 +12,6 @@ format:
       - cosmo
     css: styles.css
     toc: true
-    keep-md: true
   commonmark: default
 
 website:

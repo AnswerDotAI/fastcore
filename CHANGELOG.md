@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 2.3.2
+
+### New Features
+
+- Add `set_py_var` to fastcore.project ([#983](https://github.com/AnswerDotAI/fastcore/issues/983))
+
+
 ## 2.3.1
 
 ### New Features
